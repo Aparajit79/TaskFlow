@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-// Sidebar component: Handles listing projects and adding new projects
 export function Sidebar({ 
   projects, 
   activeProject, 
@@ -20,8 +19,7 @@ export function Sidebar({
   return (
     <aside className="sidebar">
       <h2>Projects 📂</h2>
-      
-      {/* List of projects */}
+ 
       <ul className="project-list">
         {projects.map((proj) => (
           <li key={proj} className="project-item">
@@ -35,7 +33,6 @@ export function Sidebar({
         ))}
       </ul>
 
-      {/* Form to add a new project */}
       <form onSubmit={handleSubmit} style={{ marginTop: '30px' }}>
         <input
           type="text"
