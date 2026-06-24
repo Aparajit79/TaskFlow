@@ -13,6 +13,8 @@ export function useTaskFlow() {
   const [tasks, setTasks] = useState([
     { id: 1, project: 'Personal ', text: 'Clean my bedroom ', completed: true },
     { id: 2, project: 'Personal ', text: 'Do laundry ', completed: false },
+    { id: 3, project: 'Personal ', text: 'Do Writing ', completed: false },
+    { id: 4, project: 'Personal ', text: 'Go to gym ', completed: false },
   ]);
 
   const handleAddProject = (newProjectName) => {
