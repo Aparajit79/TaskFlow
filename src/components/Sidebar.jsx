@@ -41,6 +41,7 @@ export function Sidebar({
           onChange={(e) => setNewProjectText(e.target.value)}
           style={{
             width: '100%',
+            boxSizing: 'border-box',
             padding: '8px',
             borderRadius: '4px',
             border: 'none',
@@ -52,11 +53,12 @@ export function Sidebar({
           type="submit" 
           style={{
             width: '100%',
-            padding: '8px',
+            boxSizing: 'border-box',
+            padding: '9px',
             backgroundColor: '#4f46e5',
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
+            borderRadius: '10px',
             fontWeight: 'bold',
             cursor: 'pointer'
           }}
