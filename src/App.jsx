@@ -12,7 +12,8 @@ export function App() {
     handleAddProject,
     handleAddTask,
     handleToggleTask,
-    handleDeleteTask
+    handleDeleteTask,
+    handleEditTask
   } = useTaskFlow();
 
   return (
@@ -32,6 +33,7 @@ export function App() {
           onAddTask={handleAddTask}
           onToggleTask={handleToggleTask}
           onDeleteTask={handleDeleteTask}
+          onEditTask={handleEditTask}
         />
       </main>
 

@@ -2,20 +2,14 @@ import { useState } from 'react';
 
 
 export function useTaskFlow() {
-  const [projects, setProjects] = useState([
-    'Personal ',
-    'Work'
-    
-  ]);
+
+  const [projects, setProjects] = useState(['Personal ',]);
+
+  const [tasks, setTasks] = useState([ { id: 1, project: 'Personal ', text: 'Clean my bedroom ', completed: true },]);
 
   const [activeProject, setActiveProject] = useState('Personal ');
 
-  const [tasks, setTasks] = useState([
-    { id: 1, project: 'Personal ', text: 'Clean my bedroom ', completed: true },
-    { id: 2, project: 'Personal ', text: 'Do laundry ', completed: false },
-    { id: 3, project: 'Personal ', text: 'Do Writing ', completed: false },
-    { id: 4, project: 'Personal ', text: 'Go to gym ', completed: false },
-  ]);
+  const filteredTasks = tasks.filter((task) => task.project === activeProject);
 
   const handleAddProject = (newProjectName) => {
     setProjects([...projects, newProjectName]);
@@ -44,7 +38,17 @@ export function useTaskFlow() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const filteredTasks = tasks.filter((task) => task.project === activeProject);
+  const handleEditTask = (id, updatedText) => {
+  setTasks(
+    tasks.map((task) =>
+      task.id === id
+        ? { ...task, text: updatedText }
+        : task
+    )
+  );
+};
+
+  
 
   return {
     projects,
@@ -54,7 +58,8 @@ export function useTaskFlow() {
     handleAddProject,
     handleAddTask,
     handleToggleTask,
-    handleDeleteTask
+    handleDeleteTask,
+    handleEditTask
   };
 }
 
