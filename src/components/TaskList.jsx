@@ -12,6 +12,8 @@ export function TaskList({
   const [inputText, setInputText] = useState('');
   const [priority, setPriority] = useState('Medium');
   const [status, setStatus] = useState('Pending');
+
+
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
 
@@ -98,7 +100,7 @@ export function TaskList({
               readOnly
               />
               {editingId === task.id ? (
-              <input
+              <input className="task-input"
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               />

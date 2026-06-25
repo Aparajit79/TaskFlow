@@ -3,20 +3,22 @@ import { useState } from 'react';
 
 export function useTaskFlow() {
 
-  const [projects, setProjects] = useState(['Personal ',]);
+  const [projects, setProjects] = useState(["Personal "]);
+
+  
 
   const [tasks, setTasks] = useState([
   {
     id: 1,
-    project: 'Personal',
-    text: 'Clean my bedroom',
-    priority: 'Medium',
-    status: 'Pending',
-    completed: true
-  }
-]);
+    project: "Personal",
+    text: "Learn React",
+    priority: "High",
+    status: "In Progress",
+    completed: false
+    }
+  ]);
 
-  const [activeProject, setActiveProject] = useState('Personal ');
+  const [activeProject, setActiveProject] = useState('Personal');
 
   const filteredTasks = tasks.filter((task) => task.project === activeProject);
 
@@ -40,7 +42,7 @@ export function useTaskFlow() {
   };
 
   setTasks(prev => [...prev, newTask]);
-};
+  };
 
   const handleToggleTask = (id) => {
     setTasks(
