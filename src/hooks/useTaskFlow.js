@@ -5,7 +5,16 @@ export function useTaskFlow() {
 
   const [projects, setProjects] = useState(['Personal ',]);
 
-  const [tasks, setTasks] = useState([ { id: 1, project: 'Personal ', text: 'Clean my bedroom ', completed: true },]);
+  const [tasks, setTasks] = useState([
+  {
+    id: 1,
+    project: 'Personal',
+    text: 'Clean my bedroom',
+    priority: 'Medium',
+    status: 'Pending',
+    completed: true
+  }
+]);
 
   const [activeProject, setActiveProject] = useState('Personal ');
 
@@ -16,15 +25,22 @@ export function useTaskFlow() {
     setActiveProject(newProjectName); 
   };
 
-  const handleAddTask = (taskText) => {
-    const newTask = {
-      id: Date.now(),
-      project: activeProject,
-      text: taskText,
-      completed: false
-    };
-    setTasks([...tasks, newTask]);
+ const handleAddTask = (
+  taskText,
+  priority,
+  status
+) => {
+  const newTask = {
+    id: Date.now(),
+    project: activeProject,
+    text: taskText,
+    priority,
+    status,
+    completed: false
   };
+
+  setTasks(prev => [...prev, newTask]);
+};
 
   const handleToggleTask = (id) => {
     setTasks(

@@ -10,19 +10,30 @@ export function TaskList({
   onEditTask
 }) {
   const [inputText, setInputText] = useState('');
+  const [priority, setPriority] = useState('Medium');
+  const [status, setStatus] = useState('Pending');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
 
   
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!inputText.trim()) {
+  e.preventDefault();
+
+  if (!inputText.trim()) {
     alert("Title is required");
     return;
-    }
-    onAddTask(inputText.trim());
-    setInputText('');
+  }
+
+  onAddTask(
+    inputText.trim(),
+    priority,
+    status
+  );
+
+  setInputText('');
+  setPriority('Medium');
+  setStatus('Pending');
   };
 
   const startEditing = (task) => {
@@ -48,6 +59,22 @@ export function TaskList({
           onChange={(e) => setInputText(e.target.value)}
           className="task-input"
          />
+         <select className="add-button2"
+           value={priority}
+           onChange={(e) => setPriority(e.target.value)}
+          >
+           <option value="Low">Low</option>
+           <option value="Medium">Medium</option>
+           <option value="High">High</option>
+         </select>
+         <select className="add-button2"
+           value={status}
+           onChange={(e) => setStatus(e.target.value)}
+         >
+           <option value="Pending">Pending</option>
+           <option value="In Progress">In Progress</option>
+           <option value="Completed">Completed</option>
+         </select>
          <button type="submit" className="add-button">
           Add
          </button>
@@ -76,7 +103,19 @@ export function TaskList({
               onChange={(e) => setEditText(e.target.value)}
               />
               ) : (
-              <span className="task-text">{task.text}</span>
+              <div className='task-text'>
+                <div>{task.text}</div>
+
+                <small>
+                    Priority: {task.priority}
+                </small>
+
+                <br />
+
+                <small>
+                  Status: {task.status}
+                </small>
+              </div>
               )}
           </div>
 
