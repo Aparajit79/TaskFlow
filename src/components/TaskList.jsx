@@ -58,70 +58,71 @@ export function TaskList({
 
   return (
     <div className="app-card">
-      <div className="search-container">
-        <h1>{activeProject}' Tasks</h1>
-        <input
-         type="text"
-         placeholder={`Search tasks on ${activeProject}`}
-         value={searchTerm}
-         onChange={(e) => setSearchTerm(e.target.value)}
-         className="task-input"
-        />
-      </div>
-      <div className='task-dashboard'>
-        <div className='task-list-section'>
-          <div className="task-list-container">
-            <ul className="task-list">
-           {tasks.length === 0 ? (
-           <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '20px' }}>
-            No tasks here yet! 
-           </p>
-          ) : (
-          searchedTasks.map((task) => (
-          <li key={task.id}
-            className={`task-item ${task.completed ? 'completed' : ''}`}
-          >
-          <div className="task-content" >
-              <input 
-              onClick={() => onToggleTask(task.id)}
-              type="checkbox"
-              checked={task.completed}
-              readOnly
-              />
-              {editingId === task.id ? (
-              <input className="task-input"
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              />
-              ) : (
-              <div className='task-text'>
-                <div>{task.text}</div>
-                <small>
-                  Priority: {task.priority}
-                </small> <br /> 
-                <small>
-                  Status: {task.status}
-                </small>
-              </div>
-              )}
+        <div className="search-container">
+          <h1>{activeProject}' Tasks</h1>
+          <input
+           type="text"
+           placeholder={`Search tasks on ${activeProject}`}
+           value={searchTerm}
+           onChange={(e) => setSearchTerm(e.target.value)}
+           className="task-input"
+          />
           </div>
-          <div>
-          {editingId === task.id ? (
-          <button className="delete-button" onClick={() => saveEdit(task.id)}>
+
+        <div className='task-dashboard'>
+            <div className='task-list-section'>
+               <div className="task-list-container">
+                 <ul className="task-list">
+                   {tasks.length === 0 ? (
+                  <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '20px' }}>
+                  No tasks here yet! 
+                  </p>
+                   ) : (
+                   searchedTasks.map((task) => (
+                  <li key={task.id}
+                  className={`task-item ${task.completed ? 'completed' : ''}`}
+                  >
+               <div className="task-content" >
+                  <input 
+                  onClick={() => onToggleTask(task.id)}
+                  type="checkbox"
+                  checked={task.completed}
+                  readOnly
+                  />
+                  {editingId === task.id ? (
+                  <input className="task-input"
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                   />
+                  ) : (
+                <div className='task-text'>
+                   <div>{task.text}</div>
+                   <small>
+                       Priority: {task.priority}
+                   </small> <br /> 
+                   <small>
+                        Status: {task.status}
+                   </small>
+                </div>
+                 )}
+             </div>
+            <div>
+             {editingId === task.id ? (
+             <button className="delete-button" onClick={() => saveEdit(task.id)}>
                     💾
-          </button>
-          ) : (
-          <button className="delete-button" onClick={() => startEditing(task)}>
+             </button>
+             ) : (
+             <button className="delete-button" onClick={() => startEditing(task)}>
                     ✏️
-          </button>
-          )}   
-          <button
+             </button>
+            )}   
+             <button
               className="delete-button"
               onClick={() => onDeleteTask(task.id)}
-          >
+             >
                   🗑️
-          </button>
-        </div>
+             </button>
+         </div>
         </li>
         ))
         )}
