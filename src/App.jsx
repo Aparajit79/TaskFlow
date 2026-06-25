@@ -3,7 +3,11 @@ import Sidebar from './components/Sidebar';
 import TaskList from './components/TaskList';
 import { useTaskFlow } from './hooks/useTaskFlow';
 
+
 export function App() {
+
+  
+
   const {
     projects,
     activeProject,
@@ -15,6 +19,7 @@ export function App() {
     handleDeleteTask,
     handleEditTask
   } = useTaskFlow();
+  
 
   return (
     <div className="app-container">
@@ -35,6 +40,7 @@ export function App() {
           onDeleteTask={handleDeleteTask}
           onEditTask={handleEditTask}
         />
+        
       </main>
 
     </div>

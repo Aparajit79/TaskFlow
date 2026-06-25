@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TaskStats from './TaskStats';
 
 export function TaskList({ 
   activeProject, 
@@ -11,6 +12,8 @@ export function TaskList({
   const [inputText, setInputText] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
+
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -49,7 +52,7 @@ export function TaskList({
           Add
          </button>
       </form>
-
+      <div className="task-list-container">
       <ul className="task-list">
         {tasks.length === 0 ? (
           <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '20px' }}>
@@ -79,11 +82,11 @@ export function TaskList({
 
           <div>
           {editingId === task.id ? (
-          <button onClick={() => saveEdit(task.id)}>
+          <button className="delete-button" onClick={() => saveEdit(task.id)}>
                     💾
           </button>
           ) : (
-          <button onClick={() => startEditing(task)}>
+          <button className="delete-button" onClick={() => startEditing(task)}>
                     ✏️
           </button>
           )}
@@ -99,6 +102,11 @@ export function TaskList({
         ))
         )}
       </ul>
+      </div>
+      <TaskStats
+      totalTasks={tasks.length}
+      completedTasks={tasks.filter(task => task.completed).length}
+      />
     </div>
   );
 }

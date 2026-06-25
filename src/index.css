@@ -1,3 +1,10 @@
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f0f2f5;
@@ -65,19 +72,25 @@ body {
 .main-content {
   flex-grow: 1;
   padding: 40px;
+  background: #f0f2f5;
+
   display: flex;
-  background-color: #f0f2f5;
   justify-content: center;
+  align-items: center;
 }
 
 
 .app-card {
+  width: 100%;
+  max-width: 1100px;
+  height: 85vh;
+
+  display: flex;
+  flex-direction: column;
+
   background: white;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  width: 100%;
-  max-width: 500px;
 }
 
 h1 {
@@ -161,4 +174,27 @@ h1 {
 
 .delete-button:hover {
   transform: scale(1.2);
+}
+
+.task-stats {
+  margin-top: auto;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 15px;
+
+  flex-shrink: 0;
+}
+
+.stat-card {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+}
+.task-list-container {
+  min-height: 0;
+  overflow-y: auto;
+  flex:1;
 }
