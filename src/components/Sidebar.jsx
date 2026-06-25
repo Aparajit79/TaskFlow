@@ -28,8 +28,8 @@ return (
     </li>
     ))}
   </ul>
-
-  <form onSubmit={handleSubmit} style={{ marginTop: '30px' }}>
+  <div className='add-project'>
+   <form onSubmit={handleSubmit} style={{ marginTop: '30px' }}>
     <input
      type="text"
      placeholder="New project..."
@@ -62,6 +62,7 @@ return (
           + Add Project
     </button>
   </form>
+  </div> 
   </aside>
   );
 }

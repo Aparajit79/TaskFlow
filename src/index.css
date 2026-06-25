@@ -24,6 +24,7 @@ body {
   color: white;
   padding: 24px;
   flex-shrink: 0; 
+  flex-direction: row;
 }
 
 .sidebar h2 {
@@ -130,10 +131,10 @@ h1 {
 }
 
 .add-button2:hover {
-  background-color: #635a11;
+  background-color: #23486b;
 }
 .add-button2 {
-  background-color: #afa54e;
+  background-color: #4e80af;
   color: white;
   border: none;
   padding: 10px 18px;
@@ -192,7 +193,7 @@ h1 {
 }
 
 .task-stats {
-  margin-top: auto;
+  margin-top: 15px;
 
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -205,7 +206,7 @@ h1 {
 .stat-card {
   background: #f8fafc;
   border-radius: 10px;
-  padding: 20px;
+  padding: 2px;
   text-align: center;
 }
 .task-list-container {
@@ -251,9 +252,6 @@ h1 {
   border-radius: 10px
 }
 .task-list-container {
-  flex: 1;
-
   overflow-y: auto;
-
-  min-height: 0;
+  padding-bottom: 15px;
 }

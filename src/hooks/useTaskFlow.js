@@ -3,9 +3,7 @@ import { useState } from 'react';
 
 export function useTaskFlow() {
 
-  const [projects, setProjects] = useState(["Personal"]);
- 
-  
+  const [projects, setProjects] = useState(["Personal" ,"Work", "college","School","Things to buy","Gym"]);
 
   const [tasks, setTasks] = useState([
   {

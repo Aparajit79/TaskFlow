@@ -13,30 +13,24 @@ export function TaskList({
   const [priority, setPriority] = useState('Medium');
   const [status, setStatus] = useState('Pending');
   const [searchTerm, setSearchTerm] = useState('');
-
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
 
-  
-
   const handleSubmit = (e) => {
-  e.preventDefault();
-
-  if (!inputText.trim()) {
-    alert("Title is required");
-    return;
-  }
-
-  onAddTask(
-    inputText.trim(),
-    priority,
-    status
-  );
-
-  setInputText('');
-  setPriority('Medium');
-  setStatus('Pending');
-  };
+       e.preventDefault();
+       if (!inputText.trim()) {
+         alert("Title is required");
+         return;
+       }
+       onAddTask(
+         inputText.trim(),
+         priority,
+         status
+       );
+       setInputText('');
+       setPriority('Medium');
+       setStatus('Pending');
+       };
 
   const startEditing = (task) => {
    setEditingId(task.id);
@@ -75,7 +69,7 @@ export function TaskList({
                  <ul className="task-list">
                    {tasks.length === 0 ? (
                   <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '20px' }}>
-                  No tasks here yet! 
+                  Add your first Task! 
                   </p>
                    ) : (
                    searchedTasks.map((task) => (
@@ -130,7 +124,7 @@ export function TaskList({
           </div>
           </div>
           <div className='task-form-selection'>
-          <h3>Add Task</h3>
+          <h3>{`Add Task to ${activeProject}`}</h3>
           <form onSubmit={handleSubmit} className="task-form">
         <input
           type="text"
