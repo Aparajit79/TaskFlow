@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useReducer } from 'react';
 
-export function useTaskFlow() {
-  const [projects, setProjects] = useState(["Personal", "Work", "college", "School", "Things to buy", "Gym"]);
-  const [tasks, setTasks] = useState([
+const initialState = {
+  projects: ["Personal", "Work", "college", "School", "Things to buy", "Gym"],
+  tasks: [
     {
       id: 1,
       project: "Personal",
@@ -11,67 +11,92 @@ export function useTaskFlow() {
       status: "In Progress",
       completed: false
     }
-  ]);
-  const [activeProject, setActiveProject] = useState('Personal');
+  ],
+  activeProject: 'Personal'
+};
 
-  const filteredTasks = tasks.filter((task) => task.project === activeProject);
-
-  const handleAddProject = (newProjectName) => {
-    const trimmed = newProjectName.trim();
-    if (trimmed && !projects.includes(trimmed)) {
-      setProjects((prev) => [...prev, trimmed]);
-      setActiveProject(trimmed);
+function taskReducer(state, action) {
+  switch (action.type) {
+    case 'ADD_PROJECT': {
+      const trimmed = action.payload.trim();
+      if (!trimmed || state.projects.includes(trimmed)) return state;
+      return {
+        ...state,
+        projects: [...state.projects, trimmed],
+        activeProject: trimmed
+      };
     }
-  };
+    case 'SET_ACTIVE_PROJECT': {
+      return {
+        ...state,
+        activeProject: action.payload
+      };
+    }
+    case 'ADD_TASK': {
+      const { text, priority, status } = action.payload;
+      const trimmed = text.trim();
+      if (!trimmed) return state;
 
-  const handleAddTask = (taskText, priority, status) => {
-    const trimmed = taskText.trim();
-    if (!trimmed) return;
+      const newTask = {
+        id: Date.now(),
+        project: state.activeProject,
+        text: trimmed,
+        priority,
+        status,
+        completed: false
+      };
 
-    const newTask = {
-      id: Date.now(),
-      project: activeProject,
-      text: trimmed,
-      priority,
-      status,
-      completed: false
-    };
+      return {
+        ...state,
+        tasks: [...state.tasks, newTask]
+      };
+    }
+    case 'TOGGLE_TASK': {
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload ? { ...task, completed: !task.completed } : task
+        )
+      };
+    }
+    case 'DELETE_TASK': {
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== action.payload)
+      };
+    }
+    case 'EDIT_TASK': {
+      const { id, text } = action.payload;
+      const trimmed = text.trim();
+      if (!trimmed) return state;
+      
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === id ? { ...task, text: trimmed } : task
+        )
+      };
+    }
+    default:
+      return state;
+  }
+}
 
-    setTasks((prev) => [...prev, newTask]);
-  };
+export function useTaskFlow() {
+  const [state, dispatch] = useReducer(taskReducer, initialState);
 
-  const handleToggleTask = (id) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const handleDeleteTask = (id) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
-  };
-
-  const handleEditTask = (id, updatedText) => {
-    const trimmed = updatedText.trim();
-    if (!trimmed) return;
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, text: trimmed } : task
-      )
-    );
-  };
+  const filteredTasks = state.tasks.filter((task) => task.project === state.activeProject);
 
   return {
-    projects,
-    activeProject,
-    setActiveProject,
+    projects: state.projects,
+    activeProject: state.activeProject,
     filteredTasks,
-    handleAddProject,
-    handleAddTask,
-    handleToggleTask,
-    handleDeleteTask,
-    handleEditTask
+    setActiveProject: (proj) => dispatch({ type: 'SET_ACTIVE_PROJECT', payload: proj }),
+    handleAddProject: (name) => dispatch({ type: 'ADD_PROJECT', payload: name }),
+    handleAddTask: (text, priority, status) => dispatch({ type: 'ADD_TASK', payload: { text, priority, status } }),
+    handleToggleTask: (id) => dispatch({ type: 'TOGGLE_TASK', payload: id }),
+    handleDeleteTask: (id) => dispatch({ type: 'DELETE_TASK', payload: id }),
+    handleEditTask: (id, text) => dispatch({ type: 'EDIT_TASK', payload: { id, text } })
   };
 }
 
