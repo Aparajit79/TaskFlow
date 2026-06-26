@@ -1,4 +1,11 @@
-function TaskStats({ totalTasks }) {
+import React from 'react';
+
+export function TaskStats({ tasks = [] }) {
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(task => task.completed).length;
+  const pendingTasks = totalTasks - completedTasks;
+  const highPriorityTasks = tasks.filter(task => task.priority === 'High').length;
+
   return (
     <div className="task-stats">
       <div className="stat-card">
@@ -8,17 +15,17 @@ function TaskStats({ totalTasks }) {
 
       <div className="stat-card">
         <h3>Pending</h3>
-        <p>-</p>
+        <p>{pendingTasks}</p>
       </div>
 
       <div className="stat-card">
         <h3>High Priority</h3>
-        <p>-</p>
+        <p>{highPriorityTasks}</p>
       </div>
 
       <div className="stat-card">
         <h3>Completed</h3>
-        <p>-</p>
+        <p>{completedTasks}</p>
       </div>
     </div>
   );

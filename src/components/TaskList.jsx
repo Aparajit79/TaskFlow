@@ -6,7 +6,7 @@ export function TaskList({
   tasks, 
   onAddTask, 
   onToggleTask, 
-  onDeleteTask ,
+  onDeleteTask,
   onEditTask
 }) {
   const [inputText, setInputText] = useState('');
@@ -17,151 +17,133 @@ export function TaskList({
   const [editText, setEditText] = useState('');
 
   const handleSubmit = (e) => {
-       e.preventDefault();
-       if (!inputText.trim()) {
-         alert("Title is required");
-         return;
-       }
-       onAddTask(
-         inputText.trim(),
-         priority,
-         status
-       );
-       setInputText('');
-       setPriority('Medium');
-       setStatus('Pending');
-       };
+    e.preventDefault();
+    if (!inputText.trim()) {
+      alert("Title is required");
+      return;
+    }
+    onAddTask(inputText.trim(), priority, status);
+    setInputText('');
+    setPriority('Medium');
+    setStatus('Pending');
+  };
 
   const startEditing = (task) => {
-   setEditingId(task.id);
-   setEditText(task.text);
+    setEditingId(task.id);
+    setEditText(task.text);
   };
 
   const saveEdit = (id) => {
-   if (editText.trim() === '') return;
-   onEditTask(id, editText.trim());
-   setEditingId(null);
-   setEditText('');
+    if (editText.trim() === '') return;
+    onEditTask(id, editText.trim());
+    setEditingId(null);
+    setEditText('');
   };
 
   const searchedTasks = tasks.filter(task =>
-  task.text
-    .toLowerCase()
-    .includes(searchTerm.toLowerCase())
+    task.text.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="app-card">
-        <div className="search-container">
-          <h1>{activeProject}' Tasks</h1>
-          <input
-           type="text"
-           placeholder={`Search tasks on ${activeProject}`}
-           value={searchTerm}
-           onChange={(e) => setSearchTerm(e.target.value)}
-           className="task-input"
-          />
-          </div>
-
-        <div className='task-dashboard'>
-            <div className='task-list-section'>
-               <div className="task-list-container">
-                 <ul className="task-list">
-                   {tasks.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '20px' }}>
-                  Add your first Task! 
-                  </p>
-                   ) : (
-                   searchedTasks.map((task) => (
-                  <li key={task.id}
-                  className={`task-item ${task.completed ? 'completed' : ''}`}
-                  >
-               <div className="task-content" >
-                  <input 
-                  onClick={() => onToggleTask(task.id)}
-                  type="checkbox"
-                  checked={task.completed}
-                  readOnly
-                  />
-                  {editingId === task.id ? (
-                  <input className="task-input"
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                   />
-                  ) : (
-                <div className='task-text'>
-                   <div>{task.text}</div>
-                   <small>
-                       Priority: {task.priority}
-                   </small> <br /> 
-                   <small>
-                        Status: {task.status}
-                   </small>
-                </div>
-                 )}
-             </div>
-            <div>
-             {editingId === task.id ? (
-             <button className="delete-button" onClick={() => saveEdit(task.id)}>
-                    💾
-             </button>
-             ) : (
-             <button className="delete-button" onClick={() => startEditing(task)}>
-                    ✏️
-             </button>
-            )}   
-             <button
-              className="delete-button"
-              onClick={() => onDeleteTask(task.id)}
-             >
-                  🗑️
-             </button>
-         </div>
-        </li>
-        ))
-        )}
-            </ul>
-          </div>
-          </div>
-          <div className='task-form-selection'>
-          <h3>{`Add Task to ${activeProject}`}</h3>
-          <form onSubmit={handleSubmit} className="task-form">
+      <div className="search-container">
+        <h1>{activeProject}'s Tasks</h1>
         <input
           type="text"
-          placeholder={`Add task to ${activeProject}...`}
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          placeholder={`Search tasks on ${activeProject}`}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="task-input"
-         />
-         <select className="add-button2"
-           value={priority}
-           onChange={(e) => setPriority(e.target.value)}
-          >
-           <option value="Low">Low</option>
-           <option value="Medium">Medium</option>
-           <option value="High">High</option>
-         </select>
-         <select className="add-button2"
-           value={status}
-           onChange={(e) => setStatus(e.target.value)}
-         >
-           <option value="Pending">Pending</option>
-           <option value="In Progress">In Progress</option>
-           <option value="Completed">Completed</option>
-         </select>
-         <button type="submit" className="add-button">
-          Add
-         </button>
-          </form>
+        />
+      </div>
+
+      <div className="task-dashboard">
+        <div className="task-list-section">
+          <div className="task-list-container">
+            {tasks.length === 0 ? (
+              <p className="empty-message">Add your first Task!</p>
+            ) : searchedTasks.length === 0 ? (
+              <p className="empty-message">No tasks matching "{searchTerm}"</p>
+            ) : (
+              <ul className="task-list">
+                {searchedTasks.map((task) => (
+                  <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
+                    <div className="task-content">
+                      <input 
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={() => onToggleTask(task.id)}
+                      />
+                      {editingId === task.id ? (
+                        <input 
+                          className="task-input edit-input"
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && saveEdit(task.id)}
+                          autoFocus
+                        />
+                      ) : (
+                        <div className="task-text">
+                          <div>{task.text}</div>
+                          <div className="task-meta">
+                            <span className="badge priority-badge">Priority: {task.priority}</span>
+                            <span className="badge status-badge">Status: {task.status}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="task-actions">
+                      {editingId === task.id ? (
+                        <button className="icon-button" onClick={() => saveEdit(task.id)}>💾</button>
+                      ) : (
+                        <button className="icon-button" onClick={() => startEditing(task)}>✏️</button>
+                      )}
+                      <button className="icon-button delete-btn" onClick={() => onDeleteTask(task.id)}>🗑️</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
+        </div>
+
+        <div className="task-form-selection">
+          <h3>Add Task to {activeProject}</h3>
+          <form onSubmit={handleSubmit} className="task-form">
+            <input
+              type="text"
+              placeholder={`Add task to ${activeProject}...`}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              className="task-input"
+            />
+            <select 
+              className="select-input"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+            <select 
+              className="select-input"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <button type="submit" className="add-button">
+              Add
+            </button>
+          </form>
+        </div>
       </div>
       
-      <TaskStats
-      totalTasks={tasks.length}
-      completedTasks={tasks.filter(task => task.completed).length}
-      />
-    
-  </div>
+      <TaskStats tasks={tasks} />
+    </div>
   );
 }
 
