@@ -13,6 +13,7 @@ export function TaskList({
   const [priority, setPriority] = useState('Medium');
   const [status, setStatus] = useState('Pending');
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
 
@@ -41,13 +42,15 @@ export function TaskList({
   };
 
   const searchedTasks = tasks.filter(task =>
-    task.text.toLowerCase().includes(searchTerm.toLowerCase())
+  task.text.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  (statusFilter === "All" || task.status === statusFilter)
   );
 
   return (
     <div className="app-card">
       <div className="search-container">
         <h1>{activeProject}'s Tasks</h1>
+        <div className='search-controls'>
         <input
           type="text"
           placeholder={`Search tasks on ${activeProject}`}
@@ -55,6 +58,17 @@ export function TaskList({
           onChange={(e) => setSearchTerm(e.target.value)}
           className="task-input"
         />
+         <select className="task-input"
+         value={statusFilter}
+         onChange={(e) => setStatusFilter(e.target.value)}
+         className="select-input"
+          >
+         <option value="All">All</option>
+         <option value="Pending">Pending</option>
+         <option value="In Progress">In Progress</option>
+         <option value="Completed">Completed</option>
+         </select>
+         </div>
       </div>
 
       <div className="task-dashboard">
