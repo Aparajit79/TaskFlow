@@ -57,6 +57,7 @@ function taskReducer(state, action) {
         ...state,
         activeProject: action.payload
       };
+      
     }
     case 'ADD_TASK': {
       const { text,description, priority, status } = action.payload;

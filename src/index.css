@@ -202,9 +202,17 @@ h1 {
 
   flex-shrink: 0;
 }
+.task-stats{
+  background-color: #e2f0e8ab;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+}
 
 .stat-card {
-  background: #f8fafc;
+  background: #2b295e;
+  color: rgb(255, 255, 255);
   border-radius: 10px;
   padding: 2px;
   text-align: center;
@@ -230,7 +238,7 @@ h1 {
   min-height: 0;
 }
 .task-form-selection{
-  background-color: #e2e8f0;
+  background-color: #e2f0e8ab;
   padding: 20px;
   border-radius: 12px;
   max-width: 220px;
@@ -255,7 +263,7 @@ h1 {
 .task-form {
   display: flex;
   flex-direction: column;
-  background-color: #2f2c74;
+  background-color: #2b295e;
   gap: 10px;
   padding: 10px;
   border-radius: 10px;
