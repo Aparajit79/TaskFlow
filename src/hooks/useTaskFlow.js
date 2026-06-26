@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useReducer , useEffect } from 'react';
 
 const initialState = {
   projects: ["Personal", "Work", "college", "School", "Things to buy", "Gym"],
@@ -24,6 +24,22 @@ const initialState = {
   ],
   activeProject: 'Personal'
 };
+
+function loadState() {
+    const savedData = localStorage.getItem("taskflow");
+
+    if (savedData) {
+        return null;
+    }
+    return JSON.parse(savedData);
+}
+
+// function saveState(state) {
+//     const data = JSON.stringify(state);
+
+//     localStorage.setItem("taskflow", data);
+// }
+
 
 function taskReducer(state, action) {
   switch (action.type) {
@@ -94,8 +110,12 @@ function taskReducer(state, action) {
 }
 
 export function useTaskFlow() {
-  const [state, dispatch] = useReducer(taskReducer, initialState);
 
+  const savedState = loadState()
+  const [state, dispatch] = useReducer(taskReducer, savedState || initialState);
+//  useEffect(() => {
+//     saveState(state);
+// }, [state]);
   const filteredTasks = state.tasks.filter((task) => task.project === state.activeProject);
 
   return {

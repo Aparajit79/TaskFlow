@@ -26,6 +26,7 @@ export function TaskList({
     }
     onAddTask(inputText.trim(),description , priority, status);
     setInputText('');
+    setDescription("");
     setPriority('Medium');
     setStatus('Pending');
   };
@@ -48,7 +49,7 @@ export function TaskList({
   );
 
   return (
-    <div className="app-card">
+  <div className="app-card">
       <div className="search-container">
         <h1>{activeProject}'s Tasks</h1>
         <div className='search-controls'>
@@ -139,6 +140,7 @@ export function TaskList({
               className="task-input"
             />
              <textarea placeholder="Task Description"
+             className="task-input"
              value={description}
              onChange={(e) => setDescription(e.target.value)}
              />
@@ -167,8 +169,8 @@ export function TaskList({
         </div>
       </div>
       
-      <TaskStats tasks={tasks} />
-    </div>
+     <TaskStats tasks={tasks} />
+  </div>
   );
 }
 
