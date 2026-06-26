@@ -7,6 +7,16 @@ const initialState = {
       id: 1,
       project: "Personal",
       text: "Learn React",
+      description: "Complete React basics and hooks",
+      priority: "High",
+      status: "In Progress",
+      completed: false
+    } ,
+      {
+      id: 2,
+      project: "Work",
+      text: "Presentation",
+      description: "complete the project Documentation",
       priority: "High",
       status: "In Progress",
       completed: false
@@ -33,7 +43,7 @@ function taskReducer(state, action) {
       };
     }
     case 'ADD_TASK': {
-      const { text, priority, status } = action.payload;
+      const { text,description, priority, status } = action.payload;
       const trimmed = text.trim();
       if (!trimmed) return state;
 
@@ -41,6 +51,7 @@ function taskReducer(state, action) {
         id: Date.now(),
         project: state.activeProject,
         text: trimmed,
+        description,
         priority,
         status,
         completed: false
@@ -93,7 +104,7 @@ export function useTaskFlow() {
     filteredTasks,
     setActiveProject: (proj) => dispatch({ type: 'SET_ACTIVE_PROJECT', payload: proj }),
     handleAddProject: (name) => dispatch({ type: 'ADD_PROJECT', payload: name }),
-    handleAddTask: (text, priority, status) => dispatch({ type: 'ADD_TASK', payload: { text, priority, status } }),
+    handleAddTask: (text,description, priority, status) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status } }),
     handleToggleTask: (id) => dispatch({ type: 'TOGGLE_TASK', payload: id }),
     handleDeleteTask: (id) => dispatch({ type: 'DELETE_TASK', payload: id }),
     handleEditTask: (id, text) => dispatch({ type: 'EDIT_TASK', payload: { id, text } })

@@ -265,7 +265,6 @@ h1 {
   padding-bottom: 15px;
 }
 
-/* New CSS rules to eliminate inline styles and support simplified components */
 .add-project-form {
   margin-top: 30px;
 }
@@ -368,4 +367,15 @@ h1 {
 
 .select-input:hover {
   background-color: #23486b;
+}
+.task-text > div:first-child {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.task-description {
+  font-size: 13px;
+  font-weight: 400;
+  color: #94a3b8;
+  margin-top: 4px;
 }

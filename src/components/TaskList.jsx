@@ -10,6 +10,7 @@ export function TaskList({
   onEditTask
 }) {
   const [inputText, setInputText] = useState('');
+  const [description, setDescription] = useState("");
   const [priority, setPriority] = useState('Medium');
   const [status, setStatus] = useState('Pending');
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,7 +24,7 @@ export function TaskList({
       alert("Title is required");
       return;
     }
-    onAddTask(inputText.trim(), priority, status);
+    onAddTask(inputText.trim(),description , priority, status);
     setInputText('');
     setPriority('Medium');
     setStatus('Pending');
@@ -99,6 +100,12 @@ export function TaskList({
                       ) : (
                         <div className="task-text">
                           <div>{task.text}</div>
+
+                             {task.description && (
+                               <p className="task-description">
+                                      {task.description}
+                               </p>
+                             )}
                           <div className="task-meta">
                             <span className="badge priority-badge">Priority: {task.priority}</span>
                             <span className="badge status-badge">Status: {task.status}</span>
@@ -131,6 +138,10 @@ export function TaskList({
               onChange={(e) => setInputText(e.target.value)}
               className="task-input"
             />
+             <textarea placeholder="Task Description"
+             value={description}
+             onChange={(e) => setDescription(e.target.value)}
+             />
             <select 
               className="select-input"
               value={priority}
