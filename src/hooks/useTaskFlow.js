@@ -28,17 +28,17 @@ const initialState = {
 function loadState() {
     const savedData = localStorage.getItem("taskflow");
 
-    if (savedData) {
+    if (!savedData) {
         return null;
     }
     return JSON.parse(savedData);
 }
 
-// function saveState(state) {
-//     const data = JSON.stringify(state);
+function saveState(state) {
+    const data = JSON.stringify(state);
 
-//     localStorage.setItem("taskflow", data);
-// }
+    localStorage.setItem("taskflow", data);
+}
 
 
 function taskReducer(state, action) {
@@ -114,9 +114,9 @@ export function useTaskFlow() {
 
   const savedState = loadState()
   const [state, dispatch] = useReducer(taskReducer, savedState || initialState);
-//  useEffect(() => {
-//     saveState(state);
-// }, [state]);
+   useEffect(() => {
+    saveState(state);
+   }, [state]);
   const filteredTasks = state.tasks.filter((task) => task.project === state.activeProject);
 
   return {
@@ -127,7 +127,13 @@ export function useTaskFlow() {
     handleAddProject: (name) => dispatch({ type: 'ADD_PROJECT', payload: name }),
     handleAddTask: (text,description, priority, status) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status } }),
     handleToggleTask: (id) => dispatch({ type: 'TOGGLE_TASK', payload: id }),
-    handleDeleteTask: (id) => dispatch({ type: 'DELETE_TASK', payload: id }),
+    handleDeleteTask: (id) => {
+    if (window.confirm("Are you sure you want to delete this task?")) {
+     dispatch({
+      type: 'DELETE_TASK',
+      payload: id,
+      });
+     } },
     handleEditTask: (id, text) => dispatch({ type: 'EDIT_TASK', payload: { id, text } })
   };
 }
