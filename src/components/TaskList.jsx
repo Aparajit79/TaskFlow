@@ -17,6 +17,7 @@ export function TaskList({
   const [statusFilter, setStatusFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
+  const [editDescription, setEditDescription] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,13 +35,15 @@ export function TaskList({
   const startEditing = (task) => {
     setEditingId(task.id);
     setEditText(task.text);
+    setEditDescription(task.description || '');
   };
 
   const saveEdit = (id) => {
     if (editText.trim() === '') return;
-    onEditTask(id, editText.trim());
+    onEditTask(id, editText.trim(), editDescription.trim());
     setEditingId(null);
     setEditText('');
+    setEditDescription('');
   };
 
   const searchedTasks = tasks.filter(task =>
@@ -91,13 +94,22 @@ export function TaskList({
                         onChange={() => onToggleTask(task.id)}
                       />
                       {editingId === task.id ? (
-                        <input 
-                          className="task-input edit-input"
-                          value={editText}
-                          onChange={(e) => setEditText(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && saveEdit(task.id)}
-                          autoFocus
-                        />
+                        <div className="edit-fields-container">
+                          <input 
+                            className="task-input edit-input"
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && saveEdit(task.id)}
+                            autoFocus
+                            placeholder="Task Title"
+                          />
+                          <textarea
+                            className="task-input edit-description-input"
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            placeholder="Task Description"
+                          />
+                        </div>
                       ) : (
                         <div className="task-text">
                           <div>{task.text}</div>

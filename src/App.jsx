@@ -17,7 +17,8 @@ export function App() {
     handleAddTask,
     handleToggleTask,
     handleDeleteTask,
-    handleEditTask
+    handleEditTask,
+    handleDeleteProject
   } = useTaskFlow();
   
 
@@ -29,6 +30,7 @@ export function App() {
         activeProject={activeProject}
         setActiveProject={setActiveProject}
         onAddProject={handleAddProject}
+        onDeleteProject={handleDeleteProject}
       />
 
       <main className="main-content">

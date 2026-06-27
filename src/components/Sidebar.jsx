@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export function Sidebar({ projects, activeProject, setActiveProject, onAddProject }) {
+export function Sidebar({ projects, activeProject, setActiveProject, onAddProject, onDeleteProject }) {
   const [newProjectText, setNewProjectText] = useState('');
 
   const handleSubmit = (e) => {
@@ -16,12 +16,24 @@ export function Sidebar({ projects, activeProject, setActiveProject, onAddProjec
       <ul className="project-list">
         {projects.map((proj) => (
           <li key={proj} className="project-item">
-            <button
-              className={`project-button ${activeProject === proj ? 'active' : ''}`}
-              onClick={() => setActiveProject(proj)}
-            >
-              {proj}
-            </button>
+            <div className="project-item-container">
+              <button
+                className={`project-button ${activeProject === proj ? 'active' : ''}`}
+                onClick={() => setActiveProject(proj)}
+              >
+                {proj}
+              </button>
+              <button
+                className="project-delete-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteProject(proj);
+                }}
+                title="Delete Project"
+              >
+                🗑️
+              </button>
+            </div>
           </li>
         ))}
       </ul>

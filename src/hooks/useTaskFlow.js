@@ -94,15 +94,31 @@ function taskReducer(state, action) {
       };
     }
     case 'EDIT_TASK': {
-      const { id, text } = action.payload;
+      const { id, text, description } = action.payload;
       const trimmed = text.trim();
       if (!trimmed) return state;
       
       return {
         ...state,
         tasks: state.tasks.map((task) =>
-          task.id === id ? { ...task, text: trimmed } : task
+          task.id === id ? { ...task, text: trimmed, description } : task
         )
+      };
+    }
+    case 'DELETE_PROJECT': {
+      const projName = action.payload;
+      const updatedProjects = state.projects.filter((p) => p !== projName);
+      
+      let newActiveProject = state.activeProject;
+      if (state.activeProject === projName) {
+        newActiveProject = updatedProjects.length > 0 ? updatedProjects[0] : '';
+      }
+      
+      return {
+        ...state,
+        projects: updatedProjects,
+        tasks: state.tasks.filter((t) => t.project !== projName),
+        activeProject: newActiveProject
       };
     }
     default:
@@ -128,13 +144,24 @@ export function useTaskFlow() {
     handleAddTask: (text,description, priority, status) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status } }),
     handleToggleTask: (id) => dispatch({ type: 'TOGGLE_TASK', payload: id }),
     handleDeleteTask: (id) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-     dispatch({
-      type: 'DELETE_TASK',
-      payload: id,
-      });
-     } },
-    handleEditTask: (id, text) => dispatch({ type: 'EDIT_TASK', payload: { id, text } })
+      if (window.confirm("Are you sure you want to delete this task?")) {
+        dispatch({
+          type: 'DELETE_TASK',
+          payload: id,
+        });
+      }
+    },
+    handleEditTask: (id, text, description) => dispatch({ type: 'EDIT_TASK', payload: { id, text, description } }),
+    handleDeleteProject: (projName) => {
+      const projectTasks = state.tasks.filter((t) => t.project === projName);
+      if (projectTasks.length === 0) {
+        dispatch({ type: 'DELETE_PROJECT', payload: projName });
+      } else {
+        if (window.confirm(`Project "${projName}" has ${projectTasks.length} task(s). Are you sure you want to delete it and all its tasks?`)) {
+          dispatch({ type: 'DELETE_PROJECT', payload: projName });
+        }
+      }
+    }
   };
 }
 
