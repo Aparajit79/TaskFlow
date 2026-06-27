@@ -388,32 +388,42 @@ h1 {
   text-decoration: line-through;
 }
 
-.edit-input {
-  width: 100%;
-  max-width: 300px;
+.task-item.editing {
+  border-color: var(--primary);
+  background-color: var(--primary-light);
 }
 
-.edit-fields-container {
+.icon-button.active-edit {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.form-actions {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.form-actions .add-button {
   flex: 1;
-  width: 100%;
-  max-width: 350px;
+  margin-top: 0;
 }
 
-.edit-fields-container .edit-input {
-  max-width: 100%;
+.cancel-button {
+  background-color: var(--secondary);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
+  flex: 1;
 }
 
-.edit-fields-container .edit-description-input {
-  font-size: 13px !important;
-  font-family: inherit;
-  resize: none;
-  height: 55px;
-  min-height: 55px;
-  padding: 6px 10px;
-  margin-top: 2px;
+.cancel-button:hover {
+  background-color: var(--secondary-hover);
 }
 
 /* Badges */

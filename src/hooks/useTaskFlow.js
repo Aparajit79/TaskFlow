@@ -83,7 +83,9 @@ function taskReducer(state, action) {
       return {
         ...state,
         tasks: state.tasks.map((task) =>
-          task.id === action.payload ? { ...task, completed: !task.completed } : task
+          task.id === action.payload
+            ? { ...task, completed: !task.completed }
+            : task
         )
       };
     }
@@ -94,14 +96,14 @@ function taskReducer(state, action) {
       };
     }
     case 'EDIT_TASK': {
-      const { id, text, description } = action.payload;
+      const { id, text, description, priority, status } = action.payload;
       const trimmed = text.trim();
       if (!trimmed) return state;
       
       return {
         ...state,
         tasks: state.tasks.map((task) =>
-          task.id === id ? { ...task, text: trimmed, description } : task
+          task.id === id ? { ...task, text: trimmed, description, priority, status } : task
         )
       };
     }
@@ -151,7 +153,7 @@ export function useTaskFlow() {
         });
       }
     },
-    handleEditTask: (id, text, description) => dispatch({ type: 'EDIT_TASK', payload: { id, text, description } }),
+    handleEditTask: (id, text, description, priority, status) => dispatch({ type: 'EDIT_TASK', payload: { id, text, description, priority, status } }),
     handleDeleteProject: (projName) => {
       const projectTasks = state.tasks.filter((t) => t.project === projName);
       if (projectTasks.length === 0) {

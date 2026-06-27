@@ -16,8 +16,6 @@ export function TaskList({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
-  const [editText, setEditText] = useState('');
-  const [editDescription, setEditDescription] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,7 +23,12 @@ export function TaskList({
       alert("Title is required");
       return;
     }
-    onAddTask(inputText.trim(),description , priority, status);
+    if (editingId) {
+      onEditTask(editingId, inputText.trim(), description.trim(), priority, status);
+      setEditingId(null);
+    } else {
+      onAddTask(inputText.trim(), description.trim(), priority, status);
+    }
     setInputText('');
     setDescription("");
     setPriority('Medium');
@@ -34,16 +37,18 @@ export function TaskList({
 
   const startEditing = (task) => {
     setEditingId(task.id);
-    setEditText(task.text);
-    setEditDescription(task.description || '');
+    setInputText(task.text);
+    setDescription(task.description || '');
+    setPriority(task.priority || 'Medium');
+    setStatus(task.status || 'Pending');
   };
 
-  const saveEdit = (id) => {
-    if (editText.trim() === '') return;
-    onEditTask(id, editText.trim(), editDescription.trim());
+  const handleCancelEdit = () => {
     setEditingId(null);
-    setEditText('');
-    setEditDescription('');
+    setInputText('');
+    setDescription('');
+    setPriority('Medium');
+    setStatus('Pending');
   };
 
   const searchedTasks = tasks.filter(task =>
@@ -68,10 +73,10 @@ export function TaskList({
          onChange={(e) => setStatusFilter(e.target.value)}
          className="select-input"
           >
-         <option value="All">All</option>
-         <option value="Pending">Pending</option>
-         <option value="In Progress">In Progress</option>
-         <option value="Completed">Completed</option>
+          <option value="All">All</option>
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Blocker">Blocker</option>
          </select>
          </div>
       </div>
@@ -86,52 +91,36 @@ export function TaskList({
             ) : (
               <ul className="task-list">
                 {searchedTasks.map((task) => (
-                  <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
-                    <div className="task-content">
+                  <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''} ${editingId === task.id ? 'editing' : ''}`}>
+                    <div className="task-content" onDoubleClick={() => startEditing(task)} title="Double click to edit task">
                       <input 
                         type="checkbox"
                         checked={task.completed}
                         onChange={() => onToggleTask(task.id)}
+                        onClick={(e) => e.stopPropagation()}
                       />
-                      {editingId === task.id ? (
-                        <div className="edit-fields-container">
-                          <input 
-                            className="task-input edit-input"
-                            value={editText}
-                            onChange={(e) => setEditText(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && saveEdit(task.id)}
-                            autoFocus
-                            placeholder="Task Title"
-                          />
-                          <textarea
-                            className="task-input edit-description-input"
-                            value={editDescription}
-                            onChange={(e) => setEditDescription(e.target.value)}
-                            placeholder="Task Description"
-                          />
-                        </div>
-                      ) : (
-                        <div className="task-text">
-                          <div>{task.text}</div>
+                      <div className="task-text">
+                        <div>{task.text}</div>
 
-                             {task.description && (
-                               <p className="task-description">
-                                      {task.description}
-                               </p>
-                             )}
-                          <div className="task-meta">
-                            <span className="badge priority-badge">Priority: {task.priority}</span>
-                            <span className="badge status-badge">Status: {task.status}</span>
-                          </div>
+                        {task.description && (
+                          <p className="task-description">
+                            {task.description}
+                          </p>
+                        )}
+                        <div className="task-meta">
+                          <span className="badge priority-badge">Priority: {task.priority}</span>
+                          <span className="badge status-badge">Status: {task.status}</span>
                         </div>
-                      )}
+                      </div>
                     </div>
                     <div className="task-actions">
-                      {editingId === task.id ? (
-                        <button className="icon-button" onClick={() => saveEdit(task.id)}>💾</button>
-                      ) : (
-                        <button className="icon-button" onClick={() => startEditing(task)}>✏️</button>
-                      )}
+                      <button 
+                        className={`icon-button ${editingId === task.id ? 'active-edit' : ''}`}
+                        onClick={() => startEditing(task)}
+                        title="Edit task details in form"
+                      >
+                        ✏️
+                      </button>
                       <button className="icon-button delete-btn" onClick={() => onDeleteTask(task.id)}>🗑️</button>
                     </div>
                   </li>
@@ -142,20 +131,21 @@ export function TaskList({
         </div>
 
         <div className="task-form-selection">
-          <h3>Add Task to {activeProject}</h3>
+          <h3>{editingId ? 'Edit Task' : `Add Task to ${activeProject}`}</h3>
           <form onSubmit={handleSubmit} className="task-form">
             <input
               type="text"
-              placeholder={`Add task to ${activeProject}...`}
+              placeholder={editingId ? "Edit task title..." : `Add task to ${activeProject}...`}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="task-input"
             />
-             <textarea placeholder="Task Description"
-             className="task-input"
-             value={description}
-             onChange={(e) => setDescription(e.target.value)}
-             />
+            <textarea 
+              placeholder="Task Description"
+              className="task-input"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
             <select 
               className="select-input"
               value={priority}
@@ -172,11 +162,18 @@ export function TaskList({
             >
               <option value="Pending">Pending</option>
               <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
+              <option value="Blocker">Blocker</option>
             </select>
-            <button type="submit" className="add-button">
-              Add
-            </button>
+            <div className="form-actions">
+              <button type="submit" className="add-button">
+                {editingId ? 'Save' : 'Add'}
+              </button>
+              {editingId && (
+                <button type="button" className="cancel-button" onClick={handleCancelEdit}>
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
       </div>
