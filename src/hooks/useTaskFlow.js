@@ -60,7 +60,7 @@ function taskReducer(state, action) {
       
     }
     case 'ADD_TASK': {
-      const { text,description, priority, status } = action.payload;
+      const { text,description, priority, status ,dueDate } = action.payload;
       const trimmed = text.trim();
       if (!trimmed) return state;
 
@@ -71,6 +71,7 @@ function taskReducer(state, action) {
         description,
         priority,
         status,
+        dueDate,
         completed: false
       };
 
@@ -96,14 +97,14 @@ function taskReducer(state, action) {
       };
     }
     case 'EDIT_TASK': {
-      const { id, text, description, priority, status } = action.payload;
+      const { id, text, description, priority, status ,dueDate} = action.payload;
       const trimmed = text.trim();
       if (!trimmed) return state;
       
       return {
         ...state,
         tasks: state.tasks.map((task) =>
-          task.id === id ? { ...task, text: trimmed, description, priority, status } : task
+          task.id === id ? { ...task, text: trimmed, description, priority, status ,dueDate} : task
         )
       };
     }
@@ -143,7 +144,7 @@ export function useTaskFlow() {
     filteredTasks,
     setActiveProject: (proj) => dispatch({ type: 'SET_ACTIVE_PROJECT', payload: proj }),
     handleAddProject: (name) => dispatch({ type: 'ADD_PROJECT', payload: name }),
-    handleAddTask: (text,description, priority, status) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status } }),
+    handleAddTask: (text,description, priority, status,dueDate) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status ,dueDate } }),
     handleToggleTask: (id) => dispatch({ type: 'TOGGLE_TASK', payload: id }),
     handleDeleteTask: (id) => {
       if (window.confirm("Are you sure you want to delete this task?")) {
@@ -153,7 +154,7 @@ export function useTaskFlow() {
         });
       }
     },
-    handleEditTask: (id, text, description, priority, status) => dispatch({ type: 'EDIT_TASK', payload: { id, text, description, priority, status } }),
+    handleEditTask: (id, text, description, priority, status, dueDate) => dispatch({ type: 'EDIT_TASK', payload: { id, text, description, priority, status ,dueDate} }),
     handleDeleteProject: (projName) => {
       const projectTasks = state.tasks.filter((t) => t.project === projName);
       if (projectTasks.length === 0) {

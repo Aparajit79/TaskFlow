@@ -13,6 +13,7 @@ export function TaskList({
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState('Medium');
   const [status, setStatus] = useState('Pending');
+  const [dueDate, setDueDate] = useState("");
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
@@ -24,15 +25,16 @@ export function TaskList({
       return;
     }
     if (editingId) {
-      onEditTask(editingId, inputText.trim(), description.trim(), priority, status);
+      onEditTask(editingId, inputText.trim(), description.trim(), priority, status,dueDate);
       setEditingId(null);
     } else {
-      onAddTask(inputText.trim(), description.trim(), priority, status);
+      onAddTask(inputText.trim(), description.trim(), priority, status,dueDate);
     }
     setInputText('');
     setDescription("");
     setPriority('Medium');
     setStatus('Pending');
+    setDueDate("");
   };
 
   const startEditing = (task) => {
@@ -41,6 +43,7 @@ export function TaskList({
     setDescription(task.description || '');
     setPriority(task.priority || 'Medium');
     setStatus(task.status || 'Pending');
+    setDueDate(task.dueDate || '');
   };
 
   const handleCancelEdit = () => {
@@ -110,7 +113,16 @@ export function TaskList({
                         <div className="task-meta">
                           <span className="badge priority-badge">Priority: {task.priority}</span>
                           <span className="badge status-badge">Status: {task.status}</span>
-                        </div>
+                        </div>{task.dueDate && (
+                          <p className="task-due-date">
+                            📅 Due:{" "}
+                            {new Date(task.dueDate).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="task-actions">
@@ -164,6 +176,12 @@ export function TaskList({
               <option value="In Progress">In Progress</option>
               <option value="Blocker">Blocker</option>
             </select>
+            <input
+               type="date"
+               className="task-input"
+               value={dueDate}
+               onChange={(e) => setDueDate(e.target.value)}
+             />
             <div className="form-actions">
               <button type="submit" className="add-button">
                 {editingId ? 'Save' : 'Add'}
