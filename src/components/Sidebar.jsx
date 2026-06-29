@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import MemberManager from "./MemberManager";
 
-export function Sidebar({ projects, activeProject, setActiveProject, onAddProject, onDeleteProject }) {
+export function Sidebar({ projects,members, activeProject, setActiveProject, onAddProject, onDeleteProject,onAddMember }) {
   const [newProjectText, setNewProjectText] = useState('');
 
   const handleSubmit = (e) => {
@@ -51,6 +52,8 @@ export function Sidebar({ projects, activeProject, setActiveProject, onAddProjec
           </button>
         </form>
       </div>
+      <MemberManager members={members} activeProject={activeProject} onAddMember={onAddMember} />
+     
     </aside>
   );
 }

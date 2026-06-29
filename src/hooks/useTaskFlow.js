@@ -2,6 +2,7 @@ import { useReducer , useEffect } from 'react';
 
 const initialState = {
   projects: ["Personal", "Work", "college", "School", "Things to buy", "Gym"],
+  members:[],
   tasks: [
     {
       id: 1,
@@ -12,16 +13,9 @@ const initialState = {
       status: "In Progress",
       completed: false
     } ,
-      {
-      id: 2,
-      project: "Work",
-      text: "Presentation",
-      description: "complete the project Documentation",
-      priority: "High",
-      status: "In Progress",
-      completed: false
-    }
+   
   ],
+  
   activeProject: 'Personal'
 };
 
@@ -60,7 +54,7 @@ function taskReducer(state, action) {
       
     }
     case 'ADD_TASK': {
-      const { text,description, priority, status ,dueDate } = action.payload;
+      const { text,description, priority, status ,dueDate,assignedMember } = action.payload;
       const trimmed = text.trim();
       if (!trimmed) return state;
 
@@ -72,6 +66,7 @@ function taskReducer(state, action) {
         priority,
         status,
         dueDate,
+        assignedMember,
         completed: false
       };
 
@@ -97,14 +92,14 @@ function taskReducer(state, action) {
       };
     }
     case 'EDIT_TASK': {
-      const { id, text, description, priority, status ,dueDate} = action.payload;
+      const { id, text, description, priority, status ,dueDate,assignedMember} = action.payload;
       const trimmed = text.trim();
       if (!trimmed) return state;
       
       return {
         ...state,
         tasks: state.tasks.map((task) =>
-          task.id === id ? { ...task, text: trimmed, description, priority, status ,dueDate} : task
+          task.id === id ? { ...task, text: trimmed, description, priority, status ,dueDate,assignedMember} : task
         )
       };
     }
@@ -123,6 +118,24 @@ function taskReducer(state, action) {
         tasks: state.tasks.filter((t) => t.project !== projName),
         activeProject: newActiveProject
       };
+
+    }
+    case 'ADD_MEMBER': {
+      const { name, role } = action.payload;
+      const trimmed = name.trim();
+      if (!trimmed) return state;
+    
+      const newMember = {
+        id: Date.now(),
+        project: state.activeProject,
+        name: trimmed,
+        role,
+        avatar: trimmed.charAt(0).toUpperCase()
+      };
+      return {
+        ...state,
+        members: [...state.members, newMember]
+      };
     }
     default:
       return state;
@@ -140,11 +153,20 @@ export function useTaskFlow() {
 
   return {
     projects: state.projects,
+    members: state.members,
     activeProject: state.activeProject,
     filteredTasks,
     setActiveProject: (proj) => dispatch({ type: 'SET_ACTIVE_PROJECT', payload: proj }),
     handleAddProject: (name) => dispatch({ type: 'ADD_PROJECT', payload: name }),
-    handleAddTask: (text,description, priority, status,dueDate) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status ,dueDate } }),
+    handleAddTask: (text,description, priority, status,dueDate,assignedMember) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status ,dueDate,assignedMember } }),
+    handleAddMember: (name, role) =>
+     dispatch({
+      type: "ADD_MEMBER",
+      payload: {
+      name,
+      role
+     }
+    }),
     handleToggleTask: (id) => dispatch({ type: 'TOGGLE_TASK', payload: id }),
     handleDeleteTask: (id) => {
       if (window.confirm("Are you sure you want to delete this task?")) {
@@ -154,7 +176,7 @@ export function useTaskFlow() {
         });
       }
     },
-    handleEditTask: (id, text, description, priority, status, dueDate) => dispatch({ type: 'EDIT_TASK', payload: { id, text, description, priority, status ,dueDate} }),
+    handleEditTask: (id, text, description, priority, status, dueDate,assignedMember) => dispatch({ type: 'EDIT_TASK', payload: { id, text, description, priority, status ,dueDate,assignedMember} }),
     handleDeleteProject: (projName) => {
       const projectTasks = state.tasks.filter((t) => t.project === projName);
       if (projectTasks.length === 0) {

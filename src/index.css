@@ -215,14 +215,15 @@ body {
 
 .app-card {
   width: 100%;
-  max-width: 1100px;
-  height: 85vh;
+  max-width: 1150px;
+  height: 88vh;
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
-  padding: 30px;
+  padding: 22px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
+  overflow: hidden;
 }
 
 /* Title & Search bar */
@@ -295,8 +296,8 @@ h1 {
 .task-dashboard {
   display: flex;
   flex: 1;
-  gap: 24px;
-  margin-top: 20px;
+  gap: 16px;
+  margin-top: 14px;
   min-height: 0;
 }
 
@@ -308,10 +309,10 @@ h1 {
 }
 
 .task-list-container {
-  overflow-y: auto;
   flex: 1;
+  overflow-y: auto;
   min-height: 0;
-  padding-right: 4px;
+  padding-right: 6px;
 }
 
 /* Task Item Custom Styles */
@@ -328,12 +329,11 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background-color: white;
+  background: white;
   box-shadow: var(--shadow-sm);
-  transition: var(--transition);
 }
 
 .task-item:hover {
@@ -590,27 +590,28 @@ h1 {
 
 /* Bottom Panel: Statistics Grid */
 .task-stats {
-  margin-top: 24px;
+  margin-top: 14px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  background-color: var(--light-panel);
-  border: 1px solid var(--border-color);
-  padding: 16px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  flex-shrink: 0;
+  gap: 12px;
+
+  padding: 10px;
+
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .stat-card {
-  background: white;
+  background: rgb(206, 215, 240);
   border: 1px solid var(--border-color);
-  color: var(--text-main);
-  border-radius: var(--radius-sm);
-  padding: 12px 8px;
+  border-radius: 12px;
+
+  padding: 14px 10px;
+
   text-align: center;
+
   box-shadow: var(--shadow-sm);
-  transition: var(--transition);
 }
 
 .stat-card:hover {
@@ -619,17 +620,15 @@ h1 {
 }
 
 .stat-card h3 {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  margin: 0;
+  letter-spacing: .5px;
 }
 
 .stat-card p {
-  margin: 8px 0 0 0;
-  font-size: 24px;
+  margin-top: 8px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--primary);
 }
@@ -690,4 +689,146 @@ h1 {
   .search-controls .task-input {
     width: 100%;
   }
+}
+.status-summary {
+  margin-top: 8px;
+  padding: 10px 6px;
+}
+
+.status-summary h4 {
+  margin-bottom: 12px;
+}
+
+.status-items {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  margin-top: 8px;
+
+  font-size: 15px;
+  font-weight: 500;
+}
+.progress-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+  border-radius: 20px;
+  transition: width 0.4s ease;
+}
+.member-manager{
+    margin-top:24px;
+    padding-top:18px;
+    border-top:1px solid rgba(255,255,255,0.15);
+}
+
+.member-manager h3{
+    font-size:16px;
+    font-weight:600;
+    margin-bottom:15px;
+    color:#fff;
+}
+.member-form{
+    display:flex;
+    flex-direction:column;
+    gap:5px; 
+}
+/* Member Card */
+
+.member-card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 14px;
+    background:#252d42;
+    border-radius:14px;
+    transition:0.2s;
+    margin-top: 10px;
+}
+
+.member-card:hover{
+    background:#303a55;
+}
+
+/* Avatar */
+.member-avatar{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    background:#6366f1;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    font-weight:700;
+    flex-shrink:0;
+}
+
+/* Name + Role */
+.member-info{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    flex:1;
+}
+
+.member-info strong{
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+    line-height:1.2;
+}
+
+.member-info small{
+    color:#cbd5e1;
+    font-size:13px;
+    margin-top:2px;
+    line-height:1.2;
+}
+
+.task-due-date{
+    margin-top:8px;
+    font-size:13px;
+    color:#64748b;
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+/* Assigned Member */
+
+.task-member{
+    margin-top:6px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    background:#eef2ff;
+    color:#4338ca;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:500;
+    width:fit-content;
+    border:1px solid #c7d2fe;
+}
+
+.task-member strong{
+    color:#312e81;
 }

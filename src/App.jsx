@@ -10,11 +10,13 @@ export function App() {
 
   const {
     projects,
+    members,
     activeProject,
     setActiveProject,
     filteredTasks,
     handleAddProject,
     handleAddTask,
+    handleAddMember, 
     handleToggleTask,
     handleDeleteTask,
     handleEditTask,
@@ -28,15 +30,18 @@ export function App() {
       <Sidebar
         projects={projects}
         activeProject={activeProject}
+        members={members}
         setActiveProject={setActiveProject}
         onAddProject={handleAddProject}
         onDeleteProject={handleDeleteProject}
+        onAddMember={handleAddMember}
       />
 
       <main className="main-content">
         <TaskList
           activeProject={activeProject}
           tasks={filteredTasks}
+          members={members}
           onAddTask={handleAddTask}
           onToggleTask={handleToggleTask}
           onDeleteTask={handleDeleteTask}

@@ -4,6 +4,7 @@ import TaskStats from './TaskStats';
 export function TaskList({ 
   activeProject, 
   tasks, 
+  members,
   onAddTask, 
   onToggleTask, 
   onDeleteTask,
@@ -17,6 +18,7 @@ export function TaskList({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
+  const [assignedMember, setAssignedMember] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,16 +27,17 @@ export function TaskList({
       return;
     }
     if (editingId) {
-      onEditTask(editingId, inputText.trim(), description.trim(), priority, status,dueDate);
+      onEditTask(editingId, inputText.trim(), description.trim(), priority, status,dueDate,assignedMember);
       setEditingId(null);
     } else {
-      onAddTask(inputText.trim(), description.trim(), priority, status,dueDate);
+      onAddTask(inputText.trim(), description.trim(), priority, status,dueDate,assignedMember);
     }
     setInputText('');
     setDescription("");
     setPriority('Medium');
     setStatus('Pending');
     setDueDate("");
+    setAssignedMember("");
   };
 
   const startEditing = (task) => {
@@ -44,6 +47,7 @@ export function TaskList({
     setPriority(task.priority || 'Medium');
     setStatus(task.status || 'Pending');
     setDueDate(task.dueDate || '');
+    setAssignedMember(task.assignedMember||"");
   };
 
   const handleCancelEdit = () => {
@@ -52,6 +56,7 @@ export function TaskList({
     setDescription('');
     setPriority('Medium');
     setStatus('Pending');
+    setAssignedMember("");
   };
 
   const searchedTasks = tasks.filter(task =>
@@ -111,18 +116,31 @@ export function TaskList({
                           </p>
                         )}
                         <div className="task-meta">
-                          <span className="badge priority-badge">Priority: {task.priority}</span>
-                          <span className="badge status-badge">Status: {task.status}</span>
-                        </div>{task.dueDate && (
-                          <p className="task-due-date">
-                            📅 Due:{" "}
-                            {new Date(task.dueDate).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </p>
-                        )}
+                        <span className="badge priority-badge">
+                          Priority: {task.priority}
+                        </span>
+                      
+                        <span className="badge status-badge">
+                          Status: {task.status}
+                        </span>
+                      </div>
+                      
+                      {task.dueDate && (
+                        <p className="task-due-date">
+                          📅 Due:{" "}
+                          {new Date(task.dueDate).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      )}
+                      
+                      {task.assignedMember && (
+                        <p className="task-member">
+                          👤 Assigned To: <strong>{task.assignedMember}</strong>
+                        </p>
+                      )}
                       </div>
                     </div>
                     <div className="task-actions">
@@ -182,6 +200,26 @@ export function TaskList({
                value={dueDate}
                onChange={(e) => setDueDate(e.target.value)}
              />
+             <select
+              className="select-input"
+              value={assignedMember}
+              onChange={(e) => setAssignedMember(e.target.value)}
+            >
+              <option value="">Assign To</option>
+            
+              {members
+                .filter(member => member.project === activeProject)
+                .map(member => (
+                  <option key={member.id} value={member.name}>
+                    {member.name}
+                  </option>
+                ))
+              }
+            </select>
+
+
+
+
             <div className="form-actions">
               <button type="submit" className="add-button">
                 {editingId ? 'Save' : 'Add'}
