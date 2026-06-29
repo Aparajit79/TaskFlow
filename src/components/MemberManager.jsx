@@ -22,7 +22,7 @@ function MemberManager({members, activeProject,onAddMember,onDeleteMember }) {
   return (
     <div className="member-manager">
 
-      <h3>Project Members</h3>
+      <h2>Project Members</h2>
 
       <form className="member-form" onSubmit={handleSubmit}>
 
@@ -55,27 +55,27 @@ function MemberManager({members, activeProject,onAddMember,onDeleteMember }) {
       </form>
       <div className="member-list">
 
-  {members
-    .filter(member => member.project === activeProject)
-    .map(member => (
+       {members
+         .filter(member => member.project === activeProject)
+         .map(member => (
 
-      <div className="member-card" key={member.id}>
+        <div className="member-card" key={member.id}>
 
-        <div className="member-avatar">
-          {member.avatar}
-        </div>
-
-        <div className="member-info">
-          <strong>{member.name}</strong>
-          <small>{member.role}</small>
-        </div>
-          <button
-        className="member-delete-btn"
-        onClick={() => onDeleteMember(member.id)}
-        title="Remove Member"
-    >
+          <div className="member-avatar">
+            {member.avatar}
+          </div>
+ 
+          <div className="member-info">
+            <strong>{member.name}</strong>
+            <small>{member.role}</small>
+          </div>
+        <button
+            className="member-delete-btn"
+           onClick={() => onDeleteMember(member.id)}
+          title="Remove Member"
+        >  
         🗑️
-    </button>
+        </button>
 
       </div>
       

@@ -13,7 +13,10 @@ export function Sidebar({ projects,members, activeProject, setActiveProject, onA
 
   return (
     <aside className="sidebar">
-      <h2>WorkGrid 📂</h2>
+      <div class="sidebar-header">
+      <h2>TaskMatrix</h2>
+      <p>Manage your workflow</p>
+      </div>
       <ul className="project-list">
         {projects.map((proj) => (
           <li key={proj} className="project-item">

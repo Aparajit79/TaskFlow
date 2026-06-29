@@ -82,12 +82,22 @@ body {
   overflow: auto;
 }
 
-.sidebar h2 {
-  margin-top: 0;
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; 
+}
+
+.sidebar-header h2 {
+  margin: 0;
   color: #818cf8;
-  font-size: 22px;
-  margin-bottom: 24px;
-  font-weight: 700;
+}
+
+.sidebar-header p {
+  margin: 0;
+  font-size: 12px;
+  color: #a7aac4;
+  margin-bottom: 20px;
 }
 
 .project-list {
@@ -867,4 +877,8 @@ h1 {
 
 .task-member strong{
     color:#312e81;
+}
+.member-manager{
+  font-size: 15px;
+  color: #818cf8;
 }

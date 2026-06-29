@@ -66,8 +66,9 @@ export function TaskList({
 
   return (
   <div className="app-card">
+    <h1>{activeProject}'s Tasks</h1>
       <div className="search-container">
-        <h1>{activeProject}'s Tasks</h1>
+        
         <div className='search-controls'>
         <input
           type="text"
