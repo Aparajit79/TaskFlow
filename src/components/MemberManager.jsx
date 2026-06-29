@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function MemberManager({members, activeProject,onAddMember }) { 
+function MemberManager({members, activeProject,onAddMember,onDeleteMember }) { 
 
   const [memberName, setMemberName] = useState("");
   const [memberRole, setMemberRole] = useState("Frontend Developer");
@@ -69,8 +69,16 @@ function MemberManager({members, activeProject,onAddMember }) {
           <strong>{member.name}</strong>
           <small>{member.role}</small>
         </div>
+          <button
+        className="member-delete-btn"
+        onClick={() => onDeleteMember(member.id)}
+        title="Remove Member"
+    >
+        🗑️
+    </button>
 
       </div>
+      
 
     ))}
 

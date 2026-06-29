@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import MemberManager from "./MemberManager";
 
-export function Sidebar({ projects,members, activeProject, setActiveProject, onAddProject, onDeleteProject,onAddMember }) {
+export function Sidebar({ projects,members, activeProject, setActiveProject, onAddProject, onDeleteProject,onAddMember,onDeleteMember }) {
   const [newProjectText, setNewProjectText] = useState('');
 
   const handleSubmit = (e) => {
@@ -13,7 +13,7 @@ export function Sidebar({ projects,members, activeProject, setActiveProject, onA
 
   return (
     <aside className="sidebar">
-      <h2>Projects 📂</h2>
+      <h2>WorkGrid 📂</h2>
       <ul className="project-list">
         {projects.map((proj) => (
           <li key={proj} className="project-item">
@@ -52,7 +52,7 @@ export function Sidebar({ projects,members, activeProject, setActiveProject, onA
           </button>
         </form>
       </div>
-      <MemberManager members={members} activeProject={activeProject} onAddMember={onAddMember} />
+      <MemberManager members={members} activeProject={activeProject} onDeleteMember={onDeleteMember} onAddMember={onAddMember} />
      
     </aside>
   );

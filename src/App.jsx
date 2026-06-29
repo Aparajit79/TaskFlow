@@ -20,7 +20,8 @@ export function App() {
     handleToggleTask,
     handleDeleteTask,
     handleEditTask,
-    handleDeleteProject
+    handleDeleteProject,
+    handleDeleteMember,
   } = useTaskFlow();
   
 
@@ -35,6 +36,7 @@ export function App() {
         onAddProject={handleAddProject}
         onDeleteProject={handleDeleteProject}
         onAddMember={handleAddMember}
+        onDeleteMember={handleDeleteMember}
       />
 
       <main className="main-content">

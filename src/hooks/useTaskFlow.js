@@ -120,23 +120,44 @@ function taskReducer(state, action) {
       };
 
     }
-    case 'ADD_MEMBER': {
-      const { name, role } = action.payload;
-      const trimmed = name.trim();
-      if (!trimmed) return state;
-    
-      const newMember = {
-        id: Date.now(),
-        project: state.activeProject,
-        name: trimmed,
-        role,
-        avatar: trimmed.charAt(0).toUpperCase()
-      };
-      return {
-        ...state,
-        members: [...state.members, newMember]
-      };
-    }
+   case "ADD_MEMBER": {
+  const { name, role } = action.payload;
+
+  const trimmedName = name.trim();
+
+  const memberExists = state.members.some(
+    (member) =>
+      member.project === state.activeProject &&
+      member.name.toLowerCase() === trimmedName.toLowerCase() &&
+      member.role === role
+  );
+
+  if (memberExists) {
+    alert("This member already exists in the project.");
+    return state;
+  }
+
+  const newMember = {
+    id: Date.now(),
+    project: state.activeProject,
+    name: trimmedName,
+    role,
+    avatar: trimmedName.charAt(0).toUpperCase()
+  };
+
+  return {
+    ...state,
+    members: [...(state.members || []), newMember]
+  };
+}
+  case "DELETE_MEMBER": {
+  return {
+    ...state,
+    members: state.members.filter(
+      (member) => member.id !== action.payload
+    )
+  };
+}
     default:
       return state;
   }
@@ -159,6 +180,7 @@ export function useTaskFlow() {
     setActiveProject: (proj) => dispatch({ type: 'SET_ACTIVE_PROJECT', payload: proj }),
     handleAddProject: (name) => dispatch({ type: 'ADD_PROJECT', payload: name }),
     handleAddTask: (text,description, priority, status,dueDate,assignedMember) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status ,dueDate,assignedMember } }),
+    
     handleAddMember: (name, role) =>
      dispatch({
       type: "ADD_MEMBER",
@@ -167,6 +189,14 @@ export function useTaskFlow() {
       role
      }
     }),
+    handleDeleteMember: (id) => {
+    if (window.confirm("Are you sure you want to remove this member?")) {
+      dispatch({
+        type: "DELETE_MEMBER",
+        payload: id
+      });
+     }
+    },
     handleToggleTask: (id) => dispatch({ type: 'TOGGLE_TASK', payload: id }),
     handleDeleteTask: (id) => {
       if (window.confirm("Are you sure you want to delete this task?")) {

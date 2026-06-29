@@ -64,9 +64,10 @@ body {
 }
 
 /* Sidebar Layout & Styles */
-.app-container {
-  display: flex;
-  min-height: 100vh;
+.app-container{
+    display:flex;
+    height:100vh;   
+    overflow:hidden;
 }
 
 .sidebar {
@@ -77,6 +78,8 @@ body {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: auto;
 }
 
 .sidebar h2 {
@@ -760,6 +763,39 @@ h1 {
     border-radius:14px;
     transition:0.2s;
     margin-top: 10px;
+}
+.member-list{
+    margin-top:15px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+
+    max-height:220px;     /* limits growth */
+    overflow-y:auto;      /* scroll inside member section */
+    padding-right:5px;
+}
+.member-list::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar{
+    width:6px;
+}
+
+.member-list::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb{
+    background:#4f46e5;
+    border-radius:10px;
+}
+.member-delete-btn{
+    background:transparent;
+    border:none;
+    font-size:16px;
+    cursor:pointer;
+    color:#94a3b8;
+    transition:.2s;
+}
+
+.member-delete-btn:hover{
+    color:#ef4444;
+    transform:scale(1.15);
 }
 
 .member-card:hover{
