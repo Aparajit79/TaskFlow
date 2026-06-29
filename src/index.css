@@ -305,7 +305,6 @@ h1 {
   border-color: var(--primary);
 }
 
-/* Inner Layout Columns */
 .task-dashboard {
   display: flex;
   flex: 1;

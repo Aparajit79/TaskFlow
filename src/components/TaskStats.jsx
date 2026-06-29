@@ -68,7 +68,7 @@ export function TaskStats({ tasks = [] }) {
   <h4>Task Status</h4>
 
   <div className="status-items">
-    <span>🟠 Pending: {pendingStatus}</span>
+    <span>🟠 Pending Not Started: {pendingStatus}</span>
     <span>🔵 In Progress: {inProgressStatus}</span>
     <span>🔴 Blocker: {blockerStatus}</span>
     <span>🔴 Higher priority: {highPriorityTasks}</span>
@@ -78,4 +78,4 @@ export function TaskStats({ tasks = [] }) {
   );
 }
 
-export default TaskStats;
+export default React.memo(TaskStats);

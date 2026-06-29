@@ -237,4 +237,4 @@ export function TaskList({
   );
 }
 
-export default TaskList;
+export default React.memo(TaskList);
