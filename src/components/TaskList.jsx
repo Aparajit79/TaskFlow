@@ -218,9 +218,6 @@ export function TaskList({
               }
             </select>
 
-
-
-
             <div className="form-actions">
               <button type="submit" className="add-button">
                 {editingId ? 'Save' : 'Add'}

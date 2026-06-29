@@ -366,8 +366,8 @@ h1 {
 }
 
 .task-content input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   accent-color: var(--primary);
   cursor: pointer;
 }
@@ -605,10 +605,10 @@ h1 {
 .task-stats {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 0.25fr);
   gap: 12px;
 
-  padding: 10px;
+  /* padding: 10px; */
 
   background: transparent;
   border: none;
@@ -620,7 +620,7 @@ h1 {
   border: 1px solid var(--border-color);
   border-radius: 12px;
 
-  padding: 14px 10px;
+  padding: 1px 10px;
 
   text-align: center;
 
@@ -635,7 +635,7 @@ h1 {
 .stat-card h3 {
   font-size: 11px;
   color: var(--text-muted);
-  margin: 0;
+  /* margin: 0; */
   letter-spacing: .5px;
 }
 
@@ -768,25 +768,25 @@ h1 {
     display:flex;
     align-items:center;
     gap:14px;
-    padding:12px 14px;
+    padding:9px 14px;
     background:#252d42;
     border-radius:14px;
     transition:0.2s;
-    margin-top: 10px;
+    margin-top: px;
 }
 .member-list{
-    margin-top:15px;
+    margin-top:10px;
     display:flex;
     flex-direction:column;
     gap:10px;
 
-    max-height:220px;     /* limits growth */
-    overflow-y:auto;      /* scroll inside member section */
-    padding-right:5px;
+    max-height:220px;    
+    overflow-y:auto;     
+    padding-right:2px;
 }
 .member-list::-webkit-scrollbar,
 .sidebar::-webkit-scrollbar{
-    width:6px;
+    width:4px;
 }
 
 .member-list::-webkit-scrollbar-thumb,
@@ -797,7 +797,7 @@ h1 {
 .member-delete-btn{
     background:transparent;
     border:none;
-    font-size:16px;
+    font-size:13px;
     cursor:pointer;
     color:#94a3b8;
     transition:.2s;
@@ -814,8 +814,8 @@ h1 {
 
 /* Avatar */
 .member-avatar{
-    width:46px;
-    height:46px;
+    width:42px;
+    height:42px;
     border-radius:50%;
     background:#6366f1;
     color:#fff;
@@ -844,13 +844,13 @@ h1 {
 
 .member-info small{
     color:#cbd5e1;
-    font-size:13px;
+    font-size:11px;
     margin-top:2px;
     line-height:1.2;
 }
 
 .task-due-date{
-    margin-top:8px;
+    margin-top:5px;
     font-size:13px;
     color:#64748b;
     display:flex;
@@ -861,15 +861,15 @@ h1 {
 /* Assigned Member */
 
 .task-member{
-    margin-top:6px;
+    margin-top:2px;
     display:inline-flex;
     align-items:center;
     gap:6px;
-    padding:6px 10px;
+    padding:2px 9px;
     background:#eef2ff;
     color:#4338ca;
     border-radius:20px;
-    font-size:13px;
+    font-size:11px;
     font-weight:500;
     width:fit-content;
     border:1px solid #c7d2fe;

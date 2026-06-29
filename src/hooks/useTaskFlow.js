@@ -1,7 +1,7 @@
 import { useReducer , useEffect } from 'react';
 
 const initialState = {
-  projects: ["Personal", "Work", "college", "School", "Things to buy", "Gym"],
+  projects: ["Personal", "Work", "college", "Things to buy"],
   members:[],
   tasks: [
     {
@@ -11,6 +11,8 @@ const initialState = {
       description: "Complete React basics and hooks",
       priority: "High",
       status: "In Progress",
+      dueDate:null,
+      assignedMember:"",
       completed: false
     } ,
    
@@ -122,21 +124,17 @@ function taskReducer(state, action) {
     }
    case "ADD_MEMBER": {
   const { name, role } = action.payload;
-
   const trimmedName = name.trim();
-
   const memberExists = state.members.some(
     (member) =>
       member.project === state.activeProject &&
       member.name.toLowerCase() === trimmedName.toLowerCase() &&
       member.role === role
   );
-
   if (memberExists) {
     alert("This member already exists in the project.");
     return state;
   }
-
   const newMember = {
     id: Date.now(),
     project: state.activeProject,
@@ -144,7 +142,6 @@ function taskReducer(state, action) {
     role,
     avatar: trimmedName.charAt(0).toUpperCase()
   };
-
   return {
     ...state,
     members: [...(state.members || []), newMember]
