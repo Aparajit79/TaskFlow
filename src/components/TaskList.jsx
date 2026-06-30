@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import TaskStats from './TaskStats';
 import { useTasks, useMembers } from "../hooks/useTaskFlow";
 
@@ -19,6 +19,7 @@ export function TaskList() {
   const [status, setStatus] = useState('Pending');
   const [dueDate, setDueDate] = useState("");
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [assignedMember, setAssignedMember] = useState("");
@@ -62,8 +63,21 @@ export function TaskList() {
     setAssignedMember("");
   };
 
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+
+        setDebouncedSearch(searchTerm);
+
+    }, 500);
+
+    return () => clearTimeout(timer);
+
+  }, [searchTerm]);
   const searchedTasks = tasks.filter(task =>
-  task.text.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  task.text
+      .toLowerCase()
+      .includes(debouncedSearch.toLowerCase()) &&
   (statusFilter === "All" || task.status === statusFilter)
   );
 

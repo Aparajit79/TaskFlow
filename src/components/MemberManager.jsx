@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMembers } from "../hooks/useTaskFlow";
+import {useTasks, useMembers } from "../hooks/useTaskFlow";
 
 function MemberManager() { 
   const {
@@ -11,7 +11,12 @@ function MemberManager() {
 
   const [memberName, setMemberName] = useState("");
   const [memberRole, setMemberRole] = useState("Frontend Developer");
-
+  const currentProjectMembers = members.filter(
+  (member) => member.project === activeProject
+  );
+  const totalMembers = currentProjectMembers.length;
+  const { filteredTasks } = useTasks();
+  const totalTasks = filteredTasks.length;
   const handleSubmit = (e) => {
      e.preventDefault();
    
@@ -89,9 +94,21 @@ function MemberManager() {
 
     ))}
 
-</div>
+</div >
+<div className="member-summary">
+  <div className="summary-chip">
+    <span>👥</span>
+    <span>{totalMembers}</span>
+    <small>Members</small>
+  </div>
 
-    </div>
+  <div className="summary-chip">
+    <span>📋</span>
+    <span>{totalTasks}</span>
+    <small>Tasks</small>
+  </div>
+</div>
+</div>
   );
 }
 

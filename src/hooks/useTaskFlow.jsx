@@ -1,4 +1,4 @@
-/* eslint-disable react/only-export-components */
+
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
 
 const TaskFlowContext = createContext();
@@ -305,7 +305,8 @@ export function useMembers() {
     members: context.members,
     activeProject: context.activeProject,
     handleAddMember: context.handleAddMember,
-    handleDeleteMember: context.handleDeleteMember
+    handleDeleteMember: context.handleDeleteMember,
+    filteredTasks: context.filteredTasks
   };
 }
 
