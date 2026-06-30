@@ -5,9 +5,6 @@ export function TaskStats({ tasks = [] }) {
   const completedTasks = tasks.filter(task => task.completed).length;
   const pendingTasks = totalTasks - completedTasks;
   const highPriorityTasks = tasks.filter(task => task.priority === 'High').length;
-  const inProgressTasks = tasks.filter(
-  task => task.status === "In Progress"
-   ).length;
 
    const blockerStatus = tasks.filter(   
      task => task.status === "Blocker"
@@ -49,15 +46,13 @@ export function TaskStats({ tasks = [] }) {
 
 
 <div className="stat-card progress-card">
-
-
+  <h3>Completion Rate</h3>
   <div className="progress-bar">
     <div
       className="progress-fill"
       style={{ width: `${completionRate}%` }}
     ></div>
   </div>
-
   <p>{completionRate}%</p>
 </div>
 

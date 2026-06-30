@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import MemberManager from "./MemberManager";
 
-export function Sidebar({ projects,members, activeProject, setActiveProject, onAddProject, onDeleteProject,onAddMember,onDeleteMember }) {
+export function Sidebar({ 
+  projects = [],
+  members = [], 
+  activeProject = '', 
+  setActiveProject, 
+  onAddProject, 
+  onDeleteProject,
+  onAddMember,
+  onDeleteMember 
+}) {
   const [newProjectText, setNewProjectText] = useState('');
 
   const handleSubmit = (e) => {
@@ -13,7 +22,7 @@ export function Sidebar({ projects,members, activeProject, setActiveProject, onA
 
   return (
     <aside className="sidebar">
-      <div class="sidebar-header">
+      <div className="sidebar-header">
       <h2>TaskMatrix</h2>
       <p>Manage your workflow</p>
       </div>

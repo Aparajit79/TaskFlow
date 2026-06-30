@@ -230,6 +230,7 @@ body {
   width: 100%;
   max-width: 1150px;
   height: 88vh;
+  max-height: 850px;
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
@@ -505,7 +506,7 @@ h1 {
   border: 1px solid var(--border-color);
   padding: 14px;
   border-radius: var(--radius-md);
-  width: 240px;
+  width: 320px;
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
   display: flex;
@@ -523,13 +524,19 @@ h1 {
 }
 
 .task-form {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   background-color: var(--dark-panel);
   gap: 8px;
   padding: 12px;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
+}
+
+.task-form > input[type="text"],
+.task-form > textarea,
+.task-form > .form-actions {
+  grid-column: span 2;
 }
 
 /* Inputs styling inside the dark Add Task form */
@@ -615,18 +622,21 @@ h1 {
 }
 
 .stat-card {
-  background: rgb(206, 215, 240);
+  background: var(--light-panel);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-
-  padding: 1px 10px;
-
+  padding: 12px;
   text-align: center;
-
   box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .stat-card:hover {
+  background: white;
+  border-color: var(--primary-light);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -634,13 +644,14 @@ h1 {
 .stat-card h3 {
   font-size: 11px;
   color: var(--text-muted);
-  /* margin: 0; */
+  margin: 0;
   letter-spacing: .5px;
+  text-transform: uppercase;
 }
 
 .stat-card p {
-  margin-top: 8px;
-  font-size: 30px;
+  margin: 6px 0 0 0;
+  font-size: 28px;
   font-weight: 700;
   color: var(--primary);
 }
@@ -684,6 +695,41 @@ h1 {
   }
 }
 
+/* Responsive Styles for viewports with small vertical heights (e.g. 14-inch laptops) */
+@media (max-height: 800px) {
+  html,
+  body,
+  #root {
+    overflow: auto;
+    height: auto;
+  }
+
+  .app-container {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .member-list {
+    max-height: 150px;
+  }
+
+  .main-content {
+    padding: 20px;
+    align-items: flex-start;
+  }
+
+  .app-card {
+    height: auto;
+    min-height: 0;
+    padding: 16px;
+  }
+}
+
 @media (max-width: 768px) {
   .app-container {
     flex-direction: column;
@@ -703,24 +749,45 @@ h1 {
   }
 }
 .status-summary {
-  margin-top: 8px;
-  padding: 10px 6px;
+  margin-top: 12px;
+  padding: 0 4px;
 }
 
 .status-summary h4 {
-  margin-bottom: 12px;
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .status-items {
   display: flex;
-  gap: 28px;
+  gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  margin: 0;
+}
 
-  margin-top: 8px;
-
-  font-size: 15px;
+.status-items span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--light-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 13px;
   font-weight: 500;
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.status-items span:hover {
+  background-color: white;
+  border-color: var(--primary-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 .progress-card {
   display: flex;
@@ -766,22 +833,24 @@ h1 {
 .member-card{
     display:flex;
     align-items:center;
-    gap:14px;
-    padding:9px 14px;
+    gap:10px;
+    padding:9px 12px;
     background:#252d42;
     border-radius:14px;
     transition:0.2s;
-    margin-top: px;
+    width: 100%;
+    box-sizing: border-box;
 }
 .member-list{
     margin-top:10px;
     display:flex;
     flex-direction:column;
     gap:10px;
-
     max-height:220px;    
     overflow-y:auto;     
+    overflow-x:hidden;
     padding-right:2px;
+    width: 100%;
 }
 .member-list::-webkit-scrollbar,
 .sidebar::-webkit-scrollbar{
@@ -800,6 +869,7 @@ h1 {
     cursor:pointer;
     color:#94a3b8;
     transition:.2s;
+    flex-shrink:0;
 }
 
 .member-delete-btn:hover{
@@ -832,6 +902,7 @@ h1 {
     flex-direction:column;
     justify-content:center;
     flex:1;
+    min-width:0;
 }
 
 .member-info strong{
@@ -839,6 +910,9 @@ h1 {
     font-size:15px;
     font-weight:600;
     line-height:1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .member-info small{
@@ -846,6 +920,9 @@ h1 {
     font-size:11px;
     margin-top:2px;
     line-height:1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .task-due-date{

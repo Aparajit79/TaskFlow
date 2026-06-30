@@ -22,12 +22,21 @@ const initialState = {
 };
 
 function loadState() {
+  try {
     const savedData = localStorage.getItem("taskflow");
 
     if (!savedData) {
         return null;
     }
-    return JSON.parse(savedData);
+    const parsed = JSON.parse(savedData);
+    if (!parsed || typeof parsed !== 'object') {
+        return null;
+    }
+    return parsed;
+  } catch (e) {
+    console.error("Failed to parse taskflow state from localStorage:", e);
+    return null;
+  }
 }
 
 function saveState(state) {
@@ -162,8 +171,19 @@ function taskReducer(state, action) {
 
 export function useTaskFlow() {
 
-  const savedState = loadState()
-  const [state, dispatch] = useReducer(taskReducer, savedState || initialState);
+  const savedState = loadState();
+  const initial = savedState 
+    ? {
+        projects: Array.isArray(savedState.projects) ? savedState.projects : initialState.projects,
+        members: Array.isArray(savedState.members) ? savedState.members : initialState.members,
+        tasks: Array.isArray(savedState.tasks) ? savedState.tasks : initialState.tasks,
+        activeProject: typeof savedState.activeProject === 'string' && savedState.projects?.includes(savedState.activeProject)
+          ? savedState.activeProject 
+          : (Array.isArray(savedState.projects) && savedState.projects[0]) || initialState.activeProject
+      }
+    : initialState;
+
+  const [state, dispatch] = useReducer(taskReducer, initial);
    useEffect(() => {
     saveState(state);
    }, [state]);

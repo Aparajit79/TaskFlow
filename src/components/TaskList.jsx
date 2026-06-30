@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import TaskStats from './TaskStats';
 
 export function TaskList({ 
-  activeProject, 
-  tasks, 
-  members,
+  activeProject = '', 
+  tasks = [], 
+  members = [],
   onAddTask, 
   onToggleTask, 
   onDeleteTask,
@@ -77,11 +77,11 @@ export function TaskList({
           onChange={(e) => setSearchTerm(e.target.value)}
           className="task-input"
         />
-         <select className="task-input"
-         value={statusFilter}
-         onChange={(e) => setStatusFilter(e.target.value)}
-         className="select-input"
-          >
+         <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="select-input"
+         >
           <option value="All">All</option>
           <option value="Pending">Pending</option>
           <option value="In Progress">In Progress</option>

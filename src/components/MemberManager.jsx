@@ -1,6 +1,11 @@
 import { useState } from "react";
 
-function MemberManager({members, activeProject,onAddMember,onDeleteMember }) { 
+function MemberManager({
+  members = [], 
+  activeProject = '',
+  onAddMember,
+  onDeleteMember 
+}) { 
 
   const [memberName, setMemberName] = useState("");
   const [memberRole, setMemberRole] = useState("Frontend Developer");
@@ -22,7 +27,7 @@ function MemberManager({members, activeProject,onAddMember,onDeleteMember }) {
   return (
     <div className="member-manager">
 
-      <h2>Project Members</h2>
+      <h3>Project Members</h3>
 
       <form className="member-form" onSubmit={handleSubmit}>
 
