@@ -1,4 +1,7 @@
-import { useReducer , useEffect } from 'react';
+/* eslint-disable react/only-export-components */
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
+
+const TaskFlowContext = createContext();
 
 const initialState = {
   projects: ["Personal", "Work", "college", "Things to buy"],
@@ -169,8 +172,7 @@ function taskReducer(state, action) {
   }
 }
 
-export function useTaskFlow() {
-
+export function TaskFlowProvider({ children }) {
   const savedState = loadState();
   const initial = savedState 
     ? {
@@ -184,57 +186,135 @@ export function useTaskFlow() {
     : initialState;
 
   const [state, dispatch] = useReducer(taskReducer, initial);
-   useEffect(() => {
+  
+  useEffect(() => {
     saveState(state);
-   }, [state]);
+  }, [state]);
+
   const filteredTasks = state.tasks.filter((task) => task.project === state.activeProject);
 
-  return {
+  const setActiveProject = useCallback((proj) => {
+    dispatch({ type: 'SET_ACTIVE_PROJECT', payload: proj });
+  }, []);
+
+  const handleAddProject = useCallback((name) => {
+    dispatch({ type: 'ADD_PROJECT', payload: name });
+  }, []);
+
+  const handleAddTask = useCallback((text, description, priority, status, dueDate, assignedMember) => {
+    dispatch({ type: 'ADD_TASK', payload: { text, description, priority, status, dueDate, assignedMember } });
+  }, []);
+
+  const handleAddMember = useCallback((name, role) => {
+    dispatch({ type: "ADD_MEMBER", payload: { name, role } });
+  }, []);
+
+  const handleDeleteMember = useCallback((id) => {
+    if (window.confirm("Are you sure you want to remove this member?")) {
+      dispatch({ type: "DELETE_MEMBER", payload: id });
+    }
+  }, []);
+
+  const handleToggleTask = useCallback((id) => {
+    dispatch({ type: 'TOGGLE_TASK', payload: id });
+  }, []);
+
+  const handleDeleteTask = useCallback((id) => {
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      dispatch({ type: 'DELETE_TASK', payload: id });
+    }
+  }, []);
+
+  const handleEditTask = useCallback((id, text, description, priority, status, dueDate, assignedMember) => {
+    dispatch({ type: 'EDIT_TASK', payload: { id, text, description, priority, status, dueDate, assignedMember } });
+  }, []);
+
+  const handleDeleteProject = useCallback((projName) => {
+    const projectTasks = state.tasks.filter((t) => t.project === projName);
+    if (projectTasks.length === 0) {
+      dispatch({ type: 'DELETE_PROJECT', payload: projName });
+    } else {
+      if (window.confirm(`Project "${projName}" has ${projectTasks.length} task(s). Are you sure you want to delete it and all its tasks?`)) {
+        dispatch({ type: 'DELETE_PROJECT', payload: projName });
+      }
+    }
+  }, [state.tasks]);
+
+  const value = useMemo(() => ({
     projects: state.projects,
     members: state.members,
     activeProject: state.activeProject,
     filteredTasks,
-    setActiveProject: (proj) => dispatch({ type: 'SET_ACTIVE_PROJECT', payload: proj }),
-    handleAddProject: (name) => dispatch({ type: 'ADD_PROJECT', payload: name }),
-    handleAddTask: (text,description, priority, status,dueDate,assignedMember) => dispatch({ type: 'ADD_TASK', payload: { text,description, priority, status ,dueDate,assignedMember } }),
-    
-    handleAddMember: (name, role) =>
-     dispatch({
-      type: "ADD_MEMBER",
-      payload: {
-      name,
-      role
-     }
-    }),
-    handleDeleteMember: (id) => {
-    if (window.confirm("Are you sure you want to remove this member?")) {
-      dispatch({
-        type: "DELETE_MEMBER",
-        payload: id
-      });
-     }
-    },
-    handleToggleTask: (id) => dispatch({ type: 'TOGGLE_TASK', payload: id }),
-    handleDeleteTask: (id) => {
-      if (window.confirm("Are you sure you want to delete this task?")) {
-        dispatch({
-          type: 'DELETE_TASK',
-          payload: id,
-        });
-      }
-    },
-    handleEditTask: (id, text, description, priority, status, dueDate,assignedMember) => dispatch({ type: 'EDIT_TASK', payload: { id, text, description, priority, status ,dueDate,assignedMember} }),
-    handleDeleteProject: (projName) => {
-      const projectTasks = state.tasks.filter((t) => t.project === projName);
-      if (projectTasks.length === 0) {
-        dispatch({ type: 'DELETE_PROJECT', payload: projName });
-      } else {
-        if (window.confirm(`Project "${projName}" has ${projectTasks.length} task(s). Are you sure you want to delete it and all its tasks?`)) {
-          dispatch({ type: 'DELETE_PROJECT', payload: projName });
-        }
-      }
-    }
+    setActiveProject,
+    handleAddProject,
+    handleAddTask,
+    handleAddMember,
+    handleDeleteMember,
+    handleToggleTask,
+    handleDeleteTask,
+    handleEditTask,
+    handleDeleteProject
+  }), [
+    state.projects,
+    state.members,
+    state.activeProject,
+    filteredTasks,
+    setActiveProject,
+    handleAddProject,
+    handleAddTask,
+    handleAddMember,
+    handleDeleteMember,
+    handleToggleTask,
+    handleDeleteTask,
+    handleEditTask,
+    handleDeleteProject
+  ]);
+
+  return (
+    <TaskFlowContext.Provider value={value}>
+      {children}
+    </TaskFlowContext.Provider>
+  );
+}
+
+export function useTasks() {
+  const context = useContext(TaskFlowContext);
+  if (!context) {
+    throw new Error('useTasks must be used within a TaskFlowProvider');
+  }
+  return {
+    projects: context.projects,
+    activeProject: context.activeProject,
+    setActiveProject: context.setActiveProject,
+    filteredTasks: context.filteredTasks,
+    handleAddTask: context.handleAddTask,
+    handleToggleTask: context.handleToggleTask,
+    handleDeleteTask: context.handleDeleteTask,
+    handleEditTask: context.handleEditTask,
+    handleDeleteProject: context.handleDeleteProject,
+    handleAddProject: context.handleAddProject
   };
+}
+
+export function useMembers() {
+  const context = useContext(TaskFlowContext);
+  if (!context) {
+    throw new Error('useMembers must be used within a TaskFlowProvider');
+  }
+  return {
+    members: context.members,
+    activeProject: context.activeProject,
+    handleAddMember: context.handleAddMember,
+    handleDeleteMember: context.handleDeleteMember
+  };
+}
+
+export function useTaskFlow() {
+  const context = useContext(TaskFlowContext);
+  if (!context) {
+    throw new Error('useTaskFlow must be used within a TaskFlowProvider');
+  }
+  return context;
 }
 
 export default useTaskFlow;

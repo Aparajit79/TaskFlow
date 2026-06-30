@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import MemberManager from "./MemberManager";
+import { useTasks } from "../hooks/useTaskFlow";
 
-export function Sidebar({ 
-  projects = [],
-  members = [], 
-  activeProject = '', 
-  setActiveProject, 
-  onAddProject, 
-  onDeleteProject,
-  onAddMember,
-  onDeleteMember 
-}) {
+export function Sidebar() {
+  const {
+    projects = [],
+    activeProject = '',
+    setActiveProject,
+    handleAddProject: onAddProject,
+    handleDeleteProject: onDeleteProject,
+  } = useTasks();
+
   const [newProjectText, setNewProjectText] = useState('');
 
   const handleSubmit = (e) => {
@@ -64,7 +64,7 @@ export function Sidebar({
           </button>
         </form>
       </div>
-      <MemberManager members={members} activeProject={activeProject} onDeleteMember={onDeleteMember} onAddMember={onAddMember} />
+      <MemberManager />
      
     </aside>
   );

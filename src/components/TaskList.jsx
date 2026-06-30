@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import TaskStats from './TaskStats';
+import { useTasks, useMembers } from "../hooks/useTaskFlow";
 
-export function TaskList({ 
-  activeProject = '', 
-  tasks = [], 
-  members = [],
-  onAddTask, 
-  onToggleTask, 
-  onDeleteTask,
-  onEditTask
-}) {
+export function TaskList() {
+  const {
+    activeProject = '',
+    filteredTasks: tasks = [],
+    handleAddTask: onAddTask,
+    handleToggleTask: onToggleTask,
+    handleDeleteTask: onDeleteTask,
+    handleEditTask: onEditTask
+  } = useTasks();
+
+  const { members = [] } = useMembers();
   const [inputText, setInputText] = useState('');
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState('Medium');

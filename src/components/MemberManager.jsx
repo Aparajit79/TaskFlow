@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useMembers } from "../hooks/useTaskFlow";
 
-function MemberManager({
-  members = [], 
-  activeProject = '',
-  onAddMember,
-  onDeleteMember 
-}) { 
+function MemberManager() { 
+  const {
+    members = [],
+    activeProject = '',
+    handleAddMember: onAddMember,
+    handleDeleteMember: onDeleteMember
+  } = useMembers(); 
 
   const [memberName, setMemberName] = useState("");
   const [memberRole, setMemberRole] = useState("Frontend Developer");

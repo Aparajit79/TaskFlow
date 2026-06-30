@@ -1,58 +1,24 @@
 import React from 'react';
 import Sidebar from './components/Sidebar';
 import TaskList from './components/TaskList';
-import { useTaskFlow } from './hooks/useTaskFlow';
+import { TaskFlowProvider } from './hooks/useTaskFlow';
 
-
-export function App() {
-
-  
-
-  const {
-    projects,
-    members,
-    activeProject,
-    setActiveProject,
-    filteredTasks,
-    handleAddProject,
-    handleAddTask,
-    handleAddMember, 
-    handleToggleTask,
-    handleDeleteTask,
-    handleEditTask,
-    handleDeleteProject,
-    handleDeleteMember,
-  } = useTaskFlow();
-  
-
+function AppContent() {
   return (
     <div className="app-container">
-      
-      <Sidebar
-        projects={projects}
-        activeProject={activeProject}
-        members={members}
-        setActiveProject={setActiveProject}
-        onAddProject={handleAddProject}
-        onDeleteProject={handleDeleteProject}
-        onAddMember={handleAddMember}
-        onDeleteMember={handleDeleteMember}
-      />
-
+      <Sidebar />
       <main className="main-content">
-        <TaskList
-          activeProject={activeProject}
-          tasks={filteredTasks}
-          members={members}
-          onAddTask={handleAddTask}
-          onToggleTask={handleToggleTask}
-          onDeleteTask={handleDeleteTask}
-          onEditTask={handleEditTask}
-        />
-        
+        <TaskList />
       </main>
-
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <TaskFlowProvider>
+      <AppContent />
+    </TaskFlowProvider>
   );
 }
 
