@@ -93,7 +93,7 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
       {isExpanded && (
         <div className="sidebar-section-content">
           {showAddMember && (
-            <div className="inline-add-form-container" style={{ marginBottom: '10px' }}>
+            <div className="inline-add-form-container">
               <form className="inline-add-form" onSubmit={handleSubmit}>
                 <input
                   type="text"
@@ -105,16 +105,7 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
                 />
                 
                 <select
-                  className="select-input"
-                  style={{ 
-                    padding: '8px 10px', 
-                    fontSize: '13px', 
-                    width: '100%', 
-                    marginTop: '6px', 
-                    backgroundColor: '#1e293b', 
-                    color: 'white', 
-                    borderColor: '#2d3748' 
-                  }}
+                  className="select-input inline-member-select"
                   value={memberRole}
                   onChange={(e) => setMemberRole(e.target.value)}
                 >
@@ -127,7 +118,7 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
                   <option>DevOps Engineer</option>
                 </select>
 
-                <div className="inline-add-actions" style={{ marginTop: '8px' }}>
+                <div className="inline-add-actions">
                   <button type="submit" className="inline-add-btn">Add</button>
                   <button 
                     type="button" 
@@ -143,7 +134,7 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
 
           <div className="member-list">
             {currentProjectMembers.length === 0 ? (
-              <p className="empty-section-message" style={{ margin: '4px 0 10px 14px', fontSize: '12px', color: 'var(--sidebar-text-muted)', fontStyle: 'italic' }}>
+              <p className="empty-section-message">
                 No members assigned
               </p>
             ) : (
@@ -170,7 +161,7 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
             )}
           </div>
 
-          <div className="member-summary" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px', marginTop: '10px' }}>
+          <div className="member-summary">
             <div className="summary-chip">
               <span>👥</span>
               <span>{totalMembers}</span>

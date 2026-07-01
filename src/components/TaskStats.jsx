@@ -69,7 +69,7 @@ export function TaskStats({ tasks = [] }) {
             <div className="segment segment-blocker" style={{ width: `${blockerPercent}%` }} title={`Blockers: ${blockerPercent}%`}></div>
           </>
         ) : (
-          <div className="segment segment-empty" style={{ width: '100%' }}></div>
+          <div className="segment segment-empty"></div>
         )}
       </div>
     </div>

@@ -1312,6 +1312,7 @@ body {
 
 .segment-empty {
   background-color: var(--border-color);
+  width: 100%;
 }
 
 /* Tooltip helper style */
@@ -1381,4 +1382,103 @@ body {
   .search-controls .task-input {
     width: 100%;
   }
+}
+
+/* ==========================================
+   Refactored styles (Extracted from inline)
+   ========================================== */
+
+/* Collapsed sidebar centers project items */
+.sidebar.collapsed .project-item {
+  display: flex;
+  justify-content: center;
+}
+
+/* Empty State Styles when no active project is selected */
+.task-board-card.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.task-form-selection.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-state-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.empty-state-large-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.task-board-card.empty-state h1 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+.task-board-card.empty-state p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-muted);
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.task-form-selection.empty-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+}
+
+.task-form-selection.empty-state p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+/* Form layout wrappers */
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-col {
+  flex: 1;
+}
+
+.task-form .select-input {
+  width: 100%;
+}
+
+.inline-member-select {
+  padding: 8px 10px;
+  font-size: 13px;
+  width: 100%;
+  margin-top: 6px;
+  background-color: #1e293b;
+  color: white;
+  border: 1px solid #2d3748;
+}
+
+/* Member manager accordion card adjustments */
+.sidebar-section-content .empty-section-message {
+  margin: 4px 0 10px 14px;
+  font-size: 12px;
+  color: var(--sidebar-text-muted);
+  font-style: italic;
+}
+
+.sidebar-section-content .member-summary {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
+  margin-top: 10px;
 }

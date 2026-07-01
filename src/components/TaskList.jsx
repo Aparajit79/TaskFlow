@@ -78,21 +78,21 @@ export function TaskList() {
   if (!activeProject) {
     return (
       <div className="dashboard-layout">
-        <div className="app-card task-board-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 20px' }}>
+        <div className="app-card task-board-card empty-state">
           <div>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚡</div>
-            <h1 style={{ margin: '0 0 10px 0', fontSize: '24px' }}>Welcome to TaskMatrix</h1>
-            <p style={{ margin: 0, fontSize: '15px', color: 'var(--text-muted)', maxWidth: '400px', lineHeight: '1.6' }}>
+            <div className="empty-state-large-icon">⚡</div>
+            <h1>Welcome to TaskMatrix</h1>
+            <p>
               To get started, please add a new project in the sidebar on the left.
             </p>
           </div>
         </div>
         
-        <div className="task-form-selection" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px 20px' }}>
+        <div className="task-form-selection empty-state">
           <div>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>📁</div>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '15px' }}>No Active Project</h3>
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-light)' }}>
+            <div className="empty-state-icon">📁</div>
+            <h3>No Active Project</h3>
+            <p>
               Create or select a project in the sidebar to start adding tasks.
             </p>
           </div>

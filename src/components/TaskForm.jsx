@@ -48,11 +48,11 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
 
   if (!activeProject) {
     return (
-      <div className="task-form-selection" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px 20px' }}>
+      <div className="task-form-selection empty-state">
         <div>
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>📁</div>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '15px' }}>No Active Project</h3>
-          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-light)' }}>
+          <div className="empty-state-icon">📁</div>
+          <h3>No Active Project</h3>
+          <p>
             Create or select a project in the sidebar to start adding tasks.
           </p>
         </div>
@@ -86,12 +86,11 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <div style={{ flex: 1 }}>
+        <div className="form-row">
+          <div className="form-col">
             <label>Priority</label>
             <select 
               className="select-input"
-              style={{ width: '100%' }}
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
             >
@@ -101,11 +100,10 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
             </select>
           </div>
           
-          <div style={{ flex: 1 }}>
+          <div className="form-col">
             <label>Status</label>
             <select 
               className="select-input"
-              style={{ width: '100%' }}
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
@@ -130,7 +128,6 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
           <label>Assignee</label>
           <select
             className="select-input"
-            style={{ width: '100%' }}
             value={assignedMember}
             onChange={(e) => setAssignedMember(e.target.value)}
           >

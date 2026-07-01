@@ -70,7 +70,7 @@ export function Sidebar() {
         <>
           <ul className="project-list">
             {projects.map((proj) => (
-              <li key={proj} className="project-item" style={{ display: 'flex', justifyContent: 'center' }}>
+              <li key={proj} className="project-item">
                 <button
                   className={`project-avatar-collapsed ${activeProject === proj ? 'active' : ''}`}
                   onClick={() => setActiveProject(proj)}
@@ -80,7 +80,7 @@ export function Sidebar() {
                 </button>
               </li>
             ))}
-            <li className="project-item" style={{ display: 'flex', justifyContent: 'center' }}>
+            <li className="project-item">
               <button 
                 className="add-project-collapsed-btn" 
                 onClick={() => setIsCollapsed(false)} 
