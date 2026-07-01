@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Color Palette - Elegant Hybrid Theme (Dark Slate Sidebar & Clean Light-Slate Dashboard) */
   --primary: #6366f1;
   --primary-hover: #4f46e5;
   --primary-light: rgba(99, 102, 241, 0.08);
@@ -12,7 +11,7 @@
   
   --bg-app: #f8fafc;
   --bg-card: #ffffff;
-  --bg-sidebar: #0f172a; /* Slate 900 - sleek dark sidebar */
+  --bg-sidebar: #0f172a; 
   --sidebar-hover: rgba(255, 255, 255, 0.06);
   --sidebar-active: rgba(255, 255, 255, 0.1);
   --sidebar-text: #e2e8f0;
@@ -27,8 +26,7 @@
   
   --border-color: #e2e8f0;
   --border-focus: #cbd5e1;
-  
-  /* Status & Priority Colors (Refined Soft Palette) */
+
   --danger-bg: #fee2e2;
   --danger-text: #ef4444;
   --danger-border: #fecaca;
@@ -56,8 +54,7 @@
   --blocker-bg: #fdf2f8;
   --blocker-text: #db2777;
   --blocker-border: #fbcfe8;
-  
-  /* Metrics */
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -70,7 +67,6 @@
   --sidebar-transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Global Reset */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -92,7 +88,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* App Layout */
 .app-container {
   display: flex;
   height: 100vh;
@@ -101,7 +96,6 @@ body {
   background-color: var(--bg-app);
 }
 
-/* Sidebar Styling */
 .sidebar {
   width: 280px;
   background: linear-gradient(180deg, #090d16 0%, #1e293b 100%);
@@ -125,7 +119,6 @@ body {
   align-items: center;
 }
 
-/* Sidebar Toggle Trigger */
 .sidebar-toggle-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -146,7 +139,6 @@ body {
   color: white;
 }
 
-/* Sidebar Header */
 .sidebar-header {
   display: flex;
   flex-direction: column;
@@ -173,6 +165,7 @@ body {
   letter-spacing: -0.5px;
   background: linear-gradient(135deg, #a5b4fc, #818cf8);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   display: flex;
   align-items: center;
@@ -205,7 +198,6 @@ body {
   transform: scale(1.05);
 }
 
-/* Project List */
 .project-list {
   list-style: none;
   padding: 0;
@@ -285,7 +277,6 @@ body {
   color: var(--danger-text);
 }
 
-/* Collapsed Project Button (Initials) */
 .project-avatar-collapsed {
   width: 40px;
   height: 40px;
@@ -316,8 +307,6 @@ body {
   box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
 }
 
-/* Add Project Button/Form */
-/* Sidebar Accordion Container & Section Cards */
 .sidebar-accordions-container {
   display: flex;
   flex-direction: column;
@@ -416,7 +405,6 @@ body {
   margin-left: 4px;
 }
 
-/* Inline Add Forms */
 .inline-add-form-container {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -622,7 +610,6 @@ body {
   color: white;
 }
 
-/* Stacked Avatar List for Collapsed Members */
 .collapsed-members-container {
   display: flex;
   flex-direction: column;
@@ -679,7 +666,6 @@ body {
   color: white;
 }
 
-/* Main Dashboard Workspace */
 .main-content {
   flex-grow: 1;
   padding: 30px;
@@ -698,7 +684,6 @@ body {
   height: 100%;
 }
 
-/* Header & Search Controls */
 .app-card h1 {
   margin: 0 0 4px 0;
   font-size: 28px;
@@ -730,7 +715,6 @@ body {
   width: 260px;
 }
 
-/* Form inputs & Select dropdowns */
 .task-input {
   width: 100%;
   padding: 10px 14px;
@@ -770,7 +754,6 @@ body {
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
-/* Dashboard Layout (Split screen) */
 .dashboard-layout {
   display: flex;
   gap: 24px;
@@ -794,7 +777,6 @@ body {
   padding-right: 8px;
 }
 
-/* Scrollbars */
 .task-list-container::-webkit-scrollbar,
 .member-list::-webkit-scrollbar,
 .sidebar::-webkit-scrollbar {
@@ -824,7 +806,6 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Task List & Item Styling */
 .task-list {
   list-style: none;
   padding: 0;
@@ -945,7 +926,6 @@ body {
   margin-top: 6px;
 }
 
-/* Badges for priority & status */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -967,7 +947,6 @@ body {
   background-color: currentColor;
 }
 
-/* Custom priority badges */
 .priority-badge-low {
   background-color: var(--success-bg);
   color: var(--success-text);
@@ -986,7 +965,6 @@ body {
   border: 1px solid var(--danger-border);
 }
 
-/* Custom status badges */
 .status-badge-pending {
   background-color: var(--pending-bg);
   color: var(--pending-text);
@@ -1033,7 +1011,6 @@ body {
   color: var(--text-main);
 }
 
-/* Task Action Panel Buttons */
 .task-actions {
   display: flex;
   gap: 6px;
@@ -1070,11 +1047,10 @@ body {
   color: var(--primary);
 }
 
-/* Task Form Section on the Right */
 .task-form-selection {
   width: 360px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(180deg, #38397a25 0%, #f8fafc 100%);
   border: 1px solid var(--border-color);
   border-top: 4px solid var(--primary);
   border-radius: var(--radius-lg);
@@ -1174,7 +1150,6 @@ body {
   color: var(--text-main);
 }
 
-/* Empty State */
 .empty-message {
   text-align: center;
   color: var(--text-light);
@@ -1186,7 +1161,6 @@ body {
   margin-top: 10px;
 }
 
-/* Compact Stats Footer at the bottom of the card */
 .compact-stats-footer {
   margin-top: auto;
   padding-top: 16px;
@@ -1279,7 +1253,6 @@ body {
   border: 1px solid rgba(99, 102, 241, 0.15);
 }
 
-/* Segmented progress bar line */
 .footer-segmented-bar {
   display: flex;
   height: 6px;
@@ -1315,12 +1288,12 @@ body {
   width: 100%;
 }
 
-/* Tooltip helper style */
+
 [title] {
   position: relative;
 }
 
-/* Responsive Adaptations */
+
 @media (max-width: 1024px) {
   html, body, #root {
     overflow: auto;
@@ -1384,17 +1357,13 @@ body {
   }
 }
 
-/* ==========================================
-   Refactored styles (Extracted from inline)
-   ========================================== */
 
-/* Collapsed sidebar centers project items */
+/* impimp */
 .sidebar.collapsed .project-item {
   display: flex;
   justify-content: center;
 }
 
-/* Empty State Styles when no active project is selected */
 .task-board-card.empty-state {
   display: flex;
   align-items: center;
@@ -1445,7 +1414,6 @@ body {
   color: var(--text-light);
 }
 
-/* Form layout wrappers */
 .form-row {
   display: flex;
   gap: 10px;
@@ -1469,7 +1437,7 @@ body {
   border: 1px solid #2d3748;
 }
 
-/* Member manager accordion card adjustments */
+
 .sidebar-section-content .empty-section-message {
   margin: 4px 0 10px 14px;
   font-size: 12px;

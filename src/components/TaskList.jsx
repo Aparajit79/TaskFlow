@@ -21,8 +21,6 @@ export function TaskList() {
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [memberFilter, setMemberFilter] = useState('All');
   const [editingTask, setEditingTask] = useState(null);
-
-  // Reset filters when switching active project
   useEffect(() => {
     setSearchTerm('');
     setDebouncedSearch('');

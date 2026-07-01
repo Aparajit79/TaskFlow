@@ -11,7 +11,6 @@ export function TaskFlowProvider({ children }) {
   const [tasks, setTasks] = useState([]);
   const [activeProject, setActiveProject] = useState('');
 
-  // Fetch initial data from REST API
   useEffect(() => {
     async function initFetch() {
       try {
@@ -29,7 +28,6 @@ export function TaskFlowProvider({ children }) {
           setProjects(projs);
           setMembers(mems);
           
-          // Map tasks id to number (BIGINT is parsed as string text from Express)
           const formattedTasks = tsks.map(t => ({
             ...t,
             id: Number(t.id)
@@ -103,7 +101,7 @@ export function TaskFlowProvider({ children }) {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const id = Date.now(); // Generate client numeric ID
+    const id = Date.now(); 
 
     try {
       const res = await fetch(`${API_URL}/tasks`, {

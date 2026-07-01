@@ -8,7 +8,6 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
   const [dueDate, setDueDate] = useState("");
   const [assignedMember, setAssignedMember] = useState("");
 
-  // Sync state with editingTask if present
   useEffect(() => {
     if (editingTask) {
       setInputText(editingTask.text || '');
@@ -35,7 +34,6 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
     }
     onSubmit(inputText.trim(), description.trim(), priority, status, dueDate, assignedMember);
     
-    // Reset form only if not editing (if editing, parent will reset editingTask and this useEffect will handle resetting)
     if (!editingTask) {
       setInputText('');
       setDescription("");

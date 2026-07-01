@@ -6,20 +6,18 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// PostgreSQL Connection Pool Setup
+
 const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
   host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'taskflow_db',
-  password: process.env.DB_PASSWORD || 'postgres',
+  database: process.env.DB_NAME || 'task_matrix',
+  password: process.env.DB_PASSWORD || '123',
   port: process.env.DB_PORT || 5432,
 });
 
-// Test Database Connection
 pool.connect((err, client, release) => {
   if (err) {
     return console.error('Error acquiring client from PostgreSQL connection pool:', err.stack);
@@ -28,15 +26,10 @@ pool.connect((err, client, release) => {
   release();
 });
 
-// ==========================================
-// 1. PROJECTS API ENDPOINTS
-// ==========================================
 
-// GET all projects
 app.get('/api/projects', async (req, res) => {
   try {
     const result = await pool.query('SELECT name FROM projects ORDER BY created_at ASC');
-    // Map list of project rows to string array: ["Personal", "Work", ...]
     const projectsList = result.rows.map(row => row.name);
     res.json(projectsList);
   } catch (err) {
@@ -45,7 +38,6 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-// POST add a new project
 app.post('/api/projects', async (req, res) => {
   const { name } = req.body;
   if (!name || name.trim() === '') {
@@ -64,7 +56,6 @@ app.post('/api/projects', async (req, res) => {
   }
 });
 
-// DELETE a project
 app.delete('/api/projects/:name', async (req, res) => {
   const { name } = req.params;
 
@@ -77,12 +68,6 @@ app.delete('/api/projects/:name', async (req, res) => {
   }
 });
 
-
-// ==========================================
-// 2. MEMBERS API ENDPOINTS
-// ==========================================
-
-// GET all members
 app.get('/api/members', async (req, res) => {
   try {
     const result = await pool.query('SELECT id, project, name, role, avatar FROM members ORDER BY created_at ASC');
@@ -93,7 +78,6 @@ app.get('/api/members', async (req, res) => {
   }
 });
 
-// POST add a member
 app.post('/api/members', async (req, res) => {
   const { project, name, role } = req.body;
   if (!project || !name || !role) {
@@ -114,7 +98,6 @@ app.post('/api/members', async (req, res) => {
   }
 });
 
-// DELETE a member
 app.delete('/api/members/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -128,11 +111,6 @@ app.delete('/api/members/:id', async (req, res) => {
 });
 
 
-// ==========================================
-// 3. TASKS API ENDPOINTS
-// ==========================================
-
-// GET all tasks
 app.get('/api/tasks', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -156,7 +134,6 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
-// POST add a task
 app.post('/api/tasks', async (req, res) => {
   const { id, project, text, description, priority, status, dueDate, assignedMember } = req.body;
   if (!id || !project || !text) {
@@ -178,7 +155,6 @@ app.post('/api/tasks', async (req, res) => {
   }
 });
 
-// PUT update a task details or toggle completion
 app.put('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
   const { text, description, priority, status, dueDate, assignedMember, completed } = req.body;
@@ -204,7 +180,6 @@ app.put('/api/tasks/:id', async (req, res) => {
   }
 });
 
-// DELETE a task
 app.delete('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -217,8 +192,6 @@ app.delete('/api/tasks/:id', async (req, res) => {
   }
 });
 
-
-// Start Server
 app.listen(PORT, () => {
   console.log(`TaskMatrix API Server is running on port ${PORT}`);
 });

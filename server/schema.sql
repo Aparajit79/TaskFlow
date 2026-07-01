@@ -1,12 +1,9 @@
--- Database schema for TaskMatrix (TaskFlow)
 
--- 1. Projects Table
 CREATE TABLE IF NOT EXISTS projects (
     name VARCHAR(255) PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Team Members Table
 CREATE TABLE IF NOT EXISTS members (
     id SERIAL PRIMARY KEY,
     project VARCHAR(255) REFERENCES projects(name) ON DELETE CASCADE,
@@ -16,9 +13,9 @@ CREATE TABLE IF NOT EXISTS members (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Tasks Table
+
 CREATE TABLE IF NOT EXISTS tasks (
-    id BIGINT PRIMARY KEY, -- Using client-generated BIGINT timestamps
+    id BIGINT PRIMARY KEY, 
     project VARCHAR(255) REFERENCES projects(name) ON DELETE CASCADE,
     text TEXT NOT NULL,
     description TEXT,
@@ -30,7 +27,6 @@ CREATE TABLE IF NOT EXISTS tasks (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert Default Mock Data
 INSERT INTO projects (name) VALUES 
 ('Personal'), 
 ('Work'), 
