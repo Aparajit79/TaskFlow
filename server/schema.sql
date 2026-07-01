@@ -1,0 +1,43 @@
+-- Database schema for TaskMatrix (TaskFlow)
+
+-- 1. Projects Table
+CREATE TABLE IF NOT EXISTS projects (
+    name VARCHAR(255) PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Team Members Table
+CREATE TABLE IF NOT EXISTS members (
+    id SERIAL PRIMARY KEY,
+    project VARCHAR(255) REFERENCES projects(name) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    avatar VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Tasks Table
+CREATE TABLE IF NOT EXISTS tasks (
+    id BIGINT PRIMARY KEY, -- Using client-generated BIGINT timestamps
+    project VARCHAR(255) REFERENCES projects(name) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    description TEXT,
+    priority VARCHAR(50) NOT NULL DEFAULT 'Medium',
+    status VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    due_date DATE,
+    assigned_member VARCHAR(255),
+    completed BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert Default Mock Data
+INSERT INTO projects (name) VALUES 
+('Personal'), 
+('Work'), 
+('college'), 
+('Things to buy')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO tasks (id, project, text, description, priority, status, due_date, assigned_member, completed) VALUES
+(1, 'Personal', 'Learn React', 'Complete React basics and hooks', 'High', 'In Progress', NULL, '', FALSE)
+ON CONFLICT DO NOTHING;

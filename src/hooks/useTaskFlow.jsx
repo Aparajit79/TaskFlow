@@ -1,249 +1,256 @@
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const TaskFlowContext = createContext();
 
-const initialState = {
-  projects: ["Personal", "Work", "college", "Things to buy"],
-  members:[],
-  tasks: [
-    {
-      id: 1,
-      project: "Personal",
-      text: "Learn React",
-      description: "Complete React basics and hooks",
-      priority: "High",
-      status: "In Progress",
-      dueDate:null,
-      assignedMember:"",
-      completed: false
-    } ,
-   
-  ],
-  
-  activeProject: 'Personal'
-};
-
-function loadState() {
-  try {
-    const savedData = localStorage.getItem("taskflow");
-
-    if (!savedData) {
-        return null;
-    }
-    const parsed = JSON.parse(savedData);
-    if (!parsed || typeof parsed !== 'object') {
-        return null;
-    }
-    return parsed;
-  } catch (e) {
-    console.error("Failed to parse taskflow state from localStorage:", e);
-    return null;
-  }
-}
-
-function saveState(state) {
-    const data = JSON.stringify(state);
-
-    localStorage.setItem("taskflow", data);
-}
-
-
-function taskReducer(state, action) {
-  switch (action.type) {
-    case 'ADD_PROJECT': {
-      const trimmed = action.payload.trim();
-      if (!trimmed || state.projects.includes(trimmed)) return state;
-      return {
-        ...state,
-        projects: [...state.projects, trimmed],
-        activeProject: trimmed
-      };
-    }
-    case 'SET_ACTIVE_PROJECT': {
-      return {
-        ...state,
-        activeProject: action.payload
-      };
-      
-    }
-    case 'ADD_TASK': {
-      const { text,description, priority, status ,dueDate,assignedMember } = action.payload;
-      const trimmed = text.trim();
-      if (!trimmed) return state;
-
-      const newTask = {
-        id: Date.now(),
-        project: state.activeProject,
-        text: trimmed,
-        description,
-        priority,
-        status,
-        dueDate,
-        assignedMember,
-        completed: false
-      };
-
-      return {
-        ...state,
-        tasks: [...state.tasks, newTask]
-      };
-    }
-    case 'TOGGLE_TASK': {
-      return {
-        ...state,
-        tasks: state.tasks.map((task) =>
-          task.id === action.payload
-            ? { ...task, completed: !task.completed }
-            : task
-        )
-      };
-    }
-    case 'DELETE_TASK': {
-      return {
-        ...state,
-        tasks: state.tasks.filter((task) => task.id !== action.payload)
-      };
-    }
-    case 'EDIT_TASK': {
-      const { id, text, description, priority, status ,dueDate,assignedMember} = action.payload;
-      const trimmed = text.trim();
-      if (!trimmed) return state;
-      
-      return {
-        ...state,
-        tasks: state.tasks.map((task) =>
-          task.id === id ? { ...task, text: trimmed, description, priority, status ,dueDate,assignedMember} : task
-        )
-      };
-    }
-    case 'DELETE_PROJECT': {
-      const projName = action.payload;
-      const updatedProjects = state.projects.filter((p) => p !== projName);
-      
-      let newActiveProject = state.activeProject;
-      if (state.activeProject === projName) {
-        newActiveProject = updatedProjects.length > 0 ? updatedProjects[0] : '';
-      }
-      
-      return {
-        ...state,
-        projects: updatedProjects,
-        tasks: state.tasks.filter((t) => t.project !== projName),
-        activeProject: newActiveProject
-      };
-
-    }
-   case "ADD_MEMBER": {
-  const { name, role } = action.payload;
-  const trimmedName = name.trim();
-  const memberExists = state.members.some(
-    (member) =>
-      member.project === state.activeProject &&
-      member.name.toLowerCase() === trimmedName.toLowerCase() &&
-      member.role === role
-  );
-  if (memberExists) {
-    alert("This member already exists in the project.");
-    return state;
-  }
-  const newMember = {
-    id: Date.now(),
-    project: state.activeProject,
-    name: trimmedName,
-    role,
-    avatar: trimmedName.charAt(0).toUpperCase()
-  };
-  return {
-    ...state,
-    members: [...(state.members || []), newMember]
-  };
-}
-  case "DELETE_MEMBER": {
-  return {
-    ...state,
-    members: state.members.filter(
-      (member) => member.id !== action.payload
-    )
-  };
-}
-    default:
-      return state;
-  }
-}
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function TaskFlowProvider({ children }) {
-  const savedState = loadState();
-  const initial = savedState 
-    ? {
-        projects: Array.isArray(savedState.projects) ? savedState.projects : initialState.projects,
-        members: Array.isArray(savedState.members) ? savedState.members : initialState.members,
-        tasks: Array.isArray(savedState.tasks) ? savedState.tasks : initialState.tasks,
-        activeProject: typeof savedState.activeProject === 'string' && savedState.projects?.includes(savedState.activeProject)
-          ? savedState.activeProject 
-          : (Array.isArray(savedState.projects) && savedState.projects[0]) || initialState.activeProject
-      }
-    : initialState;
+  const [projects, setProjects] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [activeProject, setActiveProject] = useState('');
 
-  const [state, dispatch] = useReducer(taskReducer, initial);
-  
+  // Fetch initial data from REST API
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    async function initFetch() {
+      try {
+        const [projRes, memRes, taskRes] = await Promise.all([
+          fetch(`${API_URL}/projects`),
+          fetch(`${API_URL}/members`),
+          fetch(`${API_URL}/tasks`)
+        ]);
 
-  const filteredTasks = state.tasks.filter((task) => task.project === state.activeProject);
+        if (projRes.ok && memRes.ok && taskRes.ok) {
+          const projs = await projRes.json();
+          const mems = await memRes.json();
+          const tsks = await taskRes.json();
 
-  const setActiveProject = useCallback((proj) => {
-    dispatch({ type: 'SET_ACTIVE_PROJECT', payload: proj });
-  }, []);
+          setProjects(projs);
+          setMembers(mems);
+          
+          // Map tasks id to number (BIGINT is parsed as string text from Express)
+          const formattedTasks = tsks.map(t => ({
+            ...t,
+            id: Number(t.id)
+          }));
+          setTasks(formattedTasks);
 
-  const handleAddProject = useCallback((name) => {
-    dispatch({ type: 'ADD_PROJECT', payload: name });
-  }, []);
-
-  const handleAddTask = useCallback((text, description, priority, status, dueDate, assignedMember) => {
-    dispatch({ type: 'ADD_TASK', payload: { text, description, priority, status, dueDate, assignedMember } });
-  }, []);
-
-  const handleAddMember = useCallback((name, role) => {
-    dispatch({ type: "ADD_MEMBER", payload: { name, role } });
-  }, []);
-
-  const handleDeleteMember = useCallback((id) => {
-    if (window.confirm("Are you sure you want to remove this member?")) {
-      dispatch({ type: "DELETE_MEMBER", payload: id });
+          if (projs.length > 0) {
+            setActiveProject(projs[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Connection to database API failed, using empty memory state:", err);
+      }
     }
+    initFetch();
   }, []);
 
-  const handleToggleTask = useCallback((id) => {
-    dispatch({ type: 'TOGGLE_TASK', payload: id });
-  }, []);
+  const handleAddProject = useCallback(async (name) => {
+    const trimmed = name.trim();
+    if (!trimmed || projects.includes(trimmed)) return;
 
-  const handleDeleteTask = useCallback((id) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      dispatch({ type: 'DELETE_TASK', payload: id });
+    try {
+      const res = await fetch(`${API_URL}/projects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed })
+      });
+      if (res.ok) {
+        setProjects((prev) => [...prev, trimmed]);
+        setActiveProject(trimmed);
+      }
+    } catch (err) {
+      console.error(err);
     }
-  }, []);
+  }, [projects]);
 
-  const handleEditTask = useCallback((id, text, description, priority, status, dueDate, assignedMember) => {
-    dispatch({ type: 'EDIT_TASK', payload: { id, text, description, priority, status, dueDate, assignedMember } });
-  }, []);
+  const handleDeleteProject = useCallback(async (projName) => {
+    const projectTasks = tasks.filter((t) => t.project === projName);
+    const performDelete = async () => {
+      try {
+        const res = await fetch(`${API_URL}/projects/${encodeURIComponent(projName)}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          setProjects((prev) => prev.filter((p) => p !== projName));
+          setTasks((prev) => prev.filter((t) => t.project !== projName));
+          setMembers((prev) => prev.filter((m) => m.project !== projName));
+          
+          if (activeProject === projName) {
+            setProjects((updatedProjs) => {
+              setActiveProject(updatedProjs.length > 0 ? updatedProjs[0] : '');
+              return updatedProjs;
+            });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  const handleDeleteProject = useCallback((projName) => {
-    const projectTasks = state.tasks.filter((t) => t.project === projName);
     if (projectTasks.length === 0) {
-      dispatch({ type: 'DELETE_PROJECT', payload: projName });
+      await performDelete();
     } else {
       if (window.confirm(`Project "${projName}" has ${projectTasks.length} task(s). Are you sure you want to delete it and all its tasks?`)) {
-        dispatch({ type: 'DELETE_PROJECT', payload: projName });
+        await performDelete();
       }
     }
-  }, [state.tasks]);
+  }, [tasks, activeProject]);
+
+  const handleAddTask = useCallback(async (text, description, priority, status, dueDate, assignedMember) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    const id = Date.now(); // Generate client numeric ID
+
+    try {
+      const res = await fetch(`${API_URL}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          project: activeProject,
+          text: trimmed,
+          description,
+          priority,
+          status,
+          dueDate,
+          assignedMember
+        })
+      });
+
+      if (res.ok) {
+        const newTask = await res.json();
+        setTasks((prev) => [...prev, { ...newTask, id: Number(newTask.id) }]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [activeProject]);
+
+  const handleToggleTask = useCallback(async (id) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+
+    try {
+      const res = await fetch(`${API_URL}/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...task,
+          completed: !task.completed
+        })
+      });
+
+      if (res.ok) {
+        const updatedTask = await res.json();
+        setTasks((prev) => prev.map((t) => t.id === id ? { ...updatedTask, id: Number(updatedTask.id) } : t));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [tasks]);
+
+  const handleEditTask = useCallback(async (id, text, description, priority, status, dueDate, assignedMember) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+
+    try {
+      const res = await fetch(`${API_URL}/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...task,
+          text: text.trim(),
+          description,
+          priority,
+          status,
+          dueDate,
+          assignedMember
+        })
+      });
+
+      if (res.ok) {
+        const updatedTask = await res.json();
+        setTasks((prev) => prev.map((t) => t.id === id ? { ...updatedTask, id: Number(updatedTask.id) } : t));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [tasks]);
+
+  const handleDeleteTask = useCallback(async (id) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/tasks/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
+  const handleAddMember = useCallback(async (name, role) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+
+    const memberExists = members.some(
+      (m) => m.project === activeProject && m.name.toLowerCase() === trimmedName.toLowerCase() && m.role === role
+    );
+    if (memberExists) {
+      alert("This member already exists in the project.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project: activeProject,
+          name: trimmedName,
+          role
+        })
+      });
+
+      if (res.ok) {
+        const newMember = await res.json();
+        setMembers((prev) => [...prev, newMember]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [members, activeProject]);
+
+  const handleDeleteMember = useCallback(async (id) => {
+    if (!window.confirm("Are you sure you want to remove this member?")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/members/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setMembers((prev) => prev.filter((m) => m.id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => task.project === activeProject);
+  }, [tasks, activeProject]);
 
   const value = useMemo(() => ({
-    projects: state.projects,
-    members: state.members,
-    activeProject: state.activeProject,
+    projects,
+    members,
+    activeProject,
     filteredTasks,
     setActiveProject,
     handleAddProject,
@@ -255,9 +262,9 @@ export function TaskFlowProvider({ children }) {
     handleEditTask,
     handleDeleteProject
   }), [
-    state.projects,
-    state.members,
-    state.activeProject,
+    projects,
+    members,
+    activeProject,
     filteredTasks,
     setActiveProject,
     handleAddProject,
