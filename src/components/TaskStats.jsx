@@ -23,53 +23,56 @@ export function TaskStats({ tasks = [] }) {
        ? 0
        : Math.round((completedTasks / totalTasks) * 100);
    
+  const completedPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+  const inprogressPercent = totalTasks === 0 ? 0 : Math.round((inProgressStatus / totalTasks) * 100);
+  const blockerPercent = totalTasks === 0 ? 0 : Math.round((blockerStatus / totalTasks) * 100);
+  const pendingPercent = totalTasks === 0 ? 0 : Math.max(0, 100 - completedPercent - inprogressPercent - blockerPercent);
+
   return (
-    <>
-    <div className="task-stats">
-      <div className="stat-card">
-        <h3>Total Tasks</h3>
-        <p>{totalTasks}</p>
-      </div>
-
-      <div className="stat-card">
-        <h3>Pending</h3>
-        <p>{pendingTasks}</p>
-      </div>
-
-    
-
-      <div className="stat-card">
-        <h3>Completed</h3>
-        <p>{completedTasks}</p>
+    <div className="compact-stats-footer">
+      <div className="footer-stats-row">
+        <div className="footer-stat-items">
+          <span className="footer-stat-chip" title="Total Tasks">
+            <span className="dot dot-total"></span>
+            <strong>{totalTasks}</strong> Total
+          </span>
+          <span className="footer-stat-chip" title="Pending Tasks">
+            <span className="dot dot-pending"></span>
+            <strong>{pendingStatus}</strong> Pending
+          </span>
+          <span className="footer-stat-chip" title="Tasks In Progress">
+            <span className="dot dot-inprogress"></span>
+            <strong>{inProgressStatus}</strong> In Progress
+          </span>
+          <span className="footer-stat-chip" title="Blockers">
+            <span className="dot dot-blocker"></span>
+            <strong>{blockerStatus}</strong> Blocker
+          </span>
+          <span className="footer-stat-chip" title="Completed Tasks">
+            <span className="dot dot-completed"></span>
+            <strong>{completedTasks}</strong> Completed
+          </span>
+        </div>
+        
+        <div className="footer-completion-rate">
+          <span className="rate-label">Project Progress</span>
+          <span className="rate-value">{completionRate}%</span>
+        </div>
       </div>
       
-
-
-<div className="stat-card progress-card">
-  <h3>Completion Rate</h3>
-  <div className="progress-bar">
-    <div
-      className="progress-fill"
-      style={{ width: `${completionRate}%` }}
-    ></div>
-  </div>
-  <p>{completionRate}%</p>
-</div>
-
-
-
+      <div className="footer-segmented-bar">
+        {totalTasks > 0 ? (
+          <>
+            <div className="segment segment-completed" style={{ width: `${completedPercent}%` }} title={`Completed: ${completedPercent}%`}></div>
+            <div className="segment segment-inprogress" style={{ width: `${inprogressPercent}%` }} title={`In Progress: ${inprogressPercent}%`}></div>
+            <div className="segment segment-pending" style={{ width: `${pendingPercent}%` }} title={`Pending: ${pendingPercent}%`}></div>
+            <div className="segment segment-blocker" style={{ width: `${blockerPercent}%` }} title={`Blockers: ${blockerPercent}%`}></div>
+          </>
+        ) : (
+          <div className="segment segment-empty" style={{ width: '100%' }}></div>
+        )}
+      </div>
     </div>
-  <div className="status-summary">
-  <h4>Task Status</h4>
-
-  <div className="status-items">
-    <span>🟠 Pending Not Started: {pendingStatus}</span>
-    <span>🔵 In Progress: {inProgressStatus}</span>
-    <span>🔴 Blocker: {blockerStatus}</span>
-    <span>🔴 Higher priority: {highPriorityTasks}</span>
-  </div>
-</div>
-    </>
   );
 }
 

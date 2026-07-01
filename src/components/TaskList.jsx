@@ -1,5 +1,7 @@
-import React, { useState , useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import TaskStats from './TaskStats';
+import TaskItem from './TaskItem';
+import TaskForm from './TaskForm';
 import { useTasks, useMembers } from "../hooks/useTaskFlow";
 
 export function TaskList() {
@@ -13,244 +15,177 @@ export function TaskList() {
   } = useTasks();
 
   const { members = [] } = useMembers();
-  const [inputText, setInputText] = useState('');
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState('Medium');
-  const [status, setStatus] = useState('Pending');
-  const [dueDate, setDueDate] = useState("");
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [editingId, setEditingId] = useState(null);
-  const [assignedMember, setAssignedMember] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState('All');
+  const [memberFilter, setMemberFilter] = useState('All');
+  const [editingTask, setEditingTask] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!inputText.trim()) {
-      alert("Title is required");
-      return;
-    }
-    if (editingId) {
-      onEditTask(editingId, inputText.trim(), description.trim(), priority, status,dueDate,assignedMember);
-      setEditingId(null);
+  // Reset filters when switching active project
+  useEffect(() => {
+    setSearchTerm('');
+    setDebouncedSearch('');
+    setStatusFilter('All');
+    setPriorityFilter('All');
+    setMemberFilter('All');
+    setEditingTask(null);
+  }, [activeProject]);
+
+  const handleFormSubmit = (text, description, priority, status, dueDate, assignedMember) => {
+    if (editingTask) {
+      onEditTask(editingTask.id, text, description, priority, status, dueDate, assignedMember);
+      setEditingTask(null);
     } else {
-      onAddTask(inputText.trim(), description.trim(), priority, status,dueDate,assignedMember);
+      onAddTask(text, description, priority, status, dueDate, assignedMember);
     }
-    setInputText('');
-    setDescription("");
-    setPriority('Medium');
-    setStatus('Pending');
-    setDueDate("");
-    setAssignedMember("");
   };
 
-  const startEditing = (task) => {
-    setEditingId(task.id);
-    setInputText(task.text);
-    setDescription(task.description || '');
-    setPriority(task.priority || 'Medium');
-    setStatus(task.status || 'Pending');
-    setDueDate(task.dueDate || '');
-    setAssignedMember(task.assignedMember||"");
+  const handleStartEdit = (task) => {
+    setEditingTask(task);
   };
 
   const handleCancelEdit = () => {
-    setEditingId(null);
-    setInputText('');
-    setDescription('');
-    setPriority('Medium');
-    setStatus('Pending');
-    setAssignedMember("");
+    setEditingTask(null);
   };
 
   useEffect(() => {
-
     const timer = setTimeout(() => {
-
-        setDebouncedSearch(searchTerm);
-
+      setDebouncedSearch(searchTerm);
     }, 500);
-
     return () => clearTimeout(timer);
-
   }, [searchTerm]);
-  const searchedTasks = tasks.filter(task =>
-  task.text
-      .toLowerCase()
-      .includes(debouncedSearch.toLowerCase()) &&
-  (statusFilter === "All" || task.status === statusFilter)
-  );
 
-  return (
-  <div className="app-card">
-    <h1>{activeProject}'s Tasks</h1>
-      <div className="search-container">
-        
-        <div className='search-controls'>
-        <input
-          type="text"
-          placeholder={`Search tasks on ${activeProject}`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="task-input"
-        />
-         <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="select-input"
-         >
-          <option value="All">All</option>
-          <option value="Pending">Pending</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Blocker">Blocker</option>
-         </select>
-         </div>
-      </div>
+  const projectMembers = members.filter(member => member.project === activeProject);
 
-      <div className="task-dashboard">
-        <div className="task-list-section">
-          <div className="task-list-container">
-            {tasks.length === 0 ? (
-              <p className="empty-message">Add your first Task!</p>
-            ) : searchedTasks.length === 0 ? (
-              <p className="empty-message">No tasks matching "{searchTerm}"</p>
-            ) : (
-              <ul className="task-list">
-                {searchedTasks.map((task) => (
-                  <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''} ${editingId === task.id ? 'editing' : ''}`}>
-                    <div className="task-content" onDoubleClick={() => startEditing(task)} title="Double click to edit task">
-                      <input 
-                        type="checkbox"
-                        checked={task.completed}
-                        onChange={() => onToggleTask(task.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="task-text">
-                        <div>{task.text}</div>
+  const searchedTasks = tasks.filter(task => {
+    const matchesSearch = task.text.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const matchesStatus = statusFilter === "All" || task.status === statusFilter;
+    const matchesPriority = priorityFilter === "All" || task.priority === priorityFilter;
+    
+    let matchesMember = true;
+    if (memberFilter !== "All") {
+      if (memberFilter === "Unassigned") {
+        matchesMember = !task.assignedMember;
+      } else {
+        matchesMember = task.assignedMember === memberFilter;
+      }
+    }
+    
+    return matchesSearch && matchesStatus && matchesPriority && matchesMember;
+  });
 
-                        {task.description && (
-                          <p className="task-description">
-                            {task.description}
-                          </p>
-                        )}
-                        <div className="task-meta">
-                        <span className="badge priority-badge">
-                          Priority: {task.priority}
-                        </span>
-                      
-                        <span className="badge status-badge">
-                          Status: {task.status}
-                        </span>
-                      </div>
-                      
-                      {task.dueDate && (
-                        <p className="task-due-date">
-                          📅 Due:{" "}
-                          {new Date(task.dueDate).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </p>
-                      )}
-                      
-                      {task.assignedMember && (
-                        <p className="task-member">
-                          👤 Assigned To: <strong>{task.assignedMember}</strong>
-                        </p>
-                      )}
-                      </div>
-                    </div>
-                    <div className="task-actions">
-                      <button 
-                        className={`icon-button ${editingId === task.id ? 'active-edit' : ''}`}
-                        onClick={() => startEditing(task)}
-                        title="Edit task details in form"
-                      >
-                        ✏️
-                      </button>
-                      <button className="icon-button delete-btn" onClick={() => onDeleteTask(task.id)}>🗑️</button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+  if (!activeProject) {
+    return (
+      <div className="dashboard-layout">
+        <div className="app-card task-board-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 20px' }}>
+          <div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚡</div>
+            <h1 style={{ margin: '0 0 10px 0', fontSize: '24px' }}>Welcome to TaskMatrix</h1>
+            <p style={{ margin: 0, fontSize: '15px', color: 'var(--text-muted)', maxWidth: '400px', lineHeight: '1.6' }}>
+              To get started, please add a new project in the sidebar on the left.
+            </p>
           </div>
         </div>
+        
+        <div className="task-form-selection" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px 20px' }}>
+          <div>
+            <div style={{ fontSize: '32px', marginBottom: '12px' }}>📁</div>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '15px' }}>No Active Project</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-light)' }}>
+              Create or select a project in the sidebar to start adding tasks.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-        <div className="task-form-selection">
-          <h3>{editingId ? 'Edit Task' : `Add Task to ${activeProject}`}</h3>
-          <form onSubmit={handleSubmit} className="task-form">
+  return (
+    <div className="dashboard-layout">
+      <div className="app-card task-board-card">
+        <h1>📁 {activeProject}'s Tasks</h1>
+        
+        <div className="search-container">
+          <div className='search-controls'>
             <input
               type="text"
-              placeholder={editingId ? "Edit task title..." : `Add task to ${activeProject}...`}
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              placeholder={`Search tasks on ${activeProject}`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="task-input"
             />
-            <textarea 
-              placeholder="Task Description"
-              className="task-input"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <select 
+            
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="select-input"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
             >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </select>
-            <select 
-              className="select-input"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
+              <option value="All">All Statuses</option>
               <option value="Pending">Pending</option>
               <option value="In Progress">In Progress</option>
               <option value="Blocker">Blocker</option>
             </select>
-            <input
-               type="date"
-               className="task-input"
-               value={dueDate}
-               onChange={(e) => setDueDate(e.target.value)}
-             />
-             <select
+
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
               className="select-input"
-              value={assignedMember}
-              onChange={(e) => setAssignedMember(e.target.value)}
             >
-              <option value="">Assign To</option>
-            
-              {members
-                .filter(member => member.project === activeProject)
-                .map(member => (
-                  <option key={member.id} value={member.name}>
-                    {member.name}
-                  </option>
-                ))
-              }
+              <option value="All">All Priorities</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
             </select>
 
-            <div className="form-actions">
-              <button type="submit" className="add-button">
-                {editingId ? 'Save' : 'Add'}
-              </button>
-              {editingId && (
-                <button type="button" className="cancel-button" onClick={handleCancelEdit}>
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
+            <select
+              value={memberFilter}
+              onChange={(e) => setMemberFilter(e.target.value)}
+              className="select-input"
+            >
+              <option value="All">All Assignees</option>
+              <option value="Unassigned">Unassigned</option>
+              {projectMembers.map(member => (
+                <option key={member.id} value={member.name}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        <div className="task-list-container">
+          {tasks.length === 0 ? (
+            <p className="empty-message">No tasks in this project. Add your first Task!</p>
+          ) : searchedTasks.length === 0 ? (
+            <p className="empty-message">No tasks matching search filters</p>
+          ) : (
+            <ul className="task-list">
+              {searchedTasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onToggleTask={onToggleTask}
+                  onDeleteTask={onDeleteTask}
+                  onStartEdit={handleStartEdit}
+                  isEditing={editingTask && editingTask.id === task.id}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <TaskStats tasks={tasks} />
       </div>
-      
-     <TaskStats tasks={tasks} />
-  </div>
+
+      <TaskForm
+        activeProject={activeProject}
+        members={members}
+        onSubmit={handleFormSubmit}
+        editingTask={editingTask}
+        onCancelEdit={handleCancelEdit}
+      />
+    </div>
   );
 }
 

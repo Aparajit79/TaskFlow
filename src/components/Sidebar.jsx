@@ -12,60 +12,172 @@ export function Sidebar() {
   } = useTasks();
 
   const [newProjectText, setNewProjectText] = useState('');
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem('taskflow_sidebar_collapsed') === 'true';
+  });
+
+  const [isProjectsExpanded, setIsProjectsExpanded] = useState(true);
+  const [showAddProject, setShowAddProject] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('taskflow_sidebar_collapsed', next);
+      return next;
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newProjectText.trim() === '') return;
     onAddProject(newProjectText);
     setNewProjectText('');
+    setShowAddProject(false);
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name.substring(0, 2).toUpperCase();
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
-      <h2>TaskMatrix</h2>
-      <p>Manage your workflow</p>
+        {isCollapsed ? (
+          <div 
+            className="logo-compact" 
+            onClick={toggleSidebar} 
+            title="Expand Sidebar"
+          >
+            ⚡
+          </div>
+        ) : (
+          <div className="sidebar-title-container">
+            <h2>⚡ TaskMatrix</h2>
+            <button 
+              className="sidebar-toggle-btn" 
+              onClick={toggleSidebar} 
+              title="Collapse Sidebar"
+            >
+              ◀
+            </button>
+          </div>
+        )}
+        {!isCollapsed && <p>Manage your workflow</p>}
       </div>
-      <ul className="project-list">
-        {projects.map((proj) => (
-          <li key={proj} className="project-item">
-            <div className="project-item-container">
-              <button
-                className={`project-button ${activeProject === proj ? 'active' : ''}`}
-                onClick={() => setActiveProject(proj)}
+
+      {isCollapsed ? (
+        <>
+          <ul className="project-list">
+            {projects.map((proj) => (
+              <li key={proj} className="project-item" style={{ display: 'flex', justifyContent: 'center' }}>
+                <button
+                  className={`project-avatar-collapsed ${activeProject === proj ? 'active' : ''}`}
+                  onClick={() => setActiveProject(proj)}
+                  title={proj}
+                >
+                  {getInitials(proj)}
+                </button>
+              </li>
+            ))}
+            <li className="project-item" style={{ display: 'flex', justifyContent: 'center' }}>
+              <button 
+                className="add-project-collapsed-btn" 
+                onClick={() => setIsCollapsed(false)} 
+                title="Add Project"
               >
-                {proj}
+                +
               </button>
-              <button
-                className="project-delete-btn"
+            </li>
+          </ul>
+          <MemberManager isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        </>
+      ) : (
+        <div className="sidebar-accordions-container">
+          {/* Projects Accordion Section */}
+          <div className="sidebar-section-card">
+            <div 
+              className="sidebar-section-header" 
+              onClick={() => setIsProjectsExpanded(!isProjectsExpanded)}
+            >
+              <span className="section-title">
+                <span className={`section-chevron ${isProjectsExpanded ? 'expanded' : ''}`}>
+                  ▶
+                </span>
+                📁 Projects
+              </span>
+              <button 
+                className="section-action-btn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDeleteProject(proj);
+                  setShowAddProject(!showAddProject);
+                  if (!isProjectsExpanded) setIsProjectsExpanded(true);
                 }}
-                title="Delete Project"
+                title="Add Project"
               >
-                🗑️
+                +
               </button>
             </div>
-          </li>
-        ))}
-      </ul>
-      <div className="add-project">
-        <form onSubmit={handleSubmit} className="add-project-form">
-          <input
-            type="text"
-            placeholder="New project..."
-            value={newProjectText}
-            onChange={(e) => setNewProjectText(e.target.value)}
-            className="add-project-input"
-          />
-          <button type="submit" className="add-project-button">
-            + Add Project
-          </button>
-        </form>
-      </div>
-      <MemberManager />
-     
+
+            {isProjectsExpanded && (
+              <div className="sidebar-section-content">
+                {showAddProject && (
+                  <div className="inline-add-form-container">
+                    <form onSubmit={handleSubmit} className="inline-add-form">
+                      <input
+                        type="text"
+                        placeholder="Project name..."
+                        value={newProjectText}
+                        onChange={(e) => setNewProjectText(e.target.value)}
+                        className="add-project-input"
+                        autoFocus
+                      />
+                      <div className="inline-add-actions">
+                        <button type="submit" className="inline-add-btn">Add</button>
+                        <button 
+                          type="button" 
+                          className="inline-cancel-btn" 
+                          onClick={() => setShowAddProject(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+                
+                <ul className="project-list">
+                  {projects.map((proj) => (
+                    <li key={proj} className="project-item">
+                      <div className="project-item-container">
+                        <button
+                          className={`project-button ${activeProject === proj ? 'active' : ''}`}
+                          onClick={() => setActiveProject(proj)}
+                        >
+                          📄 {proj}
+                        </button>
+                        <button
+                          className="project-delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteProject(proj);
+                          }}
+                          title="Delete Project"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          
+          {/* Members Accordion Section */}
+          <MemberManager isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        </div>
+      )}
     </aside>
   );
 }
