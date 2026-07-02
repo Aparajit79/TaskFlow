@@ -36,6 +36,18 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
       alert("⚠️ High priority tasks must have a due date!");
       return;
     }
+    if (dueDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const [year, month, day] = dueDate.split('-').map(Number);
+      const selectedDate = new Date(year, month - 1, day);
+      
+      if (selectedDate < today) {
+        alert("⚠️ Due date cannot be in the past!");
+        return;
+      }
+    }
     onSubmit(inputText.trim(), description.trim(), priority, status, dueDate, assignedMember);
     
     if (!editingTask) {
