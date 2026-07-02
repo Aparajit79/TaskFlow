@@ -821,7 +821,6 @@ body {
   align-items: center;
   padding: 16px 20px;
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--border-color);
   border-radius: var(--radius-md);
   background: var(--bg-card);
   box-shadow: var(--shadow-sm);
@@ -853,7 +852,6 @@ body {
 .task-item.editing {
   background: linear-gradient(145deg, #faf5ff, #f3e8ff) !important;
   border-color: #a855f7 !important;
-  border-left: 5px solid #a855f7 !important;
   animation: editPulse 2s infinite ease-in-out;
   transform: translateY(-2px) scale(1.01);
   transition: all 0.3s ease;
@@ -865,13 +863,30 @@ body {
 }
 
 .task-item:has(.priority-badge-high) {
-  border-left-color: var(--danger-text);
+  border-color: rgba(239, 68, 68, 0.15);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.04), var(--shadow-sm);
 }
+.task-item:has(.priority-badge-high):hover {
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.1), var(--shadow-lg) !important;
+}
+
 .task-item:has(.priority-badge-medium) {
-  border-left-color: var(--warning-text);
+  border-color: rgba(249, 115, 22, 0.15);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.04), var(--shadow-sm);
 }
+.task-item:has(.priority-badge-medium):hover {
+  border-color: rgba(249, 115, 22, 0.35) !important;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.1), var(--shadow-lg) !important;
+}
+
 .task-item:has(.priority-badge-low) {
-  border-left-color: var(--success-text);
+  border-color: rgba(16, 185, 129, 0.12);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.03), var(--shadow-sm);
+}
+.task-item:has(.priority-badge-low):hover {
+  border-color: rgba(16, 185, 129, 0.28) !important;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08), var(--shadow-lg) !important;
 }
 
 .task-content {
