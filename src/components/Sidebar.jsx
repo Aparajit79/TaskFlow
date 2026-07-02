@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import MemberManager from "./MemberManager";
-import { useTasks } from "../hooks/useTaskFlow";
+import { useTasks } from "../context/TaskFlowContext";
 
 export function Sidebar() {
   const {

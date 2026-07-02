@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import TaskStats from './TaskStats';
 import TaskItem from './TaskItem';
 import TaskForm from './TaskForm';
-import { useTasks, useMembers } from "../hooks/useTaskFlow";
+import { useTasks, useMembers } from "../context/TaskFlowContext";
 
 export function TaskList() {
   const {

@@ -1,7 +1,7 @@
 import React from 'react';
 import Sidebar from './components/Sidebar';
 import TaskList from './components/TaskList';
-import { TaskFlowProvider } from './hooks/useTaskFlow';
+import { TaskFlowProvider } from './context/TaskFlowContext';
 
 function AppContent() {
   return (
