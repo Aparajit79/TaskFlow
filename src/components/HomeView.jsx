@@ -23,8 +23,8 @@ export function HomeView() {
   return (
     <div className="home-hub-container">
       <div className="hub-header">
-        <h1>⚡ Workspace Projects Hub</h1>
-        <p className="hub-subtitle">Manage, monitor, and configure all team workflows in one central dashboard.</p>
+        <h1>Welcome Back</h1>
+        <p className="hub-subtitle">Your current working projects are:</p>
       </div>
 
       <div className="projects-grid">
@@ -34,6 +34,7 @@ export function HomeView() {
           const completedTasks = projectTasks.filter((t) => t.completed).length;
           const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
           
+          const hasActiveBlocker = projectTasks.some((t) => t.status === 'Blocker' && !t.completed);
           const projectMembers = members.filter((m) => m.project === proj);
 
           return (
@@ -49,17 +50,13 @@ export function HomeView() {
                 </button>
               </div>
 
-              <p className="project-card-desc">
-                Minimalist project space for coordinating tasks, tracking status indicators, and managing team assignees.
-              </p>
-
               <div className="project-card-progress">
                 <div className="progress-labels">
                   <span>Progress</span>
                   <strong>{progressPercent}%</strong>
                 </div>
                 <div className="progress-track-bg">
-                  <div className="progress-fill-bar" style={{ width: `${progressPercent}%` }}></div>
+                  <div className={`progress-fill-bar ${hasActiveBlocker ? 'has-blocker' : ''}`} style={{ width: `${progressPercent}%` }}></div>
                 </div>
               </div>
 
@@ -91,7 +88,7 @@ export function HomeView() {
                   className="open-project-btn"
                   onClick={() => setActiveProject(proj)}
                 >
-                  Open Board →
+                  Open Project
                 </button>
               </div>
             </div>
@@ -101,7 +98,6 @@ export function HomeView() {
         {/* Add Project Card */}
         <div className="project-card add-project-card">
           <h3>➕ New Project</h3>
-          <p className="project-card-desc">Initialize a new team workspace to begin planning tasks and tracking milestones.</p>
           <form onSubmit={handleSubmit} className="hub-add-project-form">
             <input 
               type="text" 

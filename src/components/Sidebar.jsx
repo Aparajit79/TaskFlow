@@ -73,7 +73,7 @@ export function Sidebar() {
           <button 
             className={`project-avatar-collapsed ${activeView === 'Home' ? 'active' : ''}`}
             onClick={() => setActiveView('Home')}
-            title="Home Hub"
+            title="Home"
           >
             🏠
           </button>
@@ -128,7 +128,7 @@ export function Sidebar() {
               className={`nav-link-btn ${activeView === 'Home' ? 'active' : ''}`}
               onClick={() => setActiveView('Home')}
             >
-              <span className="nav-icon">🏠</span> Home Hub
+              <span className="nav-icon">🏠</span> Home
             </button>
           </div>
 

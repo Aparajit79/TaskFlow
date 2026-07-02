@@ -51,6 +51,57 @@ export function DashboardView() {
         <p className="dashboard-subtitle">Global task tracking metrics, status breakdowns, and project assignee stacks.</p>
       </div>
 
+      {/* Full-width Summary Row */}
+      <div className="dashboard-summary-row">
+        <div className="summary-stat-card">
+          <span className="stat-icon">📁</span>
+          <div className="stat-info">
+            <h3>Projects</h3>
+            <p>{projects.length}</p>
+          </div>
+        </div>
+
+        <div className="summary-stat-card">
+          <span className="stat-icon">👥</span>
+          <div className="stat-info">
+            <h3>Members</h3>
+            <p>{members.length}</p>
+          </div>
+        </div>
+
+        <div className="summary-stat-card">
+          <span className="stat-icon">📋</span>
+          <div className="stat-info">
+            <h3>Total Tasks</h3>
+            <p>{totalTasks}</p>
+          </div>
+        </div>
+
+        <div className="summary-stat-card border-success">
+          <span className="stat-icon text-success">✔️</span>
+          <div className="stat-info">
+            <h3>Completed</h3>
+            <p>{completedTasks}</p>
+          </div>
+        </div>
+
+        <div className="summary-stat-card border-inprogress">
+          <span className="stat-icon text-inprogress">⚡</span>
+          <div className="stat-info">
+            <h3>In Progress</h3>
+            <p>{inprogressTasks}</p>
+          </div>
+        </div>
+
+        <div className="summary-stat-card border-blocker">
+          <span className="stat-icon text-blocker">🛑</span>
+          <div className="stat-info">
+            <h3>Blockers</h3>
+            <p>{blockerTasks}</p>
+          </div>
+        </div>
+      </div>
+
       <div className="dashboard-metrics-row">
         {/* SVG Donut Chart Card */}
         <div className="app-card chart-card">
@@ -207,6 +258,7 @@ export function DashboardView() {
             const completedProjTasks = projectTasks.filter((t) => t.completed).length;
             const progressPercent = totalProjTasks > 0 ? Math.round((completedProjTasks / totalProjTasks) * 100) : 0;
             
+            const hasActiveBlocker = projectTasks.some((t) => t.status === 'Blocker' && !t.completed);
             const projectMembers = members.filter((m) => m.project === proj);
 
             return (
@@ -222,7 +274,7 @@ export function DashboardView() {
                     <strong>{progressPercent}%</strong>
                   </div>
                   <div className="progress-track-bg">
-                    <div className="progress-fill-bar" style={{ width: `${progressPercent}%` }}></div>
+                    <div className={`progress-fill-bar ${hasActiveBlocker ? 'has-blocker' : ''}`} style={{ width: `${progressPercent}%` }}></div>
                   </div>
                 </div>
 
