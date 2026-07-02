@@ -10,6 +10,12 @@ export function TaskFlowProvider({ children }) {
   const [members, setMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [activeProject, setActiveProject] = useState('');
+  const [activeView, setActiveView] = useState('Home');
+
+  const handleSetActiveProject = useCallback((proj) => {
+    setActiveProject(proj);
+    setActiveView('Project');
+  }, []);
 
   useEffect(() => {
     async function initFetch() {
@@ -248,9 +254,12 @@ export function TaskFlowProvider({ children }) {
   const value = useMemo(() => ({
     projects,
     members,
+    tasks,
     activeProject,
     filteredTasks,
-    setActiveProject,
+    setActiveProject: handleSetActiveProject,
+    activeView,
+    setActiveView,
     handleAddProject,
     handleAddTask,
     handleAddMember,
@@ -262,9 +271,12 @@ export function TaskFlowProvider({ children }) {
   }), [
     projects,
     members,
+    tasks,
     activeProject,
     filteredTasks,
-    setActiveProject,
+    handleSetActiveProject,
+    activeView,
+    setActiveView,
     handleAddProject,
     handleAddTask,
     handleAddMember,
@@ -291,6 +303,8 @@ export function useTasks() {
     projects: context.projects,
     activeProject: context.activeProject,
     setActiveProject: context.setActiveProject,
+    activeView: context.activeView,
+    setActiveView: context.setActiveView,
     filteredTasks: context.filteredTasks,
     handleAddTask: context.handleAddTask,
     handleToggleTask: context.handleToggleTask,
