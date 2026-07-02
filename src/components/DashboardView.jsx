@@ -13,9 +13,9 @@ export function DashboardView() {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((t) => t.completed).length;
   const incompleteTasks = totalTasks - completedTasks;
-  const inprogressTasks = tasks.filter((t) => t.status === 'In Progress').length;
-  const pendingTasks = tasks.filter((t) => t.status === 'Pending').length;
-  const blockerTasks = tasks.filter((t) => t.status === 'Blocker').length;
+  const inprogressTasks = tasks.filter((t) => t.status === 'In Progress' && !t.completed).length;
+  const pendingTasks = tasks.filter((t) => t.status === 'Pending' && !t.completed).length;
+  const blockerTasks = tasks.filter((t) => t.status === 'Blocker' && !t.completed).length;
 
   // 2. SVG Donut chart math
   const radius = 50;

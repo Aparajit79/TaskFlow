@@ -7,15 +7,15 @@ export function TaskStats({ tasks = [] }) {
   const highPriorityTasks = tasks.filter(task => task.priority === 'High').length;
 
    const blockerStatus = tasks.filter(   
-     task => task.status === "Blocker"
+     task => task.status === "Blocker" && !task.completed
    ).length;
 
   const pendingStatus = tasks.filter(
-    task => task.status === "Pending"
+    task => task.status === "Pending" && !task.completed
    ).length;
 
   const inProgressStatus = tasks.filter(
-   task => task.status === "In Progress"
+   task => task.status === "In Progress" && !task.completed
   ).length;
 
    const completionRate =
