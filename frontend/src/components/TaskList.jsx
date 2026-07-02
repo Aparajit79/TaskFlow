@@ -54,6 +54,25 @@ export function TaskList() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const getTomorrowString = () => {
+    const tom = new Date();
+    tom.setDate(tom.getDate() + 1);
+    const yyyy = tom.getFullYear();
+    const mm = String(tom.getMonth() + 1).padStart(2, '0');
+    const dd = String(tom.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const tomorrowStr = getTomorrowString();
+  const tasksDueTomorrow = tasks.filter(t => t.dueDate === tomorrowStr && !t.completed);
+
+  useEffect(() => {
+    if (activeProject && tasksDueTomorrow.length > 0) {
+      const taskNames = tasksDueTomorrow.map(t => `"${t.text}"`).join(", ");
+      alert(`⚠️ Attention: The following task(s) in this project are due tomorrow: ${taskNames}`);
+    }
+  }, [activeProject]);
+
   const projectMembers = members.filter(member => member.project === activeProject);
 
   const searchedTasks = tasks.filter(task => {
@@ -103,6 +122,20 @@ export function TaskList() {
     <div className="dashboard-layout">
       <div className="app-card task-board-card">
         <h1>📁 {activeProject}'s Tasks</h1>
+
+        {tasksDueTomorrow.length > 0 && (
+          <div className="due-warning-banner">
+            <span className="warning-icon">⚠️</span>
+            <div className="warning-content">
+              <strong>Due Tomorrow:</strong> You have {tasksDueTomorrow.length} task(s) due tomorrow!
+              <ul className="due-tasks-mini-list">
+                {tasksDueTomorrow.map(t => (
+                  <li key={t.id}>“{t.text}”</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
         
         <div className="search-container">
           <div className='search-controls'>

@@ -2107,3 +2107,50 @@ body.dark-theme .project-avatar-collapsed:hover {
   margin: 2px 0 0 0;
   line-height: 1;
 }
+
+/* Due Tomorrow Warning Banner styling */
+.due-warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background-color: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  color: var(--warning-text);
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  margin-top: 16px;
+  margin-bottom: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+body.dark-theme .due-warning-banner {
+  background-color: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.25);
+  color: #fb923c;
+}
+
+.warning-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.warning-content strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.due-tasks-mini-list {
+  margin: 4px 0 0 0;
+  padding-left: 20px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style-type: disc;
+}

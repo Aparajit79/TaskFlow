@@ -32,6 +32,10 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
       alert("Title is required");
       return;
     }
+    if (priority === 'High' && !dueDate) {
+      alert("⚠️ High priority tasks must have a due date!");
+      return;
+    }
     onSubmit(inputText.trim(), description.trim(), priority, status, dueDate, assignedMember);
     
     if (!editingTask) {
