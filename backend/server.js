@@ -60,7 +60,7 @@ app.delete('/api/projects/:name', async (req, res) => {
   const { name } = req.params;
 
   try {
-    await pool.query('DELETE FROM projects WHERE name = $1', [name]);
+    await pool.query('DELETE FROM projects WHERE name = $1', [name.trim()]);
     res.json({ message: `Project "${name}" and its tasks deleted successfully` });
   } catch (err) {
     console.error(err);
@@ -89,7 +89,7 @@ app.post('/api/members', async (req, res) => {
   try {
     const result = await pool.query(
       'INSERT INTO members (project, name, role, avatar) VALUES ($1, $2, $3, $4) RETURNING *',
-      [project, name.trim(), role, avatar]
+      [project.trim(), name.trim(), role, avatar]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -146,7 +146,7 @@ app.post('/api/tasks', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO tasks (id, project, text, description, priority, status, due_date, assigned_member, completed) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, FALSE) RETURNING id::text, project, text, description, priority, status, to_char(due_date, 'YYYY-MM-DD') AS "dueDate", assigned_member AS "assignedMember", completed`,
-      [id, project, text.trim(), description, priority || 'Medium', status || 'Pending', formattedDueDate, assignedMember || '']
+      [id, project.trim(), text.trim(), description, priority || 'Medium', status || 'Pending', formattedDueDate, assignedMember || '']
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
