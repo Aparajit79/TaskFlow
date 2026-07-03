@@ -1,11 +1,15 @@
 {
   "name": "taskflow-root",
   "version": "1.0.0",
+  "type": "module",
   "description": "TaskMatrix Root Scripts",
   "scripts": {
     "dev": "npm run dev --prefix frontend",
     "build": "npm run build --prefix frontend",
     "server": "npm run dev --prefix backend",
-    "server:start": "npm start --prefix backend"
+    "server:start": "npm start --prefix backend",
+    "test": "node tests/taskValidator.test.js",
+    "test:api": "node tests/api.test.js",
+    "test:all": "node tests/taskValidator.test.js && node tests/api.test.js"
   }
 }
