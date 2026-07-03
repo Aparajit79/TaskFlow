@@ -9,13 +9,10 @@ import { TaskFlowProvider, useTaskFlow } from './context/TaskFlowContext';
 function AppContent() {
   const { activeView, tasks = [] } = useTaskFlow();
 
-  // Apply dark theme on initial mount
   useEffect(() => {
     const isDark = localStorage.getItem('taskflow_dark_theme') === 'true';
     document.body.classList.toggle('dark-theme', isDark);
   }, []);
-
-  // Alert if any tasks are due tomorrow across all projects
   useEffect(() => {
     if (tasks.length > 0) {
       const tom = new Date();

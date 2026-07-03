@@ -95,7 +95,6 @@ export function HomeView() {
           );
         })}
 
-        {/* Add Project Card */}
         <div className="project-card add-project-card">
           <h3>➕ New Project</h3>
           <form onSubmit={handleSubmit} className="hub-add-project-form">

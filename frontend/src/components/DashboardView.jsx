@@ -9,7 +9,6 @@ export function DashboardView() {
     setActiveProject 
   } = useTaskFlow();
 
-  // 1. Calculate overall stats
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((t) => t.completed).length;
   const incompleteTasks = totalTasks - completedTasks;
@@ -17,11 +16,9 @@ export function DashboardView() {
   const pendingTasks = tasks.filter((t) => t.status === 'Pending' && !t.completed).length;
   const blockerTasks = tasks.filter((t) => t.status === 'Blocker' && !t.completed).length;
 
-  // 2. SVG Donut chart math
-  const radius = 50;
-  const circumference = 2 * Math.PI * radius; // ~314.16
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
 
-  // Portions in circumference units
   const getPortion = (count) => {
     if (totalTasks === 0) return 0;
     return (count / totalTasks) * circumference;
@@ -32,13 +29,11 @@ export function DashboardView() {
   const lenPending = getPortion(pendingTasks);
   const lenBlocker = getPortion(blockerTasks);
 
-  // Offset accumulators
   const offsetCompleted = 0;
   const offsetInProgress = -lenCompleted;
   const offsetPending = -(lenCompleted + lenInProgress);
   const offsetBlocker = -(lenCompleted + lenInProgress + lenPending);
 
-  // Percentages for labels
   const getPercent = (count) => {
     if (totalTasks === 0) return 0;
     return Math.round((count / totalTasks) * 100);
@@ -51,7 +46,6 @@ export function DashboardView() {
         <p className="dashboard-subtitle">Global task tracking metrics, status breakdowns, and project assignee stacks.</p>
       </div>
 
-      {/* Full-width Summary Row */}
       <div className="dashboard-summary-row">
         <div className="summary-stat-card">
           <span className="stat-icon">📁</span>
@@ -103,14 +97,12 @@ export function DashboardView() {
       </div>
 
       <div className="dashboard-metrics-row">
-        {/* SVG Donut Chart Card */}
         <div className="app-card chart-card">
           <h3>Task Status Distribution</h3>
           
           <div className="chart-wrapper">
             <div className="svg-container">
               <svg width="220" height="220" viewBox="0 0 140 140">
-                {/* Background Ring */}
                 <circle 
                   cx="70" 
                   cy="70" 
@@ -132,7 +124,6 @@ export function DashboardView() {
                   />
                 ) : (
                   <>
-                    {/* Completed Ring */}
                     {completedTasks > 0 && (
                       <circle 
                         cx="70" 
@@ -147,7 +138,6 @@ export function DashboardView() {
                         className="donut-segment"
                       />
                     )}
-                    {/* In Progress Ring */}
                     {inprogressTasks > 0 && (
                       <circle 
                         cx="70" 
@@ -162,7 +152,6 @@ export function DashboardView() {
                         className="donut-segment"
                       />
                     )}
-                    {/* Pending Ring */}
                     {pendingTasks > 0 && (
                       <circle 
                         cx="70" 
@@ -177,7 +166,6 @@ export function DashboardView() {
                         className="donut-segment"
                       />
                     )}
-                    {/* Blocker Ring */}
                     {blockerTasks > 0 && (
                       <circle 
                         cx="70" 
@@ -226,7 +214,6 @@ export function DashboardView() {
           </div>
         </div>
 
-        {/* Numeric Stat Summary Cards */}
         <div className="stats-cards-vertical">
           <div className="app-card metric-square">
             <h3>Completed Tasks</h3>
@@ -248,7 +235,6 @@ export function DashboardView() {
         </div>
       </div>
 
-      {/* Projects Overview List Section */}
       <div className="dashboard-projects-section">
         <h2>📁 Projects Status Overview</h2>
         <div className="projects-grid">

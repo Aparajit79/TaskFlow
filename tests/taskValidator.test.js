@@ -1,12 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
 
-/**
- * Pure function representing the Task validation business logic:
- * 1. Title must not be empty.
- * 2. High priority tasks must have a due date.
- * 3. Due dates cannot be set in the past.
- */
 function validateTask(text, priority, dueDate) {
   if (!text || !text.trim()) {
     return { valid: false, error: 'Title is required' };
@@ -28,7 +22,6 @@ function validateTask(text, priority, dueDate) {
   return { valid: true };
 }
 
-// ==================== UNIT TESTS ====================
 
 test('Task Validation - Empty Title fails validation', () => {
   const res = validateTask('   ', 'Medium', '');

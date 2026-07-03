@@ -1466,9 +1466,7 @@ body {
   margin-top: 10px;
 }
 
-/* ==========================================================================
-   DARK THEME OVERRIDES & MULTI-VIEW CSS
-   ========================================================================== */
+/* dd */
 
 body.dark-theme {
   --bg-app: #0b0f19;
@@ -1571,7 +1569,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   font-size: 17px;
 }
 
-/* Collapsed navigation elements */
 .collapsed-sidebar-items {
   display: flex;
   flex-direction: column;
@@ -1588,7 +1585,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   margin: 6px 0;
 }
 
-/* Projects Hub (HomeView) CSS */
 .home-hub-container,
 .dashboard-view-container,
 .settings-container {
@@ -1736,7 +1732,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   border-color: var(--primary);
 }
 
-/* Overlapping Team Member Avatar Stack */
 .overlapping-avatars {
   display: flex;
   align-items: center;
@@ -1783,7 +1778,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   font-style: italic;
 }
 
-/* Add project quick creation card in Home */
 .add-project-card {
   border-style: dashed;
   border-width: 2px;
@@ -1813,7 +1807,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   background-color: var(--primary-hover);
 }
 
-/* Dashboard Analytics CSS */
 .dashboard-metrics-row {
   display: flex;
   gap: 24px;
@@ -1858,7 +1851,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   color: var(--text-light);
 }
 
-/* SVG Donut Chart segment animations */
 .chart-wrapper {
   display: flex;
   align-items: center;
@@ -1987,7 +1979,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   border-color: var(--primary);
 }
 
-/* Settings View CSS */
 .settings-card {
   max-width: 580px;
   padding: 24px;
@@ -2036,7 +2027,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Full-width Dashboard Summary Row styling */
 .dashboard-summary-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -2108,7 +2098,6 @@ body.dark-theme .project-avatar-collapsed:hover {
   line-height: 1;
 }
 
-/* Due Tomorrow Warning Banner styling */
 .due-warning-banner {
   display: flex;
   align-items: flex-start;
