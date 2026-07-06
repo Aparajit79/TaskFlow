@@ -91,7 +91,7 @@ app.post('/api/members', async (req, res) => {
       'INSERT INTO members (project, name, role, avatar) VALUES ($1, $2, $3, $4) RETURNING *',
       [project.trim(), name.trim(), role, avatar]
     );
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({ message: 'Team member added successfully', data: result.rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error adding team member' });

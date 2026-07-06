@@ -15,7 +15,7 @@ export function SettingsView() {
   return (
     <div className="settings-container">
       <div className="settings-header">
-        <h1>⚙️ Application Settings</h1>
+        <h1>Application Settings</h1>
         <p className="settings-subtitle">Customize your workspace experience and UI preferences.</p>
       </div>
 

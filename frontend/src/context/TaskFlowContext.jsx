@@ -224,7 +224,8 @@ export function TaskFlowProvider({ children }) {
       });
 
       if (res.ok) {
-        const newMember = await res.json();
+        const body = await res.json();
+        const newMember = body.data ?? body;
         setMembers((prev) => [...prev, newMember]);
       }
     } catch (err) {

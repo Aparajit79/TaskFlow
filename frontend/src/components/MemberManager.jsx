@@ -1,52 +1,58 @@
 import { useState } from "react";
+import { Users, Plus, Trash2, ClipboardList } from 'lucide-react';
 import { useTasks, useMembers } from "../context/TaskFlowContext";
 
-function MemberManager({ isCollapsed, setIsCollapsed }) { 
+function MemberManager({ isCollapsed, setIsCollapsed }) {
   const {
     members = [],
     activeProject = '',
     handleAddMember: onAddMember,
     handleDeleteMember: onDeleteMember
-  } = useMembers(); 
+  } = useMembers();
 
   const [memberName, setMemberName] = useState("");
   const [memberRole, setMemberRole] = useState("Frontend Developer");
-  
+  const [nameError, setNameError] = useState("");
   const [isExpanded, setIsExpanded] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
 
-  const currentProjectMembers = members.filter(
-    (member) => member.project === activeProject
-  );
-  
+  const currentProjectMembers = members.filter(m => m.project === activeProject);
   const totalMembers = currentProjectMembers.length;
   const { filteredTasks } = useTasks();
   const totalTasks = filteredTasks.length;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!memberName.trim()) {
-      alert("Member name is required");
-      return;
-    }
+    if (!memberName.trim()) { setNameError("Member name is required"); return; }
+    setNameError("");
     onAddMember(memberName.trim(), memberRole);
     setMemberName("");
     setMemberRole("Frontend Developer");
     setShowAddMember(false);
   };
 
-  if (!activeProject) {
-    return null;
-  }
+  const handleNameChange = (e) => {
+    setMemberName(e.target.value);
+    if (nameError) setNameError("");
+  };
+
+  const handleCancel = () => {
+    setShowAddMember(false);
+    setMemberName("");
+    setMemberRole("Frontend Developer");
+    setNameError("");
+  };
+
+  if (!activeProject) return null;
 
   if (isCollapsed) {
     return (
       <div className="collapsed-members-container">
         <div className="avatar-stack">
           {currentProjectMembers.map((member) => (
-            <div 
-              key={member.id} 
-              className="avatar-stack-item member-avatar" 
+            <div
+              key={member.id}
+              className="avatar-stack-item member-avatar"
               title={`${member.name} (${member.role})`}
               onClick={() => setIsCollapsed(false)}
             >
@@ -54,12 +60,8 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
             </div>
           ))}
         </div>
-        <button 
-          className="collapsed-add-member-btn" 
-          onClick={() => setIsCollapsed(false)} 
-          title="Add Member"
-        >
-          +
+        <button className="collapsed-add-member-btn" onClick={() => setIsCollapsed(false)} title="Add Member">
+          <Plus size={14} strokeWidth={2} />
         </button>
       </div>
     );
@@ -67,26 +69,17 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
 
   return (
     <div className="sidebar-section-card">
-      <div 
-        className="sidebar-section-header" 
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
+      <div className="sidebar-section-header" onClick={() => setIsExpanded(!isExpanded)}>
         <span className="section-title">
-          <span className={`section-chevron ${isExpanded ? 'expanded' : ''}`}>
-            ▶
-          </span>
-          👥 Team Members
+          <span className={`section-chevron ${isExpanded ? 'expanded' : ''}`}>▶</span>
+          Team Members
         </span>
-        <button 
+        <button
           className="section-action-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowAddMember(!showAddMember);
-            if (!isExpanded) setIsExpanded(true);
-          }}
+          onClick={(e) => { e.stopPropagation(); setShowAddMember(!showAddMember); if (!isExpanded) setIsExpanded(true); }}
           title="Add Member"
         >
-          +
+          <Plus size={13} strokeWidth={2} />
         </button>
       </div>
 
@@ -97,13 +90,13 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
               <form className="inline-add-form" onSubmit={handleSubmit}>
                 <input
                   type="text"
-                  placeholder="Member Name..."
-                  className="add-project-input"
+                  placeholder="Member name..."
+                  className={`add-project-input ${nameError ? 'input-error' : ''}`}
                   value={memberName}
-                  onChange={(e) => setMemberName(e.target.value)}
+                  onChange={handleNameChange}
                   autoFocus
                 />
-                
+                {nameError && <p className="inline-field-error">{nameError}</p>}
                 <select
                   className="select-input inline-member-select"
                   value={memberRole}
@@ -117,16 +110,9 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
                   <option>Project Manager</option>
                   <option>DevOps Engineer</option>
                 </select>
-
                 <div className="inline-add-actions">
                   <button type="submit" className="inline-add-btn">Add</button>
-                  <button 
-                    type="button" 
-                    className="inline-cancel-btn" 
-                    onClick={() => setShowAddMember(false)}
-                  >
-                    Cancel
-                  </button>
+                  <button type="button" className="inline-cancel-btn" onClick={handleCancel}>Cancel</button>
                 </div>
               </form>
             </div>
@@ -134,27 +120,17 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
 
           <div className="member-list">
             {currentProjectMembers.length === 0 ? (
-              <p className="empty-section-message">
-                No members assigned
-              </p>
+              <p className="empty-section-message">No members assigned</p>
             ) : (
-              currentProjectMembers.map(member => (
+              currentProjectMembers.map((member) => (
                 <div className="member-card" key={member.id}>
-                  <div className="member-avatar">
-                    {member.avatar}
-                  </div>
-       
+                  <div className="member-avatar">{member.avatar}</div>
                   <div className="member-info">
                     <strong>{member.name}</strong>
                     <small>{member.role}</small>
                   </div>
-                  
-                  <button
-                    className="member-delete-btn"
-                    onClick={() => onDeleteMember(member.id)}
-                    title="Remove Member"
-                  >  
-                    🗑️
+                  <button className="member-delete-btn" onClick={() => onDeleteMember(member.id)} title="Remove Member">
+                    <Trash2 size={12} strokeWidth={1.75} />
                   </button>
                 </div>
               ))
@@ -163,13 +139,12 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
 
           <div className="member-summary">
             <div className="summary-chip">
-              <span>👥</span>
+              <Users size={11} strokeWidth={1.75} />
               <span>{totalMembers}</span>
               <small>Members</small>
             </div>
-
             <div className="summary-chip">
-              <span>📋</span>
+              <ClipboardList size={11} strokeWidth={1.75} />
               <span>{totalTasks}</span>
               <small>Tasks</small>
             </div>

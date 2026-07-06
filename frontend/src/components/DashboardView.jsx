@@ -1,302 +1,229 @@
 import React from 'react';
+import {
+  FolderOpen, Users, ClipboardList, CircleCheck,
+  Zap, CircleAlert, Clock, ArrowRight, TrendingUp
+} from 'lucide-react';
 import { useTaskFlow } from '../context/TaskFlowContext';
 
-export function DashboardView() {
-  const { 
-    projects = [], 
-    members = [], 
-    tasks = [], 
-    setActiveProject 
-  } = useTaskFlow();
-
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.completed).length;
-  const incompleteTasks = totalTasks - completedTasks;
-  const inprogressTasks = tasks.filter((t) => t.status === 'In Progress' && !t.completed).length;
-  const pendingTasks = tasks.filter((t) => t.status === 'Pending' && !t.completed).length;
-  const blockerTasks = tasks.filter((t) => t.status === 'Blocker' && !t.completed).length;
-
-  const radius = 52;
+function DonutChart({ segments, total }) {
+  const radius = 54;
+  const stroke = 12;
   const circumference = 2 * Math.PI * radius;
+  const gap = total > 0 ? 2 : 0; 
 
-  const getPortion = (count) => {
-    if (totalTasks === 0) return 0;
-    return (count / totalTasks) * circumference;
-  };
+  let offset = 0;
+  const arcs = segments
+    .filter(s => s.value > 0)
+    .map((s) => {
+      const len = (s.value / total) * (circumference - gap * segments.filter(x => x.value > 0).length);
+      const arc = { ...s, len, offset: -offset };
+      offset += len + gap;
+      return arc;
+    });
 
-  const lenCompleted = getPortion(completedTasks);
-  const lenInProgress = getPortion(inprogressTasks);
-  const lenPending = getPortion(pendingTasks);
-  const lenBlocker = getPortion(blockerTasks);
+  return (
+    <div className="donut-wrapper">
+      <svg viewBox="0 0 140 140" className="donut-svg">
+        <circle cx="70" cy="70" r={radius} fill="none" stroke="var(--border-color)" strokeWidth={stroke} />
+        {total === 0 ? (
+          <circle cx="70" cy="70" r={radius} fill="none" stroke="var(--border-color)" strokeWidth={stroke} />
+        ) : arcs.map((arc, i) => (
+          <circle
+            key={i}
+            cx="70" cy="70" r={radius}
+            fill="none"
+            stroke={arc.color}
+            strokeWidth={stroke}
+            strokeDasharray={`${arc.len} ${circumference}`}
+            strokeDashoffset={arc.offset}
+            strokeLinecap="butt"
+            style={{ transition: 'stroke-dasharray 0.5s ease' }}
+          />
+        ))}
+      </svg>
+      <div className="donut-center">
+        <span className="donut-total">{total}</span>
+        <span className="donut-label">tasks</span>
+      </div>
+    </div>
+  );
+}
 
-  const offsetCompleted = 0;
-  const offsetInProgress = -lenCompleted;
-  const offsetPending = -(lenCompleted + lenInProgress);
-  const offsetBlocker = -(lenCompleted + lenInProgress + lenPending);
+function PriorityBar({ tasks }) {
+  const total = tasks.length;
+  const high   = tasks.filter(t => t.priority === 'High' && !t.completed).length;
+  const medium = tasks.filter(t => t.priority === 'Medium' && !t.completed).length;
+  const low    = tasks.filter(t => t.priority === 'Low' && !t.completed).length;
 
-  const getPercent = (count) => {
-    if (totalTasks === 0) return 0;
-    return Math.round((count / totalTasks) * 100);
-  };
+  const pct = (n) => total === 0 ? 0 : Math.round((n / total) * 100);
+
+  const bars = [
+    { label: 'High',   value: high,   pct: pct(high),   color: 'var(--danger-text)' },
+    { label: 'Medium', value: medium, pct: pct(medium), color: 'var(--warning-text)' },
+    { label: 'Low',    value: low,    pct: pct(low),    color: 'var(--success-text)' },
+  ];
+
+  return (
+    <div className="priority-bar-card">
+      <p className="chart-section-label">Open Tasks by Priority</p>
+      <div className="priority-bars">
+        {bars.map(b => (
+          <div key={b.label} className="priority-bar-row">
+            <span className="priority-bar-label">{b.label}</span>
+            <div className="priority-bar-track">
+              <div
+                className="priority-bar-fill"
+                style={{ width: `${b.pct}%`, background: b.color }}
+              />
+            </div>
+            <span className="priority-bar-count">{b.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function DashboardView() {
+  const { projects = [], members = [], tasks = [], setActiveProject } = useTaskFlow();
+
+  const total      = tasks.length;
+  const completed  = tasks.filter(t => t.completed).length;
+  const inprogress = tasks.filter(t => t.status === 'In Progress' && !t.completed).length;
+  const pending    = tasks.filter(t => t.status === 'Pending' && !t.completed).length;
+  const blockers   = tasks.filter(t => t.status === 'Blocker' && !t.completed).length;
+  const completionRate = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+  const donutSegments = [
+    { label: 'Completed',   value: completed,  color: 'var(--success-text)' },
+    { label: 'In Progress', value: inprogress, color: 'var(--inprogress-text)' },
+    { label: 'Pending',     value: pending,    color: 'var(--pending-text)' },
+    { label: 'Blocker',     value: blockers,   color: 'var(--blocker-text)' },
+  ];
+
+
+  const kpis = [
+    { icon: <FolderOpen size={18} strokeWidth={1.75} />, label: 'Projects',    value: projects.length, accent: 'var(--primary)' },
+    { icon: <Users      size={18} strokeWidth={1.75} />, label: 'Members',     value: members.length,  accent: 'var(--inprogress-text)' },
+    { icon: <ClipboardList size={18} strokeWidth={1.75} />, label: 'Total Tasks', value: total,        accent: 'var(--text-muted)' },
+    { icon: <CircleCheck size={18} strokeWidth={1.75} />, label: 'Completed',  value: completed,       accent: 'var(--success-text)' },
+    { icon: <Zap         size={18} strokeWidth={1.75} />, label: 'In Progress',value: inprogress,      accent: 'var(--warning-text)' },
+    { icon: <CircleAlert size={18} strokeWidth={1.75} />, label: 'Blockers',   value: blockers,        accent: 'var(--blocker-text)' },
+  ];
 
   return (
     <div className="dashboard-view-container">
       <div className="dashboard-header">
-        <h1>📊 Dashboard Overview</h1>
-        <p className="dashboard-subtitle">Global task tracking metrics, status breakdowns, and project assignee stacks.</p>
+        <h1>Dashboard</h1>
+        <p className="dashboard-subtitle">Workspace overview — tasks, projects, and team activity at a glance.</p>
       </div>
 
-      <div className="dashboard-summary-row">
-        <div className="summary-stat-card">
-          <span className="stat-icon">📁</span>
-          <div className="stat-info">
-            <h3>Projects</h3>
-            <p>{projects.length}</p>
-          </div>
-        </div>
 
-        <div className="summary-stat-card">
-          <span className="stat-icon">👥</span>
-          <div className="stat-info">
-            <h3>Members</h3>
-            <p>{members.length}</p>
-          </div>
-        </div>
-
-        <div className="summary-stat-card">
-          <span className="stat-icon">📋</span>
-          <div className="stat-info">
-            <h3>Total Tasks</h3>
-            <p>{totalTasks}</p>
-          </div>
-        </div>
-
-        <div className="summary-stat-card border-success">
-          <span className="stat-icon text-success">✔️</span>
-          <div className="stat-info">
-            <h3>Completed</h3>
-            <p>{completedTasks}</p>
-          </div>
-        </div>
-
-        <div className="summary-stat-card border-inprogress">
-          <span className="stat-icon text-inprogress">⚡</span>
-          <div className="stat-info">
-            <h3>In Progress</h3>
-            <p>{inprogressTasks}</p>
-          </div>
-        </div>
-
-        <div className="summary-stat-card border-blocker">
-          <span className="stat-icon text-blocker">🛑</span>
-          <div className="stat-info">
-            <h3>Blockers</h3>
-            <p>{blockerTasks}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="dashboard-metrics-row">
-        <div className="app-card chart-card">
-          <h3>Task Status Distribution</h3>
-          
-          <div className="chart-wrapper">
-            <div className="svg-container">
-              <svg width="220" height="220" viewBox="0 0 140 140">
-                <circle 
-                  cx="70" 
-                  cy="70" 
-                  r={radius} 
-                  fill="transparent" 
-                  stroke="var(--border-color)" 
-                  strokeWidth="14" 
-                />
-                {totalTasks === 0 ? (
-                  <circle 
-                    cx="70" 
-                    cy="70" 
-                    r={radius} 
-                    fill="transparent" 
-                    stroke="var(--secondary)" 
-                    strokeWidth="14" 
-                    strokeDasharray={`${circumference} ${circumference}`}
-                    strokeDashoffset="0"
-                  />
-                ) : (
-                  <>
-                    {completedTasks > 0 && (
-                      <circle 
-                        cx="70" 
-                        cy="70" 
-                        r={radius} 
-                        fill="transparent" 
-                        stroke="var(--success-text)" 
-                        strokeWidth="14" 
-                        strokeDasharray={`${lenCompleted} ${circumference}`}
-                        strokeDashoffset={offsetCompleted}
-                        strokeLinecap="round"
-                        className="donut-segment"
-                      />
-                    )}
-                    {inprogressTasks > 0 && (
-                      <circle 
-                        cx="70" 
-                        cy="70" 
-                        r={radius} 
-                        fill="transparent" 
-                        stroke="var(--inprogress-text)" 
-                        strokeWidth="14" 
-                        strokeDasharray={`${lenInProgress} ${circumference}`}
-                        strokeDashoffset={offsetInProgress}
-                        strokeLinecap="round"
-                        className="donut-segment"
-                      />
-                    )}
-                    {pendingTasks > 0 && (
-                      <circle 
-                        cx="70" 
-                        cy="70" 
-                        r={radius} 
-                        fill="transparent" 
-                        stroke="var(--pending-text)" 
-                        strokeWidth="14" 
-                        strokeDasharray={`${lenPending} ${circumference}`}
-                        strokeDashoffset={offsetPending}
-                        strokeLinecap="round"
-                        className="donut-segment"
-                      />
-                    )}
-                    {blockerTasks > 0 && (
-                      <circle 
-                        cx="70" 
-                        cy="70" 
-                        r={radius} 
-                        fill="transparent" 
-                        stroke="var(--blocker-text)" 
-                        strokeWidth="14" 
-                        strokeDasharray={`${lenBlocker} ${circumference}`}
-                        strokeDashoffset={offsetBlocker}
-                        strokeLinecap="round"
-                        className="donut-segment"
-                      />
-                    )}
-                  </>
-                )}
-              </svg>
-              <div className="donut-center-label">
-                <h2>{totalTasks}</h2>
-                <small>Total Tasks</small>
-              </div>
+      <div className="kpi-row">
+        {kpis.map((k) => (
+          <div key={k.label} className="kpi-card" style={{ '--kpi-accent': k.accent }}>
+            <span className="kpi-icon">{k.icon}</span>
+            <div className="kpi-body">
+              <span className="kpi-value">{k.value}</span>
+              <span className="kpi-label">{k.label}</span>
             </div>
+          </div>
+        ))}
+      </div>
 
-            <div className="chart-legend-grid">
-              <div className="legend-item">
-                <span className="legend-dot dot-completed"></span>
-                <span className="legend-label">Completed</span>
-                <strong>{getPercent(completedTasks)}% ({completedTasks})</strong>
-              </div>
-              <div className="legend-item">
-                <span className="legend-dot dot-inprogress"></span>
-                <span className="legend-label">In Progress</span>
-                <strong>{getPercent(inprogressTasks)}% ({inprogressTasks})</strong>
-              </div>
-              <div className="legend-item">
-                <span className="legend-dot dot-pending"></span>
-                <span className="legend-label">Pending</span>
-                <strong>{getPercent(pendingTasks)}% ({pendingTasks})</strong>
-              </div>
-              <div className="legend-item">
-                <span className="legend-dot dot-blocker"></span>
-                <span className="legend-label">Blocker</span>
-                <strong>{getPercent(blockerTasks)}% ({blockerTasks})</strong>
-              </div>
+      <div className="charts-row">
+
+
+        <div className="dash-card donut-card">
+          <p className="chart-section-label">Task Status Distribution</p>
+          <div className="donut-layout">
+            <DonutChart segments={donutSegments} total={total} />
+            <div className="donut-legend">
+              {donutSegments.map(s => (
+                <div key={s.label} className="legend-row">
+                  <span className="legend-dot" style={{ background: s.color }} />
+                  <span className="legend-text">{s.label}</span>
+                  <span className="legend-val">
+                    {s.value}
+                    <em>{total > 0 ? ` · ${Math.round((s.value / total) * 100)}%` : ''}</em>
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        <div className="stats-cards-vertical">
-          <div className="app-card metric-square">
-            <h3>Completed Tasks</h3>
-            <p className="metric-number text-success">{completedTasks}</p>
-            <span className="metric-badge-desc">Finished tasks across workspace</span>
+        <div className="dash-card rate-card">
+          <p className="chart-section-label">Overall Completion</p>
+          <div className="completion-rate-display">
+            <span className="completion-pct">{completionRate}%</span>
+            <span className="completion-sub">{completed} of {total} tasks done</span>
+          </div>
+          <div className="rate-bar-track">
+            <div className="rate-bar-fill" style={{ width: `${completionRate}%` }} />
           </div>
 
-          <div className="app-card metric-square">
-            <h3>Incomplete Tasks</h3>
-            <p className="metric-number text-pending">{incompleteTasks}</p>
-            <span className="metric-badge-desc">Remaining outstanding items</span>
-          </div>
-
-          <div className="app-card metric-square">
-            <h3>Active Blockers</h3>
-            <p className="metric-number text-blocker">{blockerTasks}</p>
-            <span className="metric-badge-desc">Blocked tasks requiring attention</span>
-          </div>
+          <PriorityBar tasks={tasks} />
         </div>
+
       </div>
 
-      <div className="dashboard-projects-section">
-        <h2>📁 Projects Status Overview</h2>
-        <div className="projects-grid">
-          {projects.map((proj) => {
-            const projectTasks = tasks.filter((t) => t.project === proj);
-            const totalProjTasks = projectTasks.length;
-            const completedProjTasks = projectTasks.filter((t) => t.completed).length;
-            const progressPercent = totalProjTasks > 0 ? Math.round((completedProjTasks / totalProjTasks) * 100) : 0;
-            
-            const hasActiveBlocker = projectTasks.some((t) => t.status === 'Blocker' && !t.completed);
-            const projectMembers = members.filter((m) => m.project === proj);
 
-            return (
-              <div key={proj} className="project-card minimalistic-card">
-                <div className="project-card-header">
-                  <h3>{proj}</h3>
-                  <span className="task-count-pill">{totalProjTasks} Tasks</span>
-                </div>
+      {projects.length > 0 && (
+        <div className="dash-projects-section">
+          <p className="chart-section-label" style={{ marginBottom: 12 }}>Projects</p>
+          <div className="dash-projects-list">
+            {projects.map((proj) => {
+              const pt = tasks.filter(t => t.project === proj);
+              const done = pt.filter(t => t.completed).length;
+              const pct  = pt.length > 0 ? Math.round((done / pt.length) * 100) : 0;
+              const hasBlocker = pt.some(t => t.status === 'Blocker' && !t.completed);
+              const pm   = members.filter(m => m.project === proj);
 
-                <div className="project-card-progress">
-                  <div className="progress-labels">
-                    <span>Progress</span>
-                    <strong>{progressPercent}%</strong>
-                  </div>
-                  <div className="progress-track-bg">
-                    <div className={`progress-fill-bar ${hasActiveBlocker ? 'has-blocker' : ''}`} style={{ width: `${progressPercent}%` }}></div>
-                  </div>
-                </div>
-
-                <div className="project-card-footer">
-                  <div className="overlapping-avatars">
-                    {projectMembers.slice(0, 5).map((member) => (
-                      <div 
-                        key={member.id} 
-                        className="stacked-avatar"
-                        title={`${member.name} (${member.role})`}
-                      >
-                        {member.avatar}
-                      </div>
-                    ))}
-                    {projectMembers.length > 5 && (
-                      <div className="stacked-avatar more-avatar">
-                        +{projectMembers.length - 5}
-                      </div>
-                    )}
-                    {projectMembers.length === 0 && (
-                      <span className="no-members-muted">No members</span>
+              return (
+                <div key={proj} className="dash-project-row">
+                  <div className="dpr-name">
+                    <FolderOpen size={14} strokeWidth={1.75} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                    <span>{proj}</span>
+                    {hasBlocker && (
+                      <span className="blocker-badge">
+                        <CircleAlert size={11} strokeWidth={2} /> Blocker
+                      </span>
                     )}
                   </div>
 
-                  <button 
-                    className="minimalist-open-btn"
-                    onClick={() => setActiveProject(proj)}
-                  >
-                    Open
+                  <div className="dpr-progress">
+                    <div className="dpr-bar-track">
+                      <div
+                        className={`dpr-bar-fill ${hasBlocker ? 'has-blocker' : ''}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="dpr-pct">{pct}%</span>
+                  </div>
+
+                  <div className="dpr-meta">
+                    <span className="task-count-pill">{pt.length} tasks</span>
+                    <div className="overlapping-avatars" style={{ paddingLeft: 0 }}>
+                      {pm.slice(0, 4).map(m => (
+                        <div key={m.id} className="stacked-avatar" title={`${m.name} (${m.role})`}>
+                          {m.avatar}
+                        </div>
+                      ))}
+                      {pm.length > 4 && <div className="stacked-avatar more-avatar">+{pm.length - 4}</div>}
+                      {pm.length === 0 && <span className="no-members-muted">No members</span>}
+                    </div>
+                  </div>
+
+                  <button className="dpr-open-btn" onClick={() => setActiveProject(proj)}>
+                    Open <ArrowRight size={13} strokeWidth={2} />
                   </button>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

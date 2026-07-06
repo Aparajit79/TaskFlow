@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Pencil, Plus } from 'lucide-react';
 
 export function TaskForm({ activeProject, members, onSubmit, editingTask, onCancelEdit }) {
   const [inputText, setInputText] = useState('');
@@ -7,6 +8,8 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
   const [status, setStatus] = useState('Pending');
   const [dueDate, setDueDate] = useState("");
   const [assignedMember, setAssignedMember] = useState("");
+  const [titleError, setTitleError] = useState("");
+  const [dueDateError, setDueDateError] = useState("");
 
   useEffect(() => {
     if (editingTask) {
@@ -24,32 +27,42 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
       setDueDate('');
       setAssignedMember('');
     }
+    setTitleError("");
+    setDueDateError("");
   }, [editingTask]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    let valid = true;
+
     if (!inputText.trim()) {
-      alert("Title is required");
-      return;
+      setTitleError("Title is required");
+      valid = false;
+    } else {
+      setTitleError("");
     }
+
     if (priority === 'High' && !dueDate) {
-      alert("⚠️ High priority tasks must have a due date!");
-      return;
-    }
-    if (dueDate) {
+      setDueDateError("High priority tasks require a due date");
+      valid = false;
+    } else if (dueDate) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
       const [year, month, day] = dueDate.split('-').map(Number);
       const selectedDate = new Date(year, month - 1, day);
-      
       if (selectedDate < today) {
-        alert("⚠️ Due date cannot be in the past!");
-        return;
+        setDueDateError("Due date cannot be in the past");
+        valid = false;
+      } else {
+        setDueDateError("");
       }
+    } else {
+      setDueDateError("");
     }
+
+    if (!valid) return;
+
     onSubmit(inputText.trim(), description.trim(), priority, status, dueDate, assignedMember);
-    
     if (!editingTask) {
       setInputText('');
       setDescription("");
@@ -64,11 +77,11 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
     return (
       <div className="task-form-selection empty-state">
         <div>
-          <div className="empty-state-icon">📁</div>
+          <div className="empty-state-icon">
+            <Plus size={28} strokeWidth={1.5} style={{ color: 'var(--text-light)' }} />
+          </div>
           <h3>No Active Project</h3>
-          <p>
-            Create or select a project in the sidebar to start adding tasks.
-          </p>
+          <p>Create or select a project in the sidebar to start adding tasks.</p>
         </div>
       </div>
     );
@@ -76,24 +89,29 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
 
   return (
     <div className={`task-form-selection ${editingTask ? 'is-editing' : ''}`}>
-      <h3>{editingTask ? '✏️ Edit Task' : `➕ Add Task to ${activeProject}`}</h3>
+      <h3>
+        {editingTask
+          ? <><Pencil size={15} strokeWidth={1.75} style={{ marginRight: 6 }} />Edit Task</>
+          : <><Plus size={15} strokeWidth={2} style={{ marginRight: 6 }} />Add Task to {activeProject}</>
+        }
+      </h3>
       <form onSubmit={handleSubmit} className="task-form">
         <div>
           <label>Task Title</label>
           <input
             type="text"
-            placeholder={editingTask ? "Edit task title..." : `Add task to ${activeProject}...`}
+            placeholder={editingTask ? "Edit task title..." : `New task in ${activeProject}...`}
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            className="task-input"
-            required
+            onChange={(e) => { setInputText(e.target.value); if (titleError) setTitleError(""); }}
+            className={`task-input ${titleError ? 'input-field-error' : ''}`}
           />
+          {titleError && <p className="form-field-error">{titleError}</p>}
         </div>
-        
+
         <div>
           <label>Description</label>
-          <textarea 
-            placeholder="Task Description"
+          <textarea
+            placeholder="Optional description..."
             className="task-input"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -103,24 +121,15 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
         <div className="form-row">
           <div className="form-col">
             <label>Priority</label>
-            <select 
-              className="select-input"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-            >
+            <select className="select-input" value={priority} onChange={(e) => setPriority(e.target.value)}>
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>
             </select>
           </div>
-          
           <div className="form-col">
             <label>Status</label>
-            <select 
-              className="select-input"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
+            <select className="select-input" value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="Pending">Pending</option>
               <option value="In Progress">In Progress</option>
               <option value="Blocker">Blocker</option>
@@ -132,27 +141,20 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
           <label>Due Date</label>
           <input
             type="date"
-            className="task-input"
+            className={`task-input ${dueDateError ? 'input-field-error' : ''}`}
             value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+            onChange={(e) => { setDueDate(e.target.value); if (dueDateError) setDueDateError(""); }}
           />
+          {dueDateError && <p className="form-field-error">{dueDateError}</p>}
         </div>
 
         <div>
           <label>Assignee</label>
-          <select
-            className="select-input"
-            value={assignedMember}
-            onChange={(e) => setAssignedMember(e.target.value)}
-          >
-            <option value="">Assign To</option>
+          <select className="select-input" value={assignedMember} onChange={(e) => setAssignedMember(e.target.value)}>
+            <option value="">Unassigned</option>
             {members
-              .filter(member => member.project === activeProject)
-              .map(member => (
-                <option key={member.id} value={member.name}>
-                  {member.name}
-                </option>
-              ))
+              .filter(m => m.project === activeProject)
+              .map(m => <option key={m.id} value={m.name}>{m.name}</option>)
             }
           </select>
         </div>
@@ -162,9 +164,7 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
             {editingTask ? 'Save Changes' : 'Add Task'}
           </button>
           {editingTask && (
-            <button type="button" className="cancel-button" onClick={onCancelEdit}>
-              Cancel
-            </button>
+            <button type="button" className="cancel-button" onClick={onCancelEdit}>Cancel</button>
           )}
         </div>
       </form>
