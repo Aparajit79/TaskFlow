@@ -3,30 +3,25 @@ import React from 'react';
 export function TaskStats({ tasks = [] }) {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(task => task.completed).length;
-  const pendingTasks = totalTasks - completedTasks;
-  const highPriorityTasks = tasks.filter(task => task.priority === 'High').length;
 
-   const blockerStatus = tasks.filter(   
-     task => task.status === "Blocker" && !task.completed
-   ).length;
+  const blockerStatus = tasks.filter(
+    task => task.status === "Blocker" && !task.completed
+  ).length;
 
   const pendingStatus = tasks.filter(
     task => task.status === "Pending" && !task.completed
-   ).length;
-
-  const inProgressStatus = tasks.filter(
-   task => task.status === "In Progress" && !task.completed
   ).length;
 
-   const completionRate =
-     totalTasks === 0
-       ? 0
-       : Math.round((completedTasks / totalTasks) * 100);
-   
-  const completedPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
-  const inprogressPercent = totalTasks === 0 ? 0 : Math.round((inProgressStatus / totalTasks) * 100);
-  const blockerPercent = totalTasks === 0 ? 0 : Math.round((blockerStatus / totalTasks) * 100);
-  const pendingPercent = totalTasks === 0 ? 0 : Math.max(0, 100 - completedPercent - inprogressPercent - blockerPercent);
+  const inProgressStatus = tasks.filter(
+    task => task.status === "In Progress" && !task.completed
+  ).length;
+
+  const completionRate = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+  const completedPercent   = totalTasks === 0 ? 0 : Math.round((completedTasks   / totalTasks) * 100);
+  const inprogressPercent  = totalTasks === 0 ? 0 : Math.round((inProgressStatus / totalTasks) * 100);
+  const blockerPercent     = totalTasks === 0 ? 0 : Math.round((blockerStatus    / totalTasks) * 100);
+  const pendingPercent     = totalTasks === 0 ? 0 : Math.max(0, 100 - completedPercent - inprogressPercent - blockerPercent);
 
   return (
     <div className="compact-stats-footer">

@@ -3259,3 +3259,32 @@ body.dark-theme .home-task-preview:hover {
 
 /* Remove show-more button — no longer used */
 .hub-show-more-btn { display: none; }
+
+/* ── Role-based member avatar ── */
+.member-role-avatar {
+  cursor: default;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 0 0 2px var(--bg-card);
+}
+
+.member-role-avatar:hover {
+  transform: scale(1.12);
+  z-index: 2;
+}
+
+/* stacked avatar override — removes old text-based style */
+.stacked-avatar.member-role-avatar {
+  font-size: unset;
+  background: unset;
+  color: unset;
+}
+
+/* member-card avatar slot — give it a bit more breathing room */
+.member-card .member-role-avatar {
+  box-shadow: none;
+}
+
+/* dark theme — boost icon contrast */
+body.dark-theme .member-role-avatar {
+  box-shadow: 0 0 0 2px var(--sidebar-bg, #0f172a);
+}

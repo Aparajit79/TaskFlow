@@ -4,6 +4,7 @@ import {
   CircleCheck, Zap, CircleAlert, Users
 } from 'lucide-react';
 import { useTaskFlow } from '../context/TaskFlowContext';
+import MemberAvatar from './MemberAvatar';
 
 const STATUS_COLOR = {
   'Pending':     { bg: 'var(--pending-bg)',     color: 'var(--pending-text)',     border: 'var(--pending-border)' },
@@ -206,9 +207,14 @@ export function HomeView() {
                   ) : (
                     <div className="overlapping-avatars" style={{ paddingLeft: 6 }}>
                       {projectMembers.slice(0, 4).map(m => (
-                        <div key={m.id} className="stacked-avatar" title={`${m.name} (${m.role})`}>
-                          {m.avatar}
-                        </div>
+                        <MemberAvatar
+                          key={m.id}
+                          name={m.name}
+                          role={m.role}
+                          size={26}
+                          iconSize={12}
+                          className="stacked-avatar"
+                        />
                       ))}
                       {projectMembers.length > 4 && (
                         <div className="stacked-avatar more-avatar">+{projectMembers.length - 4}</div>

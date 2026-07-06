@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Users, Plus, Trash2, ClipboardList } from 'lucide-react';
 import { useTasks, useMembers } from "../context/TaskFlowContext";
+import MemberAvatar from "./MemberAvatar";
 
 function MemberManager({ isCollapsed, setIsCollapsed }) {
   const {
@@ -50,14 +51,16 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
       <div className="collapsed-members-container">
         <div className="avatar-stack">
           {currentProjectMembers.map((member) => (
-            <div
+            <MemberAvatar
               key={member.id}
-              className="avatar-stack-item member-avatar"
+              name={member.name}
+              role={member.role}
+              size={28}
+              iconSize={13}
+              className="avatar-stack-item"
               title={`${member.name} (${member.role})`}
               onClick={() => setIsCollapsed(false)}
-            >
-              {member.avatar}
-            </div>
+            />
           ))}
         </div>
         <button className="collapsed-add-member-btn" onClick={() => setIsCollapsed(false)} title="Add Member">
@@ -124,7 +127,7 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
             ) : (
               currentProjectMembers.map((member) => (
                 <div className="member-card" key={member.id}>
-                  <div className="member-avatar">{member.avatar}</div>
+                  <MemberAvatar name={member.name} role={member.role} size={30} iconSize={13} />
                   <div className="member-info">
                     <strong>{member.name}</strong>
                     <small>{member.role}</small>

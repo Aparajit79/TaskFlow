@@ -1,9 +1,10 @@
 import React from 'react';
 import {
   FolderOpen, Users, ClipboardList, CircleCheck,
-  Zap, CircleAlert, Clock, ArrowRight, TrendingUp
+  Zap, CircleAlert, ArrowRight
 } from 'lucide-react';
 import { useTaskFlow } from '../context/TaskFlowContext';
+import MemberAvatar from './MemberAvatar';
 
 function DonutChart({ segments, total }) {
   const radius = 54;
@@ -133,7 +134,6 @@ export function DashboardView() {
 
       <div className="charts-row">
 
-
         <div className="dash-card donut-card">
           <p className="chart-section-label">Task Status Distribution</p>
           <div className="donut-layout">
@@ -206,9 +206,14 @@ export function DashboardView() {
                     <span className="task-count-pill">{pt.length} tasks</span>
                     <div className="overlapping-avatars" style={{ paddingLeft: 0 }}>
                       {pm.slice(0, 4).map(m => (
-                        <div key={m.id} className="stacked-avatar" title={`${m.name} (${m.role})`}>
-                          {m.avatar}
-                        </div>
+                        <MemberAvatar
+                          key={m.id}
+                          name={m.name}
+                          role={m.role}
+                          size={24}
+                          iconSize={11}
+                          className="stacked-avatar"
+                        />
                       ))}
                       {pm.length > 4 && <div className="stacked-avatar more-avatar">+{pm.length - 4}</div>}
                       {pm.length === 0 && <span className="no-members-muted">No members</span>}

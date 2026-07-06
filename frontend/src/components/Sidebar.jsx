@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
-  Zap, House, FolderOpen, FileText, LayoutDashboard,
-  Settings, Trash2, Plus, PanelLeftClose, PanelLeftOpen, Users
+  Zap, House, FileText, LayoutDashboard,
+  Settings, Trash2, Plus, PanelLeftClose
 } from 'lucide-react';
 import MemberManager from "./MemberManager";
 import { useTasks } from "../context/TaskFlowContext";
