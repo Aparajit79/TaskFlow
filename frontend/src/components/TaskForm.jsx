@@ -97,7 +97,7 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
       </h3>
       <form onSubmit={handleSubmit} className="task-form">
         <div>
-          <label>Task Title</label>
+          <label>Task Title <span className="required-star">*</span></label>
           <input
             type="text"
             placeholder={editingTask ? "Edit task title..." : `New task in ${activeProject}...`}

@@ -71,6 +71,13 @@ export function TaskFlowProvider({ children }) {
   }, [projects]);
 
   const handleDeleteProject = useCallback(async (projName) => {
+    const projectTasks = tasks.filter((t) => t.project === projName);
+    const msg = projectTasks.length > 0
+      ? `"${projName}" has ${projectTasks.length} task(s). Deleting it will permanently remove all tasks. Continue?`
+      : `Delete project "${projName}"?`;
+
+    if (!window.confirm(msg)) return;
+
     try {
       const res = await fetch(`${API_URL}/projects/${encodeURIComponent(projName)}`, {
         method: 'DELETE'
@@ -89,13 +96,13 @@ export function TaskFlowProvider({ children }) {
     } catch (err) {
       console.error(err);
     }
-  }, [activeProject]);
+  }, [tasks, activeProject]);
 
   const handleAddTask = useCallback(async (text, description, priority, status, dueDate, assignedMember) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const id = Date.now();
+    const id = Date.now(); // permanent id sent to DB
 
     try {
       const res = await fetch(`${API_URL}/tasks`, {
@@ -174,6 +181,7 @@ export function TaskFlowProvider({ children }) {
   }, [tasks]);
 
   const handleDeleteTask = useCallback(async (id) => {
+    if (!window.confirm('Delete this task? This cannot be undone.')) return;
     try {
       const res = await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -217,6 +225,7 @@ export function TaskFlowProvider({ children }) {
   }, [members, activeProject]);
 
   const handleDeleteMember = useCallback(async (id) => {
+    if (!window.confirm('Remove this member from the project?')) return;
     try {
       const res = await fetch(`${API_URL}/members/${id}`, { method: 'DELETE' });
       if (res.ok) {
