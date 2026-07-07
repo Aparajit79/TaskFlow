@@ -1633,12 +1633,15 @@ body.dark-theme .project-avatar-collapsed:hover {
   max-width: 1300px;
   width: 100%;
   animation: fadeIn 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .hub-header,
 .dashboard-header,
 .settings-header {
-  margin-bottom: 24px;
+  margin-bottom: 0;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--border-color);
 }
@@ -2804,7 +2807,7 @@ body.dark-theme .dash-project-row {
 /* Header row with action button */
 .hub-header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }

@@ -16,12 +16,10 @@ export function TaskStats({ tasks = [] }) {
     task => task.status === "In Progress" && !task.completed
   ).length;
 
-  const completionRate = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
-
-  const completedPercent   = totalTasks === 0 ? 0 : Math.round((completedTasks   / totalTasks) * 100);
+  const completionRate     = totalTasks === 0 ? 0 : Math.round((completedTasks   / totalTasks) * 100);
   const inprogressPercent  = totalTasks === 0 ? 0 : Math.round((inProgressStatus / totalTasks) * 100);
   const blockerPercent     = totalTasks === 0 ? 0 : Math.round((blockerStatus    / totalTasks) * 100);
-  const pendingPercent     = totalTasks === 0 ? 0 : Math.max(0, 100 - completedPercent - inprogressPercent - blockerPercent);
+  const pendingPercent     = totalTasks === 0 ? 0 : Math.max(0, 100 - completionRate - inprogressPercent - blockerPercent);
 
   return (
     <div className="compact-stats-footer">
@@ -58,7 +56,7 @@ export function TaskStats({ tasks = [] }) {
       <div className="footer-segmented-bar">
         {totalTasks > 0 ? (
           <>
-            <div className="segment segment-completed" style={{ width: `${completedPercent}%` }} title={`Completed: ${completedPercent}%`}></div>
+            <div className="segment segment-completed" style={{ width: `${completionRate}%` }} title={`Completed: ${completionRate}%`}></div>
             <div className="segment segment-inprogress" style={{ width: `${inprogressPercent}%` }} title={`In Progress: ${inprogressPercent}%`}></div>
             <div className="segment segment-pending" style={{ width: `${pendingPercent}%` }} title={`Pending: ${pendingPercent}%`}></div>
             <div className="segment segment-blocker" style={{ width: `${blockerPercent}%` }} title={`Blockers: ${blockerPercent}%`}></div>

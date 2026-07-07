@@ -71,43 +71,31 @@ export function TaskFlowProvider({ children }) {
   }, [projects]);
 
   const handleDeleteProject = useCallback(async (projName) => {
-    const projectTasks = tasks.filter((t) => t.project === projName);
-    const performDelete = async () => {
-      try {
-        const res = await fetch(`${API_URL}/projects/${encodeURIComponent(projName)}`, {
-          method: 'DELETE'
-        });
-        if (res.ok) {
-          setProjects((prev) => prev.filter((p) => p !== projName));
-          setTasks((prev) => prev.filter((t) => t.project !== projName));
-          setMembers((prev) => prev.filter((m) => m.project !== projName));
-          
+    try {
+      const res = await fetch(`${API_URL}/projects/${encodeURIComponent(projName)}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setProjects((prev) => {
+          const updated = prev.filter((p) => p !== projName);
           if (activeProject === projName) {
-            setProjects((updatedProjs) => {
-              setActiveProject(updatedProjs.length > 0 ? updatedProjs[0] : '');
-              return updatedProjs;
-            });
+            setActiveProject(updated.length > 0 ? updated[0] : '');
           }
-        }
-      } catch (err) {
-        console.error(err);
+          return updated;
+        });
+        setTasks((prev) => prev.filter((t) => t.project !== projName));
+        setMembers((prev) => prev.filter((m) => m.project !== projName));
       }
-    };
-
-    if (projectTasks.length === 0) {
-      await performDelete();
-    } else {
-      if (window.confirm(`Project "${projName}" has ${projectTasks.length} task(s). Are you sure you want to delete it and all its tasks?`)) {
-        await performDelete();
-      }
+    } catch (err) {
+      console.error(err);
     }
-  }, [tasks, activeProject]);
+  }, [activeProject]);
 
   const handleAddTask = useCallback(async (text, description, priority, status, dueDate, assignedMember) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const id = Date.now(); 
+    const id = Date.now();
 
     try {
       const res = await fetch(`${API_URL}/tasks`, {
@@ -186,12 +174,8 @@ export function TaskFlowProvider({ children }) {
   }, [tasks]);
 
   const handleDeleteTask = useCallback(async (id) => {
-    if (!window.confirm("Are you sure you want to delete this task?")) return;
-
     try {
-      const res = await fetch(`${API_URL}/tasks/${id}`, {
-        method: 'DELETE'
-      });
+      const res = await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setTasks((prev) => prev.filter((t) => t.id !== id));
       }
@@ -205,12 +189,11 @@ export function TaskFlowProvider({ children }) {
     if (!trimmedName) return;
 
     const memberExists = members.some(
-      (m) => m.project === activeProject && m.name.toLowerCase() === trimmedName.toLowerCase() && m.role === role
+      (m) => m.project === activeProject &&
+             m.name.toLowerCase() === trimmedName.toLowerCase() &&
+             m.role === role
     );
-    if (memberExists) {
-      alert("This member already exists in the project.");
-      return;
-    }
+    if (memberExists) return;
 
     try {
       const res = await fetch(`${API_URL}/members`, {
@@ -234,12 +217,8 @@ export function TaskFlowProvider({ children }) {
   }, [members, activeProject]);
 
   const handleDeleteMember = useCallback(async (id) => {
-    if (!window.confirm("Are you sure you want to remove this member?")) return;
-
     try {
-      const res = await fetch(`${API_URL}/members/${id}`, {
-        method: 'DELETE'
-      });
+      const res = await fetch(`${API_URL}/members/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setMembers((prev) => prev.filter((m) => m.id !== id));
       }

@@ -102,7 +102,6 @@ export function DashboardView() {
     { label: 'Blocker',     value: blockers,   color: 'var(--blocker-text)' },
   ];
 
-
   const kpis = [
     { icon: <FolderOpen size={18} strokeWidth={1.75} />, label: 'Projects',    value: projects.length, accent: 'var(--primary)' },
     { icon: <Users      size={18} strokeWidth={1.75} />, label: 'Members',     value: members.length,  accent: 'var(--inprogress-text)' },

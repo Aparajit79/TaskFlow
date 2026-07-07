@@ -182,9 +182,8 @@ app.put('/api/tasks/:id', async (req, res) => {
 
 app.delete('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
-
   try {
-    const result = await pool.query('DELETE FROM tasks WHERE id = $1', [id]);
+    await pool.query('DELETE FROM tasks WHERE id = $1', [id]);
     res.json({ message: 'Task deleted successfully' });
   } catch (err) {
     console.error(err);
