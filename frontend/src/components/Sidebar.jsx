@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Zap, House, FileText, LayoutDashboard,
-  Settings, Trash2, Plus, PanelLeftClose
+  LayoutGrid, CheckSquare, BarChart2, Users,
+  Settings, HelpCircle, Folder, Plus, ChevronDown, Trash2, Zap
 } from 'lucide-react';
-import MemberManager from "./MemberManager";
 import { useTasks } from "../context/TaskFlowContext";
 
 export function Sidebar() {
@@ -14,226 +13,220 @@ export function Sidebar() {
     handleAddProject: onAddProject,
     handleDeleteProject: onDeleteProject,
     activeView = 'Home',
-    setActiveView
+    setActiveView,
+    tasks = []
   } = useTasks();
 
-  const [newProjectText, setNewProjectText] = useState('');
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    return localStorage.getItem('taskflow_sidebar_collapsed') === 'true';
-  });
-  const [isProjectsExpanded, setIsProjectsExpanded] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [showAddProject, setShowAddProject] = useState(false);
+  const [newProjectText, setNewProjectText] = useState('');
 
-  const toggleSidebar = () => {
-    setIsCollapsed((prev) => {
-      const next = !prev;
-      localStorage.setItem('taskflow_sidebar_collapsed', next);
-      return next;
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleAddProjectSubmit = (e) => {
     e.preventDefault();
     if (newProjectText.trim() === '') return;
     onAddProject(newProjectText);
     setNewProjectText('');
     setShowAddProject(false);
+    setIsOpen(false);
+    setActiveView('Project');
   };
 
-  const getInitials = (name) => {
-    if (!name) return '?';
-    return name.substring(0, 2).toUpperCase();
+  const handleProjectSelect = (projId) => {
+    setActiveProject(projId);
+    setActiveView('Project');
+    setIsOpen(false);
   };
 
-  if (isCollapsed) {
-    return (
-      <aside className="sidebar collapsed">
-        <div className="sidebar-header">
-          <div className="logo-compact" onClick={toggleSidebar} title="Expand Sidebar">
-            <Zap size={20} strokeWidth={2.5} />
-          </div>
-        </div>
+  const activeProjectObj = projects.find(p => Number(p.id) === Number(activeProject));
+  const activeProjectName = activeProjectObj ? activeProjectObj.name : "Select Project...";
 
-        <div className="collapsed-sidebar-items">
-          <button
-            className={`project-avatar-collapsed ${activeView === 'Home' ? 'active' : ''}`}
-            onClick={() => setActiveView('Home')}
-            title="Home"
-          >
-            <House size={16} strokeWidth={1.75} />
-          </button>
-
-          <hr className="collapsed-divider" />
-
-          <ul className="project-list">
-            {projects.map((proj) => (
-              <li key={proj} className="project-item">
-                <button
-                  className={`project-avatar-collapsed ${activeProject === proj && activeView === 'Project' ? 'active' : ''}`}
-                  onClick={() => setActiveProject(proj)}
-                  title={proj}
-                >
-                  {getInitials(proj)}
-                </button>
-              </li>
-            ))}
-            <li className="project-item">
-              <button
-                className="add-project-collapsed-btn"
-                onClick={() => setIsCollapsed(false)}
-                title="Add Project"
-              >
-                <Plus size={16} strokeWidth={2} />
-              </button>
-            </li>
-          </ul>
-
-          <hr className="collapsed-divider" />
-
-          <button
-            className={`project-avatar-collapsed ${activeView === 'Dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveView('Dashboard')}
-            title="Dashboard"
-          >
-            <LayoutDashboard size={16} strokeWidth={1.75} />
-          </button>
-
-          <button
-            className={`project-avatar-collapsed ${activeView === 'Settings' ? 'active' : ''}`}
-            onClick={() => setActiveView('Settings')}
-            title="Settings"
-          >
-            <Settings size={16} strokeWidth={1.75} />
-          </button>
-        </div>
-      </aside>
-    );
-  }
+  // Get active tasks count for the badge (total pending tasks in active project)
+  const activeTasksCount = tasks.filter(t => Number(t.projectId) === Number(activeProject) && !t.completed).length;
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="sidebar-title-container">
-          <h2>
-            <Zap size={18} strokeWidth={2.5} style={{ flexShrink: 0 }} />
-            TaskMatrix
-          </h2>
-          <button className="sidebar-toggle-btn" onClick={toggleSidebar} title="Collapse Sidebar">
-            <PanelLeftClose size={14} strokeWidth={1.75} />
-          </button>
+    <aside className="taskmatrix-sidebar">
+      {/* Logo Header */}
+      <div className="logo-container">
+        <div className="logo-circle">
+          <Zap size={18} strokeWidth={2.5} className="logo-icon" />
         </div>
-        <p>Manage your workflow</p>
+        <span className="logo-text">TaskMatrix</span>
       </div>
 
-      <div className="sidebar-expanded-content">
-        <nav className="sidebar-nav-links">
-          <button
-            className={`nav-link-btn ${activeView === 'Home' ? 'active' : ''}`}
-            onClick={() => setActiveView('Home')}
-          >
-            <House size={15} strokeWidth={1.75} className="nav-icon" />
-            Home
-          </button>
-        </nav>
-
-        <div className="sidebar-accordions-container">
-
-          <div className="sidebar-section-card">
-            <div
-              className="sidebar-section-header"
-              onClick={() => setIsProjectsExpanded(!isProjectsExpanded)}
+      {/* Project Switcher */}
+      <div className="project-switcher-container">
+        <div className="project-switcher-header">
+          <span className="project-switcher-label">Workspace</span>
+          {activeProject && (
+            <button 
+              className="delete-project-btn"
+              onClick={() => {
+                if (window.confirm(`Are you sure you want to delete the project "${activeProjectName}"?`)) {
+                  onDeleteProject(activeProject);
+                }
+              }}
+              title="Delete Active Project"
             >
-              <span className="section-title">
-                <span className={`section-chevron ${isProjectsExpanded ? 'expanded' : ''}`}>▶</span>
-                Projects
-              </span>
-              <button
-                className="section-action-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowAddProject(!showAddProject);
-                  if (!isProjectsExpanded) setIsProjectsExpanded(true);
-                }}
-                title="Add Project"
-              >
-                <Plus size={13} strokeWidth={2} />
-              </button>
-            </div>
-
-            {isProjectsExpanded && (
-              <div className="sidebar-section-content">
-                {showAddProject && (
-                  <div className="inline-add-form-container">
-                    <form onSubmit={handleSubmit} className="inline-add-form">
-                      <input
-                        type="text"
-                        placeholder="Project name..."
-                        value={newProjectText}
-                        onChange={(e) => setNewProjectText(e.target.value)}
-                        className="add-project-input"
-                        autoFocus
-                      />
-                      <div className="inline-add-actions">
-                        <button type="submit" className="inline-add-btn">Add</button>
-                        <button type="button" className="inline-cancel-btn" onClick={() => setShowAddProject(false)}>
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                )}
-
-                {projects.length === 0 && !showAddProject && (
-                  <p className="empty-section-message">No projects yet</p>
-                )}
-
-                <ul className="project-list">
-                  {projects.map((proj) => (
-                    <li key={proj} className="project-item">
-                      <div className="project-item-container">
-                        <button
-                          className={`project-button ${activeProject === proj && activeView === 'Project' ? 'active' : ''}`}
-                          onClick={() => setActiveProject(proj)}
-                        >
-                          <FileText size={14} strokeWidth={1.75} className="nav-icon" />
-                          {proj}
-                        </button>
-                        <button
-                          className="project-delete-btn"
-                          onClick={(e) => { e.stopPropagation(); onDeleteProject(proj); }}
-                          title="Delete Project"
-                        >
-                          <Trash2 size={13} strokeWidth={1.75} />
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {activeView === 'Project' && activeProject && (
-            <MemberManager isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+              <Trash2 size={12} />
+            </button>
           )}
         </div>
 
-        <nav className="sidebar-nav-links-bottom">
+        <div className="custom-select-container">
+          <button 
+            className="custom-select-trigger" 
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <div className="custom-select-trigger-content">
+              <Folder size={14} className="project-select-icon" />
+              <span className="current-project-name">
+                {activeProjectName}
+              </span>
+            </div>
+            <ChevronDown size={14} className={`project-select-chevron ${isOpen ? 'open' : ''}`} />
+          </button>
+
+          {isOpen && (
+            <div className="custom-select-dropdown">
+              <ul className="custom-select-options">
+                {projects.map((p) => (
+                  <li key={p.id}>
+                    <button 
+                      className={`custom-select-option ${Number(activeProject) === Number(p.id) ? 'selected' : ''}`}
+                      onClick={() => handleProjectSelect(p.id)}
+                    >
+                      <Folder size={12} style={{ marginRight: 8, opacity: 0.7 }} />
+                      {p.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="custom-select-divider"></div>
+              {showAddProject ? (
+                <form onSubmit={handleAddProjectSubmit} className="project-add-form" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="text"
+                    placeholder="Project name..."
+                    value={newProjectText}
+                    onChange={(e) => setNewProjectText(e.target.value)}
+                    className="project-add-input"
+                    autoFocus
+                  />
+                  <div className="project-add-actions">
+                    <button type="submit" className="project-add-submit-btn">Add</button>
+                    <button type="button" className="project-add-cancel-btn" onClick={() => setShowAddProject(false)}>Cancel</button>
+                  </div>
+                </form>
+              ) : (
+                <button 
+                  className="custom-select-add-btn" 
+                  onClick={() => setShowAddProject(true)}
+                >
+                  <Plus size={12} style={{ marginRight: 8 }} />
+                  Create New Workspace
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Navigation List */}
+      <div className="sidebar-sections-wrapper">
+        {/* Menu Section */}
+        <div className="sidebar-section">
+          <h4 className="sidebar-section-header-text">Menu</h4>
+          
           <button
-            className={`nav-link-btn ${activeView === 'Dashboard' ? 'active' : ''}`}
+            className={`taskmatrix-nav-btn ${activeView === 'Home' ? 'active' : ''}`}
+            onClick={() => setActiveView('Home')}
+          >
+            <div className="taskmatrix-nav-btn-content">
+              <LayoutGrid size={18} className="nav-icon" />
+              <span>Dashboard</span>
+            </div>
+          </button>
+
+          <button
+            className={`taskmatrix-nav-btn ${activeView === 'Project' ? 'active' : ''}`}
+            onClick={() => {
+              if (projects.length > 0) {
+                if (!activeProject) {
+                  setActiveProject(projects[0].id);
+                }
+                setActiveView('Project');
+              } else {
+                setActiveView('Home');
+              }
+            }}
+            disabled={projects.length === 0}
+            style={{ opacity: projects.length === 0 ? 0.6 : 1 }}
+          >
+            <div className="taskmatrix-nav-btn-content">
+              <CheckSquare size={18} className="nav-icon" />
+              <span>Tasks</span>
+            </div>
+            {projects.length > 0 && activeProject && activeTasksCount > 0 && (
+              <span className="taskmatrix-badge">{activeTasksCount}</span>
+            )}
+          </button>
+
+          <button
+            className={`taskmatrix-nav-btn ${activeView === 'Dashboard' ? 'active' : ''}`}
             onClick={() => setActiveView('Dashboard')}
           >
-            <LayoutDashboard size={15} strokeWidth={1.75} className="nav-icon" />
-            Dashboard
+            <div className="taskmatrix-nav-btn-content">
+              <BarChart2 size={18} className="nav-icon" />
+              <span>Analytics</span>
+            </div>
           </button>
+
           <button
-            className={`nav-link-btn ${activeView === 'Settings' ? 'active' : ''}`}
+            className={`taskmatrix-nav-btn ${activeView === 'Team' ? 'active' : ''}`}
+            onClick={() => {
+              if (projects.length > 0) {
+                if (!activeProject) {
+                  setActiveProject(projects[0].id);
+                }
+                setActiveView('Team');
+              } else {
+                setActiveView('Home');
+              }
+            }}
+            disabled={projects.length === 0}
+            style={{ opacity: projects.length === 0 ? 0.6 : 1 }}
+          >
+            <div className="taskmatrix-nav-btn-content">
+              <Users size={18} className="nav-icon" />
+              <span>Team</span>
+            </div>
+          </button>
+        </div>
+
+        {/* General Section */}
+        <div className="sidebar-section" style={{ marginTop: '16px' }}>
+          <h4 className="sidebar-section-header-text">General</h4>
+
+          <button
+            className={`taskmatrix-nav-btn ${activeView === 'Settings' ? 'active' : ''}`}
             onClick={() => setActiveView('Settings')}
           >
-            <Settings size={15} strokeWidth={1.75} className="nav-icon" />
-            Settings
+            <div className="taskmatrix-nav-btn-content">
+              <Settings size={18} className="nav-icon" />
+              <span>Settings</span>
+            </div>
           </button>
-        </nav>
+
+          <button
+            className={`taskmatrix-nav-btn ${activeView === 'Help' ? 'active' : ''}`}
+            onClick={() => setActiveView('Help')}
+          >
+            <div className="taskmatrix-nav-btn-content">
+              <HelpCircle size={18} className="nav-icon" />
+              <span>Help</span>
+            </div>
+          </button>
+        </div>
       </div>
     </aside>
   );

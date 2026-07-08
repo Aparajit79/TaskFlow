@@ -4,6 +4,8 @@ import TaskList from './components/TaskList';
 import HomeView from './components/HomeView';
 import DashboardView from './components/DashboardView';
 import SettingsView from './components/SettingsView';
+import TeamView from './components/TeamView';
+import HelpView from './components/HelpView';
 import { TaskFlowProvider, useTaskFlow } from './context/TaskFlowContext';
 
 function AppContent() {
@@ -22,8 +24,12 @@ function AppContent() {
         return <TaskList />;
       case 'Dashboard':
         return <DashboardView />;
+      case 'Team':
+        return <TeamView />;
       case 'Settings':
         return <SettingsView />;
+      case 'Help':
+        return <HelpView />;
       default:
         return <HomeView />;
     }

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const TaskFlowContext = createContext();
@@ -12,8 +11,8 @@ export function TaskFlowProvider({ children }) {
   const [activeProject, setActiveProject] = useState('');
   const [activeView, setActiveView] = useState('Home');
 
-  const handleSetActiveProject = useCallback((proj) => {
-    setActiveProject(proj);
+  const handleSetActiveProject = useCallback((projId) => {
+    setActiveProject(Number(projId));
     setActiveView('Project');
   }, []);
 
@@ -32,16 +31,24 @@ export function TaskFlowProvider({ children }) {
           const tsks = await taskRes.json();
 
           setProjects(projs);
-          setMembers(mems);
+          
+          const formattedMembers = mems.map(m => ({
+            ...m,
+            id: Number(m.id),
+            projectId: Number(m.projectId)
+          }));
+          setMembers(formattedMembers);
           
           const formattedTasks = tsks.map(t => ({
             ...t,
-            id: Number(t.id)
+            id: Number(t.id),
+            projectId: Number(t.projectId),
+            assignedMemberId: t.assignedMemberId ? Number(t.assignedMemberId) : null
           }));
           setTasks(formattedTasks);
 
           if (projs.length > 0) {
-            setActiveProject(projs[0]);
+            setActiveProject(Number(projs[0].id));
           }
         }
       } catch (err) {
@@ -53,7 +60,7 @@ export function TaskFlowProvider({ children }) {
 
   const handleAddProject = useCallback(async (name) => {
     const trimmed = name.trim();
-    if (!trimmed || projects.includes(trimmed)) return;
+    if (!trimmed || projects.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) return;
 
     try {
       const res = await fetch(`${API_URL}/projects`, {
@@ -62,16 +69,20 @@ export function TaskFlowProvider({ children }) {
         body: JSON.stringify({ name: trimmed })
       });
       if (res.ok) {
-        setProjects((prev) => [...prev, trimmed]);
-        setActiveProject(trimmed);
+        const body = await res.json();
+        const newProj = body.data ?? body;
+        setProjects((prev) => [...prev, newProj]);
+        setActiveProject(Number(newProj.id));
       }
     } catch (err) {
       console.error(err);
     }
   }, [projects]);
 
-  const handleDeleteProject = useCallback(async (projName) => {
-    const projectTasks = tasks.filter((t) => t.project === projName);
+  const handleDeleteProject = useCallback(async (projId) => {
+    const proj = projects.find(p => p.id === projId);
+    const projName = proj ? proj.name : 'Unknown';
+    const projectTasks = tasks.filter((t) => Number(t.projectId) === Number(projId));
     const msg = projectTasks.length > 0
       ? `"${projName}" has ${projectTasks.length} task(s). Deleting it will permanently remove all tasks. Continue?`
       : `Delete project "${projName}"?`;
@@ -79,30 +90,30 @@ export function TaskFlowProvider({ children }) {
     if (!window.confirm(msg)) return;
 
     try {
-      const res = await fetch(`${API_URL}/projects/${encodeURIComponent(projName)}`, {
+      const res = await fetch(`${API_URL}/projects/${projId}`, {
         method: 'DELETE'
       });
       if (res.ok) {
         setProjects((prev) => {
-          const updated = prev.filter((p) => p !== projName);
-          if (activeProject === projName) {
-            setActiveProject(updated.length > 0 ? updated[0] : '');
+          const updated = prev.filter((p) => p.id !== projId);
+          if (activeProject === projId) {
+            setActiveProject(updated.length > 0 ? Number(updated[0].id) : '');
           }
           return updated;
         });
-        setTasks((prev) => prev.filter((t) => t.project !== projName));
-        setMembers((prev) => prev.filter((m) => m.project !== projName));
+        setTasks((prev) => prev.filter((t) => Number(t.projectId) !== Number(projId)));
+        setMembers((prev) => prev.filter((m) => Number(m.projectId) !== Number(projId)));
       }
     } catch (err) {
       console.error(err);
     }
-  }, [tasks, activeProject]);
+  }, [tasks, activeProject, projects]);
 
-  const handleAddTask = useCallback(async (text, description, priority, status, dueDate, assignedMember) => {
+  const handleAddTask = useCallback(async (text, description, priority, status, dueDate, assignedMemberId) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const id = Date.now(); // permanent id sent to DB
+    const id = Date.now();
 
     try {
       const res = await fetch(`${API_URL}/tasks`, {
@@ -110,19 +121,24 @@ export function TaskFlowProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id,
-          project: activeProject,
+          projectId: Number(activeProject),
           text: trimmed,
           description,
           priority,
           status,
           dueDate,
-          assignedMember
+          assignedMemberId: assignedMemberId ? Number(assignedMemberId) : null
         })
       });
 
       if (res.ok) {
         const newTask = await res.json();
-        setTasks((prev) => [...prev, { ...newTask, id: Number(newTask.id) }]);
+        setTasks((prev) => [...prev, {
+          ...newTask,
+          id: Number(newTask.id),
+          projectId: Number(newTask.projectId),
+          assignedMemberId: newTask.assignedMemberId ? Number(newTask.assignedMemberId) : null
+        }]);
       }
     } catch (err) {
       console.error(err);
@@ -145,14 +161,19 @@ export function TaskFlowProvider({ children }) {
 
       if (res.ok) {
         const updatedTask = await res.json();
-        setTasks((prev) => prev.map((t) => t.id === id ? { ...updatedTask, id: Number(updatedTask.id) } : t));
+        setTasks((prev) => prev.map((t) => t.id === id ? {
+          ...updatedTask,
+          id: Number(updatedTask.id),
+          projectId: Number(updatedTask.projectId),
+          assignedMemberId: updatedTask.assignedMemberId ? Number(updatedTask.assignedMemberId) : null
+        } : t));
       }
     } catch (err) {
       console.error(err);
     }
   }, [tasks]);
 
-  const handleEditTask = useCallback(async (id, text, description, priority, status, dueDate, assignedMember) => {
+  const handleEditTask = useCallback(async (id, text, description, priority, status, dueDate, assignedMemberId) => {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
 
@@ -167,13 +188,18 @@ export function TaskFlowProvider({ children }) {
           priority,
           status,
           dueDate,
-          assignedMember
+          assignedMemberId: assignedMemberId ? Number(assignedMemberId) : null
         })
       });
 
       if (res.ok) {
         const updatedTask = await res.json();
-        setTasks((prev) => prev.map((t) => t.id === id ? { ...updatedTask, id: Number(updatedTask.id) } : t));
+        setTasks((prev) => prev.map((t) => t.id === id ? {
+          ...updatedTask,
+          id: Number(updatedTask.id),
+          projectId: Number(updatedTask.projectId),
+          assignedMemberId: updatedTask.assignedMemberId ? Number(updatedTask.assignedMemberId) : null
+        } : t));
       }
     } catch (err) {
       console.error(err);
@@ -197,7 +223,7 @@ export function TaskFlowProvider({ children }) {
     if (!trimmedName) return;
 
     const memberExists = members.some(
-      (m) => m.project === activeProject &&
+      (m) => Number(m.projectId) === Number(activeProject) &&
              m.name.toLowerCase() === trimmedName.toLowerCase() &&
              m.role === role
     );
@@ -208,7 +234,7 @@ export function TaskFlowProvider({ children }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          project: activeProject,
+          projectId: Number(activeProject),
           name: trimmedName,
           role
         })
@@ -217,7 +243,11 @@ export function TaskFlowProvider({ children }) {
       if (res.ok) {
         const body = await res.json();
         const newMember = body.data ?? body;
-        setMembers((prev) => [...prev, newMember]);
+        setMembers((prev) => [...prev, {
+          ...newMember,
+          id: Number(newMember.id),
+          projectId: Number(newMember.projectId)
+        }]);
       }
     } catch (err) {
       console.error(err);
@@ -237,7 +267,7 @@ export function TaskFlowProvider({ children }) {
   }, []);
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => task.project === activeProject);
+    return tasks.filter((task) => Number(task.projectId) === Number(activeProject));
   }, [tasks, activeProject]);
 
   const value = useMemo(() => ({

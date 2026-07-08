@@ -118,7 +118,6 @@ export function DashboardView() {
         <p className="dashboard-subtitle">Workspace overview — tasks, projects, and team activity at a glance.</p>
       </div>
 
-
       <div className="kpi-row">
         {kpis.map((k) => (
           <div key={k.label} className="kpi-card" style={{ '--kpi-accent': k.accent }}>
@@ -132,7 +131,6 @@ export function DashboardView() {
       </div>
 
       <div className="charts-row">
-
         <div className="dash-card donut-card">
           <p className="chart-section-label">Task Status Distribution</p>
           <div className="donut-layout">
@@ -164,26 +162,24 @@ export function DashboardView() {
 
           <PriorityBar tasks={tasks} />
         </div>
-
       </div>
-
 
       {projects.length > 0 && (
         <div className="dash-projects-section">
           <p className="chart-section-label" style={{ marginBottom: 12 }}>Projects</p>
           <div className="dash-projects-list">
             {projects.map((proj) => {
-              const pt = tasks.filter(t => t.project === proj);
+              const pt = tasks.filter(t => Number(t.projectId) === Number(proj.id));
               const done = pt.filter(t => t.completed).length;
               const pct  = pt.length > 0 ? Math.round((done / pt.length) * 100) : 0;
               const hasBlocker = pt.some(t => t.status === 'Blocker' && !t.completed);
-              const pm   = members.filter(m => m.project === proj);
+              const pm   = members.filter(m => Number(m.projectId) === Number(proj.id));
 
               return (
-                <div key={proj} className="dash-project-row">
+                <div key={proj.id} className="dash-project-row">
                   <div className="dpr-name">
                     <FolderOpen size={14} strokeWidth={1.75} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-                    <span>{proj}</span>
+                    <span>{proj.name}</span>
                     {hasBlocker && (
                       <span className="blocker-badge">
                         <CircleAlert size={11} strokeWidth={2} /> Blocker
@@ -219,7 +215,7 @@ export function DashboardView() {
                     </div>
                   </div>
 
-                  <button className="dpr-open-btn" onClick={() => setActiveProject(proj)}>
+                  <button className="dpr-open-btn" onClick={() => setActiveProject(proj.id)}>
                     Open <ArrowRight size={13} strokeWidth={2} />
                   </button>
                 </div>

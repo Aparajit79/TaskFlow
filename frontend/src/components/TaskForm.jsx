@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Plus } from 'lucide-react';
 
-export function TaskForm({ activeProject, members, onSubmit, editingTask, onCancelEdit }) {
+export function TaskForm({ activeProject, projects = [], members = [], onSubmit, editingTask, onCancelEdit, titleInputRef }) {
   const [inputText, setInputText] = useState('');
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState('Medium');
   const [status, setStatus] = useState('Pending');
   const [dueDate, setDueDate] = useState("");
-  const [assignedMember, setAssignedMember] = useState("");
+  const [assignedMemberId, setAssignedMemberId] = useState("");
   const [titleError, setTitleError] = useState("");
   const [dueDateError, setDueDateError] = useState("");
+
+  const activeProjObj = projects.find(p => Number(p.id) === Number(activeProject));
+  const activeProjectName = activeProjObj ? activeProjObj.name : 'Unknown';
 
   useEffect(() => {
     if (editingTask) {
@@ -18,14 +21,14 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
       setPriority(editingTask.priority || 'Medium');
       setStatus(editingTask.status || 'Pending');
       setDueDate(editingTask.dueDate || '');
-      setAssignedMember(editingTask.assignedMember || '');
+      setAssignedMemberId(editingTask.assignedMemberId ? String(editingTask.assignedMemberId) : '');
     } else {
       setInputText('');
       setDescription('');
       setPriority('Medium');
       setStatus('Pending');
       setDueDate('');
-      setAssignedMember('');
+      setAssignedMemberId('');
     }
     setTitleError("");
     setDueDateError("");
@@ -62,14 +65,14 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
 
     if (!valid) return;
 
-    onSubmit(inputText.trim(), description.trim(), priority, status, dueDate, assignedMember);
+    onSubmit(inputText.trim(), description.trim(), priority, status, dueDate, assignedMemberId ? Number(assignedMemberId) : null);
     if (!editingTask) {
       setInputText('');
       setDescription("");
       setPriority('Medium');
       setStatus('Pending');
       setDueDate("");
-      setAssignedMember("");
+      setAssignedMemberId("");
     }
   };
 
@@ -92,15 +95,16 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
       <h3>
         {editingTask
           ? <><Pencil size={15} strokeWidth={1.75} style={{ marginRight: 6 }} />Edit Task</>
-          : <><Plus size={15} strokeWidth={2} style={{ marginRight: 6 }} />Add Task to {activeProject}</>
+          : <><Plus size={15} strokeWidth={2} style={{ marginRight: 6 }} />Add Task to {activeProjectName}</>
         }
       </h3>
       <form onSubmit={handleSubmit} className="task-form">
         <div>
           <label>Task Title <span className="required-star">*</span></label>
           <input
+            ref={titleInputRef}
             type="text"
-            placeholder={editingTask ? "Edit task title..." : `New task in ${activeProject}...`}
+            placeholder={editingTask ? "Edit task title..." : `New task in ${activeProjectName}...`}
             value={inputText}
             onChange={(e) => { setInputText(e.target.value); if (titleError) setTitleError(""); }}
             className={`task-input ${titleError ? 'input-field-error' : ''}`}
@@ -150,11 +154,11 @@ export function TaskForm({ activeProject, members, onSubmit, editingTask, onCanc
 
         <div>
           <label>Assignee</label>
-          <select className="select-input" value={assignedMember} onChange={(e) => setAssignedMember(e.target.value)}>
+          <select className="select-input" value={assignedMemberId} onChange={(e) => setAssignedMemberId(e.target.value)}>
             <option value="">Unassigned</option>
             {members
-              .filter(m => m.project === activeProject)
-              .map(m => <option key={m.id} value={m.name}>{m.name}</option>)
+              .filter(m => Number(m.projectId) === Number(activeProject))
+              .map(m => <option key={m.id} value={m.id}>{m.name}</option>)
             }
           </select>
         </div>

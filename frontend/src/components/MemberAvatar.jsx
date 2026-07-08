@@ -5,14 +5,14 @@ import {
 } from 'lucide-react';
 
 const AVATAR_COLORS = [
-  { bg: '#e0e7ff', color: '#4f46e5' }, // indigo
-  { bg: '#ede9fe', color: '#7c3aed' }, // violet
-  { bg: '#fce7f3', color: '#be185d' }, // pink
-  { bg: '#fef3c7', color: '#b45309' }, // amber
-  { bg: '#d1fae5', color: '#065f46' }, // emerald
-  { bg: '#dbeafe', color: '#1d4ed8' }, // blue
-  { bg: '#fee2e2', color: '#b91c1c' }, // red
-  { bg: '#ccfbf1', color: '#0f766e' }, // teal
+  { bg: '#e0e7ff', color: '#4f46e5' },
+  { bg: '#ede9fe', color: '#7c3aed' },
+  { bg: '#fce7f3', color: '#be185d' },
+  { bg: '#fef3c7', color: '#b45309' }, 
+  { bg: '#d1fae5', color: '#065f46' }, 
+  { bg: '#dbeafe', color: '#1d4ed8' }, 
+  { bg: '#fee2e2', color: '#b91c1c' }, 
+  { bg: '#ccfbf1', color: '#0f766e' }, 
 ];
 
 
@@ -47,12 +47,12 @@ const ROLE_ICONS = {
 
 /**
  * MemberAvatar
- * @param {string}  name      - member name (used for colour)
- * @param {string}  role      - member role (used for icon)
- * @param {number}  size      - overall circle diameter in px (default 32)
- * @param {number}  iconSize  - lucide icon size (default 14)
- * @param {boolean} dark      - pass true to use dark-mode palette
- * @param {string}  className - extra class names
+ * @param {string}  name    
+ * @param {string}  role      
+ * @param {number}  size     
+ * @param {number}  iconSize  
+ * @param {boolean} dark     
+ * @param {string}  className
  */
 export function MemberAvatar({ name = '', role = '', size = 32, iconSize = 14, dark = false, className = '' }) {
   const idx     = hashName(name);

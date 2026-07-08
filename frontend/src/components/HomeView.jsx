@@ -18,7 +18,7 @@ const PRIORITY_COLOR = {
   'Low':    'var(--success-text)',
 };
 
-function TaskPreviewRow({ task }) {
+function TaskPreviewRow({ task, assigneeName }) {
   const s = STATUS_COLOR[task.status] || STATUS_COLOR['Pending'];
   return (
     <div className={`home-task-preview ${task.completed ? 'home-task-done' : ''}`}>
@@ -34,9 +34,9 @@ function TaskPreviewRow({ task }) {
       >
         {task.status}
       </span>
-      {task.assignedMember && (
-        <span className="home-task-assignee" title={`Assigned to ${task.assignedMember}`}>
-          {task.assignedMember.split(' ')[0]}
+      {assigneeName && (
+        <span className="home-task-assignee" title={`Assigned to ${assigneeName}`}>
+          {assigneeName.split(' ')[0]}
         </span>
       )}
     </div>
@@ -72,7 +72,6 @@ export function HomeView() {
 
   return (
     <div className="home-hub-container">
-
       <div className="hub-header">
         <div className="hub-header-left">
           <h1>Home</h1>
@@ -146,15 +145,14 @@ export function HomeView() {
 
       <div className="hub-project-list">
         {projects.map((proj) => {
-          const projectTasks   = tasks.filter(t => t.project === proj);
+          const projectTasks   = tasks.filter(t => Number(t.projectId) === Number(proj.id));
           const totalT         = projectTasks.length;
           const doneT          = projectTasks.filter(t => t.completed).length;
           const inprogressT    = projectTasks.filter(t => t.status === 'In Progress' && !t.completed).length;
           const blockersT      = projectTasks.filter(t => t.status === 'Blocker'     && !t.completed).length;
           const pct            = totalT > 0 ? Math.round((doneT / totalT) * 100) : 0;
           const hasBlocker     = blockersT > 0;
-          const projectMembers = members.filter(m => m.project === proj);
-
+          const projectMembers = members.filter(m => Number(m.projectId) === Number(proj.id));
 
           const previewTasks = [...projectTasks]
             .sort((a, b) => {
@@ -167,12 +165,11 @@ export function HomeView() {
           const remaining = totalT - 2;
 
           return (
-            <div key={proj} className={`hub-project-row ${hasBlocker ? 'hub-project-row--blocker' : ''}`}>
-
+            <div key={proj.id} className={`hub-project-row ${hasBlocker ? 'hub-project-row--blocker' : ''}`}>
               <div className="hub-row-header">
                 <div className="hub-row-left">
                   <FolderOpen size={16} strokeWidth={1.75} className="hub-row-folder-icon" />
-                  <span className="hub-row-name">{proj}</span>
+                  <span className="hub-row-name">{proj.name}</span>
                   {hasBlocker && (
                     <span className="hub-blocker-pill">
                       <CircleAlert size={10} strokeWidth={2} /> Blocker
@@ -225,13 +222,12 @@ export function HomeView() {
 
                 <button
                   className="project-card-delete"
-                  onClick={() => handleDeleteProject(proj)}
+                  onClick={() => handleDeleteProject(proj.id)}
                   title="Delete project"
                 >
                   <Trash2 size={13} strokeWidth={1.75} />
                 </button>
               </div>
-
 
               <div className="hub-row-progress">
                 <div className="hub-row-progress-track">
@@ -245,9 +241,11 @@ export function HomeView() {
 
               {totalT > 0 && (
                 <div className="hub-task-preview-section">
-                  {previewTasks.map(t => (
-                    <TaskPreviewRow key={t.id} task={t} />
-                  ))}
+                  {previewTasks.map(t => {
+                    const assignee = members.find(m => Number(m.id) === Number(t.assignedMemberId));
+                    const assigneeName = assignee ? assignee.name : null;
+                    return <TaskPreviewRow key={t.id} task={t} assigneeName={assigneeName} />;
+                  })}
                   {remaining > 0 && (
                     <p className="hub-remaining-label">
                       +{remaining} more task{remaining > 1 ? 's' : ''} in this project
@@ -259,12 +257,11 @@ export function HomeView() {
               <div className="hub-row-footer">
                 <button
                   className="hub-open-project-btn"
-                  onClick={() => setActiveProject(proj)}
+                  onClick={() => setActiveProject(proj.id)}
                 >
                   Open Project <ArrowRight size={13} strokeWidth={2} />
                 </button>
               </div>
-
             </div>
           );
         })}

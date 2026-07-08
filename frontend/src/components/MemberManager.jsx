@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Plus, Trash2, ClipboardList } from 'lucide-react';
+import { Users, Plus, Trash2, ClipboardList, Info } from 'lucide-react';
 import { useTasks, useMembers } from "../context/TaskFlowContext";
 import MemberAvatar from "./MemberAvatar";
 
@@ -16,8 +16,9 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
   const [nameError, setNameError] = useState("");
   const [isExpanded, setIsExpanded] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
+  const [duplicateAlert, setDuplicateAlert] = useState(false);
 
-  const currentProjectMembers = members.filter(m => m.project === activeProject);
+  const currentProjectMembers = members.filter(m => Number(m.projectId) === Number(activeProject));
   const totalMembers = currentProjectMembers.length;
   const { filteredTasks } = useTasks();
   const totalTasks = filteredTasks.length;
@@ -26,7 +27,21 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
     e.preventDefault();
     if (!memberName.trim()) { setNameError("Member name is required"); return; }
     setNameError("");
-    onAddMember(memberName.trim(), memberRole);
+    
+    const trimmedName = memberName.trim();
+    const isDuplicate = members.some(
+      (m) => Number(m.projectId) === Number(activeProject) &&
+             m.name.toLowerCase() === trimmedName.toLowerCase() &&
+             m.role === memberRole
+    );
+    
+    if (isDuplicate) {
+      setDuplicateAlert(true);
+      return;
+    }
+    
+    setDuplicateAlert(false);
+    onAddMember(trimmedName, memberRole);
     setMemberName("");
     setMemberRole("Frontend Developer");
     setShowAddMember(false);
@@ -35,6 +50,7 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
   const handleNameChange = (e) => {
     setMemberName(e.target.value);
     if (nameError) setNameError("");
+    if (duplicateAlert) setDuplicateAlert(false);
   };
 
   const handleCancel = () => {
@@ -42,6 +58,7 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
     setMemberName("");
     setMemberRole("Frontend Developer");
     setNameError("");
+    setDuplicateAlert(false);
   };
 
   if (!activeProject) return null;
@@ -100,6 +117,12 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
                   autoFocus
                 />
                 {nameError && <p className="inline-field-error">{nameError}</p>}
+                {duplicateAlert && (
+                  <div className="inline-field-info">
+                    <Info size={14} strokeWidth={2} />
+                    <p className="inline-field-info-text">Member with this name and role already exists in this project</p>
+                  </div>
+                )}
                 <select
                   className="select-input inline-member-select"
                   value={memberRole}

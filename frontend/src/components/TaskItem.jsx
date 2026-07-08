@@ -1,7 +1,19 @@
 import React from 'react';
 import { Pencil, Trash2, Calendar, UserRound } from 'lucide-react';
 
-export function TaskItem({ task, onToggleTask, onDeleteTask, onStartEdit, isEditing }) {
+const highlightText = (text, search) => {
+  if (!search || !search.trim()) return text;
+  const regex = new RegExp(`(${search.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  return parts.map((part, i) =>
+    regex.test(part) ? <mark key={i} className="search-highlight">{part}</mark> : part
+  );
+};
+
+export function TaskItem({ task, onToggleTask, onDeleteTask, onStartEdit, isEditing, members = [], searchTerm = '' }) {
+  const assignee = members.find(m => Number(m.id) === Number(task.assignedMemberId));
+  const assigneeName = assignee ? assignee.name : null;
+
   return (
     <li className={`task-item ${task.completed ? 'completed' : ''} ${isEditing ? 'editing' : ''}`}>
       <div
@@ -16,7 +28,7 @@ export function TaskItem({ task, onToggleTask, onDeleteTask, onStartEdit, isEdit
           onClick={(e) => e.stopPropagation()}
         />
         <div className="task-text">
-          <div>{task.text}</div>
+          <div>{highlightText(task.text, searchTerm)}</div>
 
           {task.description && (
             <p className="task-description">{task.description}</p>
@@ -40,10 +52,10 @@ export function TaskItem({ task, onToggleTask, onDeleteTask, onStartEdit, isEdit
               </p>
             )}
 
-            {task.assignedMember && (
+            {assigneeName && (
               <p className="task-member">
                 <UserRound size={12} strokeWidth={1.75} />
-                <strong>{task.assignedMember}</strong>
+                <strong>{assigneeName}</strong>
               </p>
             )}
           </div>

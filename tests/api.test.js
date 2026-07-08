@@ -34,25 +34,28 @@ test('API Backend - Create, Fetch, and Delete a Test Project & Task', async () =
   if (resHealth.status !== 200) {
     return;
   }
+  
   const createProjRes = await fetch(`${BASE_URL}/projects`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: testProjectName })
   });
   assert.strictEqual(createProjRes.status, 201);
-  const projData = await createProjRes.json();
-  assert.strictEqual(projData.message, 'Project added successfully');
+  const projResponse = await createProjRes.json();
+  assert.strictEqual(projResponse.message, 'Project added successfully');
+  const projData = projResponse.data;
+  assert.ok(projData && projData.id);
 
   const getProjsRes = await fetch(`${BASE_URL}/projects`);
   const projects = await getProjsRes.json();
-  assert.ok(projects.includes(testProjectName));
+  assert.ok(projects.some(p => p.name === testProjectName));
 
   const createTaskRes = await fetch(`${BASE_URL}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       id: testTaskId,
-      project: testProjectName,
+      projectId: projData.id,
       text: 'Temporary Integration Test Task',
       description: 'API test coverage',
       priority: 'Medium',
@@ -67,14 +70,14 @@ test('API Backend - Create, Fetch, and Delete a Test Project & Task', async () =
   const tasks = await getTasksRes.json();
   const foundTask = tasks.find(t => Number(t.id) === testTaskId);
   assert.ok(foundTask);
-  assert.strictEqual(foundTask.project, testProjectName);
+  assert.strictEqual(Number(foundTask.projectId), Number(projData.id));
 
-  const deleteProjRes = await fetch(`${BASE_URL}/projects/${encodeURIComponent(testProjectName)}`, {
+  const deleteProjRes = await fetch(`${BASE_URL}/projects/${projData.id}`, {
     method: 'DELETE'
   });
   assert.strictEqual(deleteProjRes.status, 200);
 
   const getProjsPostRes = await fetch(`${BASE_URL}/projects`);
   const projectsPost = await getProjsPostRes.json();
-  assert.ok(!projectsPost.includes(testProjectName));
+  assert.ok(!projectsPost.some(p => p.name === testProjectName));
 });

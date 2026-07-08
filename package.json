@@ -11,5 +11,11 @@
     "test": "node tests/taskValidator.test.js",
     "test:api": "node tests/api.test.js",
     "test:all": "node tests/taskValidator.test.js && node tests/api.test.js"
+  },
+  "devDependencies": {
+    "plantuml": "^0.0.2"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
   }
 }
