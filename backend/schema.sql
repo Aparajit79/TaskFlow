@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS task_matrix.tasks (
     due_date DATE,
     assigned_member_id INT REFERENCES task_matrix.members(id) ON DELETE SET NULL,
     completed BOOLEAN NOT NULL DEFAULT FALSE,
+    completed_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   LayoutGrid, CheckSquare, BarChart2, Users,
-  Settings, HelpCircle, Folder, Plus, ChevronDown, Trash2, Zap
+  Settings, HelpCircle, Folder, Plus, ChevronDown, Trash2, Zap, Terminal
 } from 'lucide-react';
 import { useTasks } from "../context/TaskFlowContext";
 
@@ -178,6 +178,16 @@ export function Sidebar() {
             <div className="taskmatrix-nav-btn-content">
               <BarChart2 size={18} className="nav-icon" />
               <span>Analytics</span>
+            </div>
+          </button>
+
+          <button
+            className={`taskmatrix-nav-btn ${activeView === 'PowerQuery' ? 'active' : ''}`}
+            onClick={() => setActiveView('PowerQuery')}
+          >
+            <div className="taskmatrix-nav-btn-content">
+              <Terminal size={18} className="nav-icon" />
+              <span>Power Query</span>
             </div>
           </button>
 

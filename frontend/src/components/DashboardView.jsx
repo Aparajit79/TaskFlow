@@ -1,10 +1,8 @@
 import React from 'react';
 import {
-  FolderOpen, Users, ClipboardList, CircleCheck,
-  Zap, CircleAlert, ArrowRight
+  FolderOpen, Users, CircleCheck, Download
 } from 'lucide-react';
 import { useTaskFlow } from '../context/TaskFlowContext';
-import MemberAvatar from './MemberAvatar';
 
 function DonutChart({ segments, total }) {
   const radius = 54;
@@ -23,7 +21,7 @@ function DonutChart({ segments, total }) {
     });
 
   return (
-    <div className="donut-wrapper">
+    <div className="donut-wrapper" style={{ margin: '0 auto 16px auto', width: '150px', height: '150px', position: 'relative' }}>
       <svg viewBox="0 0 140 140" className="donut-svg">
         <circle cx="70" cy="70" r={radius} fill="none" stroke="var(--border-color)" strokeWidth={stroke} />
         {total === 0 ? (
@@ -42,58 +40,30 @@ function DonutChart({ segments, total }) {
           />
         ))}
       </svg>
-      <div className="donut-center">
-        <span className="donut-total">{total}</span>
-        <span className="donut-label">tasks</span>
-      </div>
-    </div>
-  );
-}
-
-function PriorityBar({ tasks }) {
-  const total = tasks.length;
-  const high   = tasks.filter(t => t.priority === 'High' && !t.completed).length;
-  const medium = tasks.filter(t => t.priority === 'Medium' && !t.completed).length;
-  const low    = tasks.filter(t => t.priority === 'Low' && !t.completed).length;
-
-  const pct = (n) => total === 0 ? 0 : Math.round((n / total) * 100);
-
-  const bars = [
-    { label: 'High',   value: high,   pct: pct(high),   color: 'var(--danger-text)' },
-    { label: 'Medium', value: medium, pct: pct(medium), color: 'var(--warning-text)' },
-    { label: 'Low',    value: low,    pct: pct(low),    color: 'var(--success-text)' },
-  ];
-
-  return (
-    <div className="priority-bar-card">
-      <p className="chart-section-label">Open Tasks by Priority</p>
-      <div className="priority-bars">
-        {bars.map(b => (
-          <div key={b.label} className="priority-bar-row">
-            <span className="priority-bar-label">{b.label}</span>
-            <div className="priority-bar-track">
-              <div
-                className="priority-bar-fill"
-                style={{ width: `${b.pct}%`, background: b.color }}
-              />
-            </div>
-            <span className="priority-bar-count">{b.value}</span>
-          </div>
-        ))}
+      <div className="donut-center" style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <span className="donut-total" style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-main)' }}>{total}</span>
+        <span className="donut-label" style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>tasks</span>
       </div>
     </div>
   );
 }
 
 export function DashboardView() {
-  const { projects = [], members = [], tasks = [], setActiveProject } = useTaskFlow();
+  const { projects = [], members = [], tasks = [] } = useTaskFlow();
 
   const total      = tasks.length;
   const completed  = tasks.filter(t => t.completed).length;
   const inprogress = tasks.filter(t => t.status === 'In Progress' && !t.completed).length;
   const pending    = tasks.filter(t => t.status === 'Pending' && !t.completed).length;
   const blockers   = tasks.filter(t => t.status === 'Blocker' && !t.completed).length;
-  const completionRate = total === 0 ? 0 : Math.round((completed / total) * 100);
 
   const donutSegments = [
     { label: 'Completed',   value: completed,  color: 'var(--success-text)' },
@@ -102,47 +72,194 @@ export function DashboardView() {
     { label: 'Blocker',     value: blockers,   color: 'var(--blocker-text)' },
   ];
 
+  // Calculate dynamic weekly completions
+  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weeklyCounts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+  
+  // Get start of the current week (Monday)
+  const now = new Date();
+  const currentDayIndex = now.getDay(); // 0 is Sun, 1 is Mon, etc.
+  const distanceToMonday = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - distanceToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  tasks.forEach(t => {
+    if (t.completed && t.completedAt) {
+      const compDate = new Date(t.completedAt);
+      if (compDate >= startOfWeek && compDate <= endOfWeek) {
+        const dayIdx = compDate.getDay(); // 0 is Sun, 1 is Mon, etc.
+        const dayName = dayIdx === 0 ? 'Sun' : daysOfWeek[dayIdx - 1];
+        weeklyCounts[dayName] = (weeklyCounts[dayName] || 0) + 1;
+      }
+    }
+  });
+
+  const weeklyData = daysOfWeek.map(day => ({
+    label: day,
+    value: weeklyCounts[day]
+  }));
+
+  const maxWeeklyValue = Math.max(...weeklyData.map(d => d.value), 1);
+
   const kpis = [
-    { icon: <FolderOpen size={18} strokeWidth={1.75} />, label: 'Projects',    value: projects.length, accent: 'var(--primary)' },
-    { icon: <Users      size={18} strokeWidth={1.75} />, label: 'Members',     value: members.length,  accent: 'var(--inprogress-text)' },
-    { icon: <ClipboardList size={18} strokeWidth={1.75} />, label: 'Total Tasks', value: total,        accent: 'var(--text-muted)' },
-    { icon: <CircleCheck size={18} strokeWidth={1.75} />, label: 'Completed',  value: completed,       accent: 'var(--success-text)' },
-    { icon: <Zap         size={18} strokeWidth={1.75} />, label: 'In Progress',value: inprogress,      accent: 'var(--warning-text)' },
-    { icon: <CircleAlert size={18} strokeWidth={1.75} />, label: 'Blockers',   value: blockers,        accent: 'var(--blocker-text)' },
+    { icon: <CircleCheck size={18} strokeWidth={2} />, label: 'Total Tasks Completed', value: completed, accent: 'var(--success-text)' },
+    { icon: <FolderOpen  size={18} strokeWidth={2} />, label: 'Active Projects',       value: projects.length, accent: 'var(--primary)' },
+    { icon: <Users       size={18} strokeWidth={2} />, label: 'Team Members',          value: members.length, accent: 'var(--inprogress-text)' },
   ];
 
+  const handleExport = () => {
+    const reportData = {
+      generatedAt: new Date().toISOString(),
+      metrics: {
+        totalTasks: total,
+        completedTasks: completed,
+        inProgressTasks: inprogress,
+        pendingTasks: pending,
+        blockers: blockers,
+        activeProjects: projects.length,
+        teamMembers: members.length
+      },
+      weeklyCompletions: weeklyCounts
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `taskmatrix_analytics_report_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
   return (
-    <div className="dashboard-view-container">
-      <div className="dashboard-header">
-        <h1>Dashboard</h1>
-        <p className="dashboard-subtitle">Workspace overview — tasks, projects, and team activity at a glance.</p>
+    <div className="dashboard-view-container" style={{ padding: '24px 0' }}>
+      {/* Header section matching mockup style */}
+      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <div>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 6px 0', letterSpacing: '-0.5px' }}>Analytics</h1>
+          <p className="dashboard-subtitle" style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>Track your performance and productivity metrics.</p>
+        </div>
+        <button 
+          onClick={handleExport}
+          className="export-report-btn"
+        >
+          <Download size={14} />
+          Export Report
+        </button>
       </div>
 
-      <div className="kpi-row">
+      <div className="kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         {kpis.map((k) => (
-          <div key={k.label} className="kpi-card" style={{ '--kpi-accent': k.accent }}>
-            <span className="kpi-icon">{k.icon}</span>
-            <div className="kpi-body">
-              <span className="kpi-value">{k.value}</span>
-              <span className="kpi-label">{k.label}</span>
+          <div 
+            key={k.label} 
+            className="kpi-card" 
+            style={{ 
+              backgroundColor: 'var(--bg-card)', 
+              border: '1px solid var(--border-color)', 
+              borderRadius: '16px', 
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)' }}>{k.label}</span>
+              <span style={{ 
+                width: '32px', 
+                height: '32px', 
+                borderRadius: '50%', 
+                backgroundColor: 'var(--border-color)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                color: k.accent,
+                flexShrink: 0
+              }}>
+                {k.icon}
+              </span>
             </div>
+            <span style={{ fontSize: '36px', fontWeight: '700', color: 'var(--text-main)', letterSpacing: '-1px', marginTop: '4px' }}>
+              {k.value}
+            </span>
           </div>
         ))}
       </div>
 
-      <div className="charts-row">
-        <div className="dash-card donut-card">
-          <p className="chart-section-label">Task Status Distribution</p>
-          <div className="donut-layout">
+      {/* Weekly Completion & Pie Chart Layout */}
+      <div className="charts-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
+        
+        {/* Weekly Completion Progress Card */}
+        <div 
+          className="dash-card" 
+          style={{ 
+            backgroundColor: 'var(--bg-card)', 
+            border: '1px solid var(--border-color)', 
+            borderRadius: '16px', 
+            padding: '24px' 
+          }}
+        >
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 24px 0' }}>Weekly Task Completion</h3>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {weeklyData.map(day => {
+              const percentage = Math.round((day.value / maxWeeklyValue) * 100);
+              return (
+                <div key={day.label} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: '600' }}>
+                    <span style={{ color: 'var(--text-main)' }}>{day.label}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{day.value} task{day.value !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div style={{ height: '8px', backgroundColor: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden', width: '100%' }}>
+                    <div 
+                      style={{ 
+                        height: '100%', 
+                        width: `${percentage}%`, 
+                        backgroundColor: 'var(--primary)', 
+                        borderRadius: '4px',
+                        transition: 'width 0.5s ease-out'
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Task Status Distribution (Donut Chart) Card */}
+        <div 
+          className="dash-card" 
+          style={{ 
+            backgroundColor: 'var(--bg-card)', 
+            border: '1px solid var(--border-color)', 
+            borderRadius: '16px', 
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}
+        >
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 24px 0' }}>Task Status Distribution</h3>
+          
+          <div className="donut-layout" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', flex: 1, justifyContent: 'center' }}>
             <DonutChart segments={donutSegments} total={total} />
-            <div className="donut-legend">
+            
+            <div className="donut-legend" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
               {donutSegments.map(s => (
-                <div key={s.label} className="legend-row">
-                  <span className="legend-dot" style={{ background: s.color }} />
-                  <span className="legend-text">{s.label}</span>
-                  <span className="legend-val">
+                <div key={s.label} className="legend-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                  <span className="legend-dot" style={{ width: '10px', height: '10px', borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
+                  <span className="legend-text" style={{ color: 'var(--text-muted)', flex: 1 }}>{s.label}</span>
+                  <span className="legend-val" style={{ fontWeight: '700', color: 'var(--text-main)' }}>
                     {s.value}
-                    <em>{total > 0 ? ` · ${Math.round((s.value / total) * 100)}%` : ''}</em>
                   </span>
                 </div>
               ))}
@@ -150,80 +267,7 @@ export function DashboardView() {
           </div>
         </div>
 
-        <div className="dash-card rate-card">
-          <p className="chart-section-label">Overall Completion</p>
-          <div className="completion-rate-display">
-            <span className="completion-pct">{completionRate}%</span>
-            <span className="completion-sub">{completed} of {total} tasks done</span>
-          </div>
-          <div className="rate-bar-track">
-            <div className="rate-bar-fill" style={{ width: `${completionRate}%` }} />
-          </div>
-
-          <PriorityBar tasks={tasks} />
-        </div>
       </div>
-
-      {projects.length > 0 && (
-        <div className="dash-projects-section">
-          <p className="chart-section-label" style={{ marginBottom: 12 }}>Projects</p>
-          <div className="dash-projects-list">
-            {projects.map((proj) => {
-              const pt = tasks.filter(t => Number(t.projectId) === Number(proj.id));
-              const done = pt.filter(t => t.completed).length;
-              const pct  = pt.length > 0 ? Math.round((done / pt.length) * 100) : 0;
-              const hasBlocker = pt.some(t => t.status === 'Blocker' && !t.completed);
-              const pm   = members.filter(m => Number(m.projectId) === Number(proj.id));
-
-              return (
-                <div key={proj.id} className="dash-project-row">
-                  <div className="dpr-name">
-                    <FolderOpen size={14} strokeWidth={1.75} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-                    <span>{proj.name}</span>
-                    {hasBlocker && (
-                      <span className="blocker-badge">
-                        <CircleAlert size={11} strokeWidth={2} /> Blocker
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="dpr-progress">
-                    <div className="dpr-bar-track">
-                      <div
-                        className={`dpr-bar-fill ${hasBlocker ? 'has-blocker' : ''}`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="dpr-pct">{pct}%</span>
-                  </div>
-
-                  <div className="dpr-meta">
-                    <span className="task-count-pill">{pt.length} tasks</span>
-                    <div className="overlapping-avatars" style={{ paddingLeft: 0 }}>
-                      {pm.slice(0, 4).map(m => (
-                        <MemberAvatar
-                          key={m.id}
-                          name={m.name}
-                          role={m.role}
-                          size={24}
-                          iconSize={11}
-                          className="stacked-avatar"
-                        />
-                      ))}
-                      {pm.length > 4 && <div className="stacked-avatar more-avatar">+{pm.length - 4}</div>}
-                      {pm.length === 0 && <span className="no-members-muted">No members</span>}
-                    </div>
-                  </div>
-
-                  <button className="dpr-open-btn" onClick={() => setActiveProject(proj.id)}>
-                    Open <ArrowRight size={13} strokeWidth={2} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

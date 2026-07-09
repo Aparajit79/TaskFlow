@@ -60,7 +60,11 @@ export function TaskFlowProvider({ children }) {
 
   const handleAddProject = useCallback(async (name) => {
     const trimmed = name.trim();
-    if (!trimmed || projects.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) return;
+    if (!trimmed) return;
+    if (projects.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) {
+      alert(`A project with the name "${trimmed}" already exists.`);
+      return;
+    }
 
     try {
       const res = await fetch(`${API_URL}/projects`, {
@@ -266,6 +270,40 @@ export function TaskFlowProvider({ children }) {
     }
   }, []);
 
+  const handleQueryTasks = useCallback(async (filters, useFallback = false) => {
+    try {
+      const response = await fetch(`${API_URL}/tasks/query`, {
+        method: useFallback ? 'POST' : 'QUERY',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(filters)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          ok: true,
+          data: data.map(t => ({
+            ...t,
+            id: Number(t.id),
+            projectId: Number(t.projectId),
+            assignedMemberId: t.assignedMemberId ? Number(t.assignedMemberId) : null
+          })),
+          methodUsed: response.headers.get('X-Response-Method') || (useFallback ? 'POST' : 'QUERY'),
+          cacheStatus: response.headers.get('X-Cache') || 'BYPASS',
+          responseTime: response.headers.get('X-Response-Time') || 'unknown'
+        };
+      }
+      return { ok: false, error: `Server returned status ${response.status}` };
+    } catch (err) {
+      console.error("QUERY request failed, attempting fallback POST:", err);
+      if (!useFallback) {
+        return handleQueryTasks(filters, true);
+      }
+      return { ok: false, error: err.message };
+    }
+  }, []);
+
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => Number(task.projectId) === Number(activeProject));
   }, [tasks, activeProject]);
@@ -286,7 +324,8 @@ export function TaskFlowProvider({ children }) {
     handleToggleTask,
     handleDeleteTask,
     handleEditTask,
-    handleDeleteProject
+    handleDeleteProject,
+    handleQueryTasks
   }), [
     projects,
     members,
@@ -303,7 +342,8 @@ export function TaskFlowProvider({ children }) {
     handleToggleTask,
     handleDeleteTask,
     handleEditTask,
-    handleDeleteProject
+    handleDeleteProject,
+    handleQueryTasks
   ]);
 
   return (
@@ -330,7 +370,8 @@ export function useTasks() {
     handleDeleteTask: context.handleDeleteTask,
     handleEditTask: context.handleEditTask,
     handleDeleteProject: context.handleDeleteProject,
-    handleAddProject: context.handleAddProject
+    handleAddProject: context.handleAddProject,
+    handleQueryTasks: context.handleQueryTasks
   };
 }
 
