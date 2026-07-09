@@ -83,7 +83,7 @@ export function TaskList() {
       const priorityWeight = { High: 3, Medium: 2, Low: 1 };
       const weightA = priorityWeight[a.priority] || 0;
       const weightB = priorityWeight[b.priority] || 0;
-      return weightB - weightA; // High to Low
+      return weightB - weightA; 
     }
     return 0; // Default (insertion order)
   });

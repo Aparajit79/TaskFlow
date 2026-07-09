@@ -13,17 +13,15 @@ export function TeamView() {
     tasks = []
   } = useTaskFlow();
 
-  const [viewMode, setViewMode] = useState('project'); // 'project' or 'overall'
+  const [viewMode, setViewMode] = useState('project'); 
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('Frontend Developer');
   const [nameError, setNameError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [duplicateAlert, setDuplicateAlert] = useState(false);
 
-  // Filter members belonging to the active project
   const currentProjectMembers = members.filter((m) => Number(m.projectId) === Number(activeProject));
 
-  // Select displayed members list based on viewMode
   const displayedMembers = viewMode === 'project' ? currentProjectMembers : members;
 
   const handleSubmit = (e) => {
@@ -161,7 +159,6 @@ export function TeamView() {
             </button>
           )}
 
-          {/* Add Member Modal */}
           {showAddForm && viewMode === 'project' && (
             <div className="modal-overlay" onClick={() => setShowAddForm(false)}>
               <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
@@ -209,7 +206,6 @@ export function TeamView() {
             </div>
           )}
 
-          {/* Members Directory Grid */}
           {displayedMembers.length === 0 ? (
             <div className="empty-state" style={{ padding: '40px 0' }}>
               <Users size={24} style={{ color: 'var(--text-light)', marginBottom: 8 }} />
@@ -228,12 +224,10 @@ export function TeamView() {
                 
                 return (
                   <div className="member-view-card" key={member.id}>
-                    {/* Avatar Icon */}
                     <div style={{ marginBottom: '16px' }}>
                       <MemberAvatar name={member.name} role={member.role} size={56} iconSize={24} />
                     </div>
                     
-                    {/* Title & Role Info */}
                     <div className="member-view-card-body" style={{ margin: 0, padding: 0 }}>
                       <h4 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
                         {member.name}
@@ -243,7 +237,6 @@ export function TeamView() {
                       </span>
                     </div>
 
-                    {/* Workspace Indicator Badge (Overall View only) */}
                     {viewMode === 'overall' && (
                       <div style={{ marginBottom: '12px' }}>
                         <span className="workspace-cell-name" style={{ display: 'inline-block' }}>
@@ -252,17 +245,14 @@ export function TeamView() {
                       </div>
                     )}
 
-                    {/* Status Badge */}
                     <div style={{ marginBottom: '16px' }}>
                       <span className={`member-status-badge ${isActive ? 'active' : 'away'}`}>
                         {isActive ? 'Assigned' : 'Unassigned'}
                       </span>
                     </div>
 
-                    {/* Separator Line */}
                     <div className="member-card-separator"></div>
 
-                    {/* Active Tasks Row */}
                     <div className="member-tasks-row" style={{ marginBottom: '16px' }}>
                       <span>Active Tasks</span>
                       <strong style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>
@@ -270,7 +260,6 @@ export function TeamView() {
                       </strong>
                     </div>
 
-                    {/* Remove Button */}
                     <button
                       className="member-card-remove-btn"
                       onClick={() => onDeleteMember(member.id)}

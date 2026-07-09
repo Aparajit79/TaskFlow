@@ -3,6 +3,7 @@ import {
   FolderOpen, Users, CircleCheck, Download
 } from 'lucide-react';
 import { useTaskFlow } from '../context/TaskFlowContext';
+import Papa from "papaparse";
 
 function DonutChart({ segments, total }) {
   const radius = 54;
@@ -112,29 +113,28 @@ export function DashboardView() {
     { icon: <Users       size={18} strokeWidth={2} />, label: 'Team Members',          value: members.length, accent: 'var(--inprogress-text)' },
   ];
 
-  const handleExport = () => {
-    const reportData = {
-      generatedAt: new Date().toISOString(),
-      metrics: {
-        totalTasks: total,
-        completedTasks: completed,
-        inProgressTasks: inprogress,
-        pendingTasks: pending,
-        blockers: blockers,
-        activeProjects: projects.length,
-        teamMembers: members.length
-      },
-      weeklyCompletions: weeklyCounts
-    };
+const handleExport = () => {
+  const csvData = [
+    { Metric: "Total Tasks", Value: total },
+    { Metric: "Completed Tasks", Value: completed },
+    { Metric: "In Progress Tasks", Value: inprogress },
+    { Metric: "Pending Tasks", Value: pending },
+    { Metric: "Blockers", Value: blockers },
+    { Metric: "Active Projects", Value: projects.length },
+    { Metric: "Team Members", Value: members.length },
+  ];
 
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `taskmatrix_analytics_report_${Date.now()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
+  const csv = Papa.unparse(csvData);
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "task-report.csv";
+  link.click();
+
+  URL.revokeObjectURL(link.href);
+};
 
   return (
     <div className="dashboard-view-container" style={{ padding: '24px 0' }}>
@@ -197,7 +197,6 @@ export function DashboardView() {
       {/* Weekly Completion & Pie Chart Layout */}
       <div className="charts-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
         
-        {/* Weekly Completion Progress Card */}
         <div 
           className="dash-card" 
           style={{ 

@@ -176,7 +176,6 @@ export function PowerQueryView() {
 
       {/* Main Split Layout */}
       <div className="power-query-split-layout">
-        {/* Left: Terminal Console */}
         <div className="app-card power-query-terminal">
           <div className="terminal-header">
             <div className="terminal-header-left">
