@@ -7,6 +7,7 @@ import SettingsView from './components/SettingsView';
 import TeamView from './components/TeamView';
 import HelpView from './components/HelpView';
 import PowerQueryView from './components/PowerQueryView';
+import KanbanView from './components/KanbanView';
 import { TaskFlowProvider, useTaskFlow } from './context/TaskFlowContext';
 
 function AppContent() {
@@ -25,6 +26,8 @@ function AppContent() {
         return <TaskList />;
       case 'Dashboard':
         return <DashboardView />;
+      case 'Kanban':
+        return <KanbanView />;
       case 'Team':
         return <TeamView />;
       case 'Settings':

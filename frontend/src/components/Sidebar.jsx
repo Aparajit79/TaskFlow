@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   LayoutGrid, CheckSquare, BarChart2, Users,
-  Settings, HelpCircle, Folder, Plus, ChevronDown, Trash2, Zap, Terminal
+  Settings, HelpCircle, Folder, Plus, ChevronDown, Trash2, Zap, Terminal, Kanban
 } from 'lucide-react';
 import { useTasks } from "../context/TaskFlowContext";
 
@@ -169,6 +169,27 @@ export function Sidebar() {
             {projects.length > 0 && activeProject && activeTasksCount > 0 && (
               <span className="taskmatrix-badge">{activeTasksCount}</span>
             )}
+          </button>
+
+          <button
+            className={`taskmatrix-nav-btn ${activeView === 'Kanban' ? 'active' : ''}`}
+            onClick={() => {
+              if (projects.length > 0) {
+                if (!activeProject) {
+                  setActiveProject(projects[0].id);
+                }
+                setActiveView('Kanban');
+              } else {
+                setActiveView('Home');
+              }
+            }}
+            disabled={projects.length === 0}
+            style={{ opacity: projects.length === 0 ? 0.6 : 1 }}
+          >
+            <div className="taskmatrix-nav-btn-content">
+              <Kanban size={18} className="nav-icon" />
+              <span>Kanban Board</span>
+            </div>
           </button>
 
           <button
