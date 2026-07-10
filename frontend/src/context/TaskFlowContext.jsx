@@ -5,58 +5,113 @@ const TaskFlowContext = createContext();
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function TaskFlowProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [projects, setProjects] = useState([]);
   const [members, setMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [activeProject, setActiveProject] = useState('');
   const [activeView, setActiveView] = useState('Home');
 
+  const fetchWithCredentials = useCallback((url, options = {}) => {
+    return fetch(url, {
+      ...options,
+      credentials: 'include'
+    });
+  }, []);
+
   const handleSetActiveProject = useCallback((projId) => {
     setActiveProject(Number(projId));
     setActiveView('Project');
   }, []);
 
-  useEffect(() => {
-    async function initFetch() {
-      try {
-        const [projRes, memRes, taskRes] = await Promise.all([
-          fetch(`${API_URL}/projects`),
-          fetch(`${API_URL}/members`),
-          fetch(`${API_URL}/tasks`)
-        ]);
+  const fetchWorkspaceData = useCallback(async () => {
+    try {
+      const [projRes, memRes, taskRes] = await Promise.all([
+        fetchWithCredentials(`${API_URL}/projects`),
+        fetchWithCredentials(`${API_URL}/members`),
+        fetchWithCredentials(`${API_URL}/tasks`)
+      ]);
 
-        if (projRes.ok && memRes.ok && taskRes.ok) {
-          const projs = await projRes.json();
-          const mems = await memRes.json();
-          const tsks = await taskRes.json();
+      if (projRes.ok && memRes.ok && taskRes.ok) {
+        const projs = await projRes.json();
+        const mems = await memRes.json();
+        const tsks = await taskRes.json();
 
-          setProjects(projs);
-          
-          const formattedMembers = mems.map(m => ({
-            ...m,
-            id: Number(m.id),
-            projectId: Number(m.projectId)
-          }));
-          setMembers(formattedMembers);
-          
-          const formattedTasks = tsks.map(t => ({
-            ...t,
-            id: Number(t.id),
-            projectId: Number(t.projectId),
-            assignedMemberId: t.assignedMemberId ? Number(t.assignedMemberId) : null
-          }));
-          setTasks(formattedTasks);
+        setProjects(projs);
+        
+        const formattedMembers = mems.map(m => ({
+          ...m,
+          id: Number(m.id),
+          projectId: Number(m.projectId),
+          userId: m.userId ? Number(m.userId) : null
+        }));
+        setMembers(formattedMembers);
+        
+        const formattedTasks = tsks.map(t => ({
+          ...t,
+          id: Number(t.id),
+          projectId: Number(t.projectId),
+          assignedMemberId: t.assignedMemberId ? Number(t.assignedMemberId) : null
+        }));
+        setTasks(formattedTasks);
 
-          if (projs.length > 0) {
-            setActiveProject(Number(projs[0].id));
+        setActiveProject((currentActive) => {
+          if (currentActive && projs.some(p => Number(p.id) === Number(currentActive))) {
+            return Number(currentActive);
           }
+          return projs.length > 0 ? Number(projs[0].id) : '';
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load workspace data:", err);
+    }
+  }, [fetchWithCredentials]);
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetchWithCredentials(`${API_URL}/auth/me`);
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        } else {
+          setUser(null);
         }
       } catch (err) {
-        console.error("Connection to database API failed, using empty memory state:", err);
+        console.error("Session verification failed:", err);
+        setUser(null);
+      } finally {
+        setAuthLoading(false);
       }
     }
-    initFetch();
+    checkAuth();
+  }, [fetchWithCredentials]);
+
+  useEffect(() => {
+    if (user) {
+      fetchWorkspaceData();
+    } else {
+      setProjects([]);
+      setMembers([]);
+      setTasks([]);
+      setActiveProject('');
+      setActiveView('Home');
+    }
+  }, [user, fetchWorkspaceData]);
+
+  const handleLoginSuccess = useCallback((userData) => {
+    setUser(userData);
   }, []);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await fetchWithCredentials(`${API_URL}/auth/logout`, { method: 'POST' });
+      setUser(null);
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  }, [fetchWithCredentials]);
 
   const handleAddProject = useCallback(async (name) => {
     const trimmed = name.trim();
@@ -67,7 +122,7 @@ export function TaskFlowProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_URL}/projects`, {
+      const res = await fetchWithCredentials(`${API_URL}/projects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: trimmed })
@@ -75,13 +130,13 @@ export function TaskFlowProvider({ children }) {
       if (res.ok) {
         const body = await res.json();
         const newProj = body.data ?? body;
-        setProjects((prev) => [...prev, newProj]);
+        await fetchWorkspaceData();
         setActiveProject(Number(newProj.id));
       }
     } catch (err) {
       console.error(err);
     }
-  }, [projects]);
+  }, [projects, fetchWithCredentials, fetchWorkspaceData]);
 
   const handleDeleteProject = useCallback(async (projId) => {
     const proj = projects.find(p => p.id === projId);
@@ -94,24 +149,16 @@ export function TaskFlowProvider({ children }) {
     if (!window.confirm(msg)) return;
 
     try {
-      const res = await fetch(`${API_URL}/projects/${projId}`, {
+      const res = await fetchWithCredentials(`${API_URL}/projects/${projId}`, {
         method: 'DELETE'
       });
       if (res.ok) {
-        setProjects((prev) => {
-          const updated = prev.filter((p) => p.id !== projId);
-          if (activeProject === projId) {
-            setActiveProject(updated.length > 0 ? Number(updated[0].id) : '');
-          }
-          return updated;
-        });
-        setTasks((prev) => prev.filter((t) => Number(t.projectId) !== Number(projId)));
-        setMembers((prev) => prev.filter((m) => Number(m.projectId) !== Number(projId)));
+        await fetchWorkspaceData();
       }
     } catch (err) {
       console.error(err);
     }
-  }, [tasks, activeProject, projects]);
+  }, [tasks, projects, fetchWithCredentials, fetchWorkspaceData]);
 
   const handleAddTask = useCallback(async (text, description, priority, status, dueDate, assignedMemberId) => {
     const trimmed = text.trim();
@@ -120,7 +167,7 @@ export function TaskFlowProvider({ children }) {
     const id = Date.now();
 
     try {
-      const res = await fetch(`${API_URL}/tasks`, {
+      const res = await fetchWithCredentials(`${API_URL}/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -136,25 +183,22 @@ export function TaskFlowProvider({ children }) {
       });
 
       if (res.ok) {
-        const newTask = await res.json();
-        setTasks((prev) => [...prev, {
-          ...newTask,
-          id: Number(newTask.id),
-          projectId: Number(newTask.projectId),
-          assignedMemberId: newTask.assignedMemberId ? Number(newTask.assignedMemberId) : null
-        }]);
+        await fetchWorkspaceData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to add task');
       }
     } catch (err) {
       console.error(err);
     }
-  }, [activeProject]);
+  }, [activeProject, fetchWithCredentials, fetchWorkspaceData]);
 
   const handleToggleTask = useCallback(async (id) => {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
 
     try {
-      const res = await fetch(`${API_URL}/tasks/${id}`, {
+      const res = await fetchWithCredentials(`${API_URL}/tasks/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -164,25 +208,22 @@ export function TaskFlowProvider({ children }) {
       });
 
       if (res.ok) {
-        const updatedTask = await res.json();
-        setTasks((prev) => prev.map((t) => t.id === id ? {
-          ...updatedTask,
-          id: Number(updatedTask.id),
-          projectId: Number(updatedTask.projectId),
-          assignedMemberId: updatedTask.assignedMemberId ? Number(updatedTask.assignedMemberId) : null
-        } : t));
+        await fetchWorkspaceData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to toggle task');
       }
     } catch (err) {
       console.error(err);
     }
-  }, [tasks]);
+  }, [tasks, fetchWithCredentials, fetchWorkspaceData]);
 
   const handleEditTask = useCallback(async (id, text, description, priority, status, dueDate, assignedMemberId) => {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
 
     try {
-      const res = await fetch(`${API_URL}/tasks/${id}`, {
+      const res = await fetchWithCredentials(`${API_URL}/tasks/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -197,44 +238,37 @@ export function TaskFlowProvider({ children }) {
       });
 
       if (res.ok) {
-        const updatedTask = await res.json();
-        setTasks((prev) => prev.map((t) => t.id === id ? {
-          ...updatedTask,
-          id: Number(updatedTask.id),
-          projectId: Number(updatedTask.projectId),
-          assignedMemberId: updatedTask.assignedMemberId ? Number(updatedTask.assignedMemberId) : null
-        } : t));
+        await fetchWorkspaceData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to edit task');
       }
     } catch (err) {
       console.error(err);
     }
-  }, [tasks]);
+  }, [tasks, fetchWithCredentials, fetchWorkspaceData]);
 
   const handleDeleteTask = useCallback(async (id) => {
     if (!window.confirm('Delete this task? This cannot be undone.')) return;
     try {
-      const res = await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
+      const res = await fetchWithCredentials(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setTasks((prev) => prev.filter((t) => t.id !== id));
+        await fetchWorkspaceData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to delete task');
       }
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  }, [fetchWithCredentials, fetchWorkspaceData]);
 
   const handleAddMember = useCallback(async (name, role) => {
     const trimmedName = name.trim();
     if (!trimmedName) return;
 
-    const memberExists = members.some(
-      (m) => Number(m.projectId) === Number(activeProject) &&
-             m.name.toLowerCase() === trimmedName.toLowerCase() &&
-             m.role === role
-    );
-    if (memberExists) return;
-
     try {
-      const res = await fetch(`${API_URL}/members`, {
+      const res = await fetchWithCredentials(`${API_URL}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -245,34 +279,57 @@ export function TaskFlowProvider({ children }) {
       });
 
       if (res.ok) {
-        const body = await res.json();
-        const newMember = body.data ?? body;
-        setMembers((prev) => [...prev, {
-          ...newMember,
-          id: Number(newMember.id),
-          projectId: Number(newMember.projectId)
-        }]);
+        await fetchWorkspaceData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to add member');
       }
     } catch (err) {
       console.error(err);
     }
-  }, [members, activeProject]);
+  }, [activeProject, fetchWithCredentials, fetchWorkspaceData]);
+
+  const handleAssignMember = useCallback(async (userId, role) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/members/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: Number(activeProject),
+          userId: Number(userId),
+          role
+        })
+      });
+
+      if (res.ok) {
+        await fetchWorkspaceData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to assign member');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [activeProject, fetchWithCredentials, fetchWorkspaceData]);
 
   const handleDeleteMember = useCallback(async (id) => {
     if (!window.confirm('Remove this member from the project?')) return;
     try {
-      const res = await fetch(`${API_URL}/members/${id}`, { method: 'DELETE' });
+      const res = await fetchWithCredentials(`${API_URL}/members/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setMembers((prev) => prev.filter((m) => m.id !== id));
+        await fetchWorkspaceData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to remove member');
       }
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  }, [fetchWithCredentials, fetchWorkspaceData]);
 
   const handleQueryTasks = useCallback(async (filters, useFallback = false) => {
     try {
-      const response = await fetch(`${API_URL}/tasks/query`, {
+      const response = await fetchWithCredentials(`${API_URL}/tasks/query`, {
         method: useFallback ? 'POST' : 'QUERY',
         headers: {
           'Content-Type': 'application/json'
@@ -302,13 +359,15 @@ export function TaskFlowProvider({ children }) {
       }
       return { ok: false, error: err.message };
     }
-  }, []);
+  }, [fetchWithCredentials]);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => Number(task.projectId) === Number(activeProject));
   }, [tasks, activeProject]);
 
   const value = useMemo(() => ({
+    user,
+    authLoading,
     projects,
     members,
     tasks,
@@ -317,9 +376,12 @@ export function TaskFlowProvider({ children }) {
     setActiveProject: handleSetActiveProject,
     activeView,
     setActiveView,
+    handleLoginSuccess,
+    handleLogout,
     handleAddProject,
     handleAddTask,
     handleAddMember,
+    handleAssignMember,
     handleDeleteMember,
     handleToggleTask,
     handleDeleteTask,
@@ -327,6 +389,8 @@ export function TaskFlowProvider({ children }) {
     handleDeleteProject,
     handleQueryTasks
   }), [
+    user,
+    authLoading,
     projects,
     members,
     tasks,
@@ -335,9 +399,12 @@ export function TaskFlowProvider({ children }) {
     handleSetActiveProject,
     activeView,
     setActiveView,
+    handleLoginSuccess,
+    handleLogout,
     handleAddProject,
     handleAddTask,
     handleAddMember,
+    handleAssignMember,
     handleDeleteMember,
     handleToggleTask,
     handleDeleteTask,
@@ -384,6 +451,7 @@ export function useMembers() {
     members: context.members,
     activeProject: context.activeProject,
     handleAddMember: context.handleAddMember,
+    handleAssignMember: context.handleAssignMember,
     handleDeleteMember: context.handleDeleteMember,
     filteredTasks: context.filteredTasks
   };

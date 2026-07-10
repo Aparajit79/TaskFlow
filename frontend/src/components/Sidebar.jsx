@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import {
   LayoutGrid, CheckSquare, BarChart2, Users,
-  Settings, HelpCircle, Folder, Plus, ChevronDown, Trash2, Zap, Terminal, Kanban
+  Settings, HelpCircle, Folder, Plus, ChevronDown, Trash2, Zap, Terminal, Kanban, LogOut
 } from 'lucide-react';
-import { useTasks } from "../context/TaskFlowContext";
+import { useTasks, useTaskFlow } from "../context/TaskFlowContext";
 
 export function Sidebar() {
   const {
@@ -16,6 +16,8 @@ export function Sidebar() {
     setActiveView,
     tasks = []
   } = useTasks();
+
+  const { user, handleLogout } = useTaskFlow();
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAddProject, setShowAddProject] = useState(false);
@@ -57,7 +59,7 @@ export function Sidebar() {
       <div className="project-switcher-container">
         <div className="project-switcher-header">
           <span className="project-switcher-label">Workspace</span>
-          {activeProject && (
+          {activeProject && user?.role === 'admin' && (
             <button 
               className="delete-project-btn"
               onClick={() => {
@@ -101,30 +103,34 @@ export function Sidebar() {
                   </li>
                 ))}
               </ul>
-              <div className="custom-select-divider"></div>
-              {showAddProject ? (
-                <form onSubmit={handleAddProjectSubmit} className="project-add-form" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="text"
-                    placeholder="Project name..."
-                    value={newProjectText}
-                    onChange={(e) => setNewProjectText(e.target.value)}
-                    className="project-add-input"
-                    autoFocus
-                  />
-                  <div className="project-add-actions">
-                    <button type="submit" className="project-add-submit-btn">Add</button>
-                    <button type="button" className="project-add-cancel-btn" onClick={() => setShowAddProject(false)}>Cancel</button>
-                  </div>
-                </form>
-              ) : (
-                <button 
-                  className="custom-select-add-btn" 
-                  onClick={() => setShowAddProject(true)}
-                >
-                  <Plus size={12} style={{ marginRight: 8 }} />
-                  Create New Workspace
-                </button>
+              {user?.role === 'admin' && (
+                <>
+                  <div className="custom-select-divider"></div>
+                  {showAddProject ? (
+                    <form onSubmit={handleAddProjectSubmit} className="project-add-form" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="text"
+                        placeholder="Project name..."
+                        value={newProjectText}
+                        onChange={(e) => setNewProjectText(e.target.value)}
+                        className="project-add-input"
+                        autoFocus
+                      />
+                      <div className="project-add-actions">
+                        <button type="submit" className="project-add-submit-btn">Add</button>
+                        <button type="button" className="project-add-cancel-btn" onClick={() => setShowAddProject(false)}>Cancel</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <button 
+                      className="custom-select-add-btn" 
+                      onClick={() => setShowAddProject(true)}
+                    >
+                      <Plus size={12} style={{ marginRight: 8 }} />
+                      Create New Workspace
+                    </button>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -202,15 +208,17 @@ export function Sidebar() {
             </div>
           </button>
 
-          <button
-            className={`taskmatrix-nav-btn ${activeView === 'PowerQuery' ? 'active' : ''}`}
-            onClick={() => setActiveView('PowerQuery')}
-          >
-            <div className="taskmatrix-nav-btn-content">
-              <Terminal size={18} className="nav-icon" />
-              <span>Power Query</span>
-            </div>
-          </button>
+          {user?.role === 'admin' && (
+            <button
+              className={`taskmatrix-nav-btn ${activeView === 'PowerQuery' ? 'active' : ''}`}
+              onClick={() => setActiveView('PowerQuery')}
+            >
+              <div className="taskmatrix-nav-btn-content">
+                <Terminal size={18} className="nav-icon" />
+                <span>Power Query</span>
+              </div>
+            </button>
+          )}
 
           <button
             className={`taskmatrix-nav-btn ${activeView === 'Team' ? 'active' : ''}`}
@@ -258,6 +266,56 @@ export function Sidebar() {
             </div>
           </button>
         </div>
+      </div>
+
+      {/* User Section at the bottom */}
+      <div className="sidebar-user-footer" style={{
+        marginTop: 'auto',
+        padding: '16px',
+        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '8px'
+      }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ 
+            fontSize: '13px', 
+            fontWeight: '600', 
+            color: 'var(--sidebar-text)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            {user?.name}
+          </div>
+          <div style={{ 
+            fontSize: '11px', 
+            color: 'var(--sidebar-text-muted)',
+            textTransform: 'capitalize' 
+          }}>
+            {user?.role}
+          </div>
+        </div>
+        <button 
+          onClick={handleLogout}
+          title="Sign Out"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--sidebar-text-muted)',
+            cursor: 'pointer',
+            padding: '6px',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 0.2s ease, color 0.2s ease'
+          }}
+          className="logout-icon-btn"
+        >
+          <LogOut size={16} />
+        </button>
       </div>
     </aside>
   );

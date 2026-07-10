@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pencil, Trash2, Calendar, UserRound } from 'lucide-react';
+import { useTaskFlow } from '../context/TaskFlowContext';
 
 const highlightText = (text, search) => {
   if (!search || !search.trim()) return text;
@@ -11,20 +12,27 @@ const highlightText = (text, search) => {
 };
 
 export function TaskItem({ task, onToggleTask, onDeleteTask, onStartEdit, isEditing, members = [], searchTerm = '' }) {
+  const { user } = useTaskFlow();
   const assignee = members.find(m => Number(m.id) === Number(task.assignedMemberId));
   const assigneeName = assignee ? assignee.name : null;
 
+  const isAdmin = user?.role === 'admin';
+  const myMemberRecord = members.find(m => Number(m.projectId) === Number(task.projectId) && Number(m.userId) === Number(user?.id));
+  const isMyTask = myMemberRecord && Number(task.assignedMemberId) === Number(myMemberRecord.id);
+  const canModify = isAdmin || isMyTask;
+
   return (
-    <li className={`task-item ${task.completed ? 'completed' : ''} ${isEditing ? 'editing' : ''}`}>
+    <li className={`task-item ${task.completed ? 'completed' : ''} ${isEditing ? 'editing' : ''} ${isMyTask ? 'my-task' : 'other-task'} ${!canModify ? 'locked-task' : ''}`}>
       <div
         className="task-content"
-        onDoubleClick={() => onStartEdit(task)}
-        title="Double click to edit task"
+        onDoubleClick={() => canModify && onStartEdit(task)}
+        title={canModify ? "Double click to edit task" : "Locked (Read-Only)"}
       >
         <input
           type="checkbox"
           checked={task.completed}
-          onChange={() => onToggleTask(task.id)}
+          disabled={!canModify}
+          onChange={() => canModify && onToggleTask(task.id)}
           onClick={(e) => e.stopPropagation()}
         />
         <div className="task-text">
@@ -63,20 +71,24 @@ export function TaskItem({ task, onToggleTask, onDeleteTask, onStartEdit, isEdit
       </div>
 
       <div className="task-actions">
-        <button
-          className={`icon-button ${isEditing ? 'active-edit' : ''}`}
-          onClick={() => onStartEdit(task)}
-          title="Edit task"
-        >
-          <Pencil size={14} strokeWidth={1.75} />
-        </button>
-        <button
-          className="icon-button delete-btn"
-          onClick={() => onDeleteTask(task.id)}
-          title="Delete task"
-        >
-          <Trash2 size={14} strokeWidth={1.75} />
-        </button>
+        {canModify && (
+          <button
+            className={`icon-button ${isEditing ? 'active-edit' : ''}`}
+            onClick={() => onStartEdit(task)}
+            title="Edit task"
+          >
+            <Pencil size={14} strokeWidth={1.75} />
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className="icon-button delete-btn"
+            onClick={() => onDeleteTask(task.id)}
+            title="Delete task"
+          >
+            <Trash2 size={14} strokeWidth={1.75} />
+          </button>
+        )}
       </div>
     </li>
   );

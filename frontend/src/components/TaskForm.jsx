@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Plus } from 'lucide-react';
+import { useTaskFlow } from '../context/TaskFlowContext';
 
 export function TaskForm({ activeProject, projects = [], members = [], onSubmit, editingTask, onCancelEdit, titleInputRef }) {
+  const { user } = useTaskFlow();
   const [inputText, setInputText] = useState('');
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState('Medium');
@@ -13,6 +15,9 @@ export function TaskForm({ activeProject, projects = [], members = [], onSubmit,
 
   const activeProjObj = projects.find(p => Number(p.id) === Number(activeProject));
   const activeProjectName = activeProjObj ? activeProjObj.name : 'Unknown';
+
+  const myMemberRecord = members.find(m => Number(m.projectId) === Number(activeProject) && Number(m.userId) === Number(user?.id));
+  const myMemberId = myMemberRecord ? String(myMemberRecord.id) : '';
 
   useEffect(() => {
     if (editingTask) {
@@ -28,11 +33,15 @@ export function TaskForm({ activeProject, projects = [], members = [], onSubmit,
       setPriority('Medium');
       setStatus('Pending');
       setDueDate('');
-      setAssignedMemberId('');
+      if (user?.role !== 'admin' && myMemberId) {
+        setAssignedMemberId(myMemberId);
+      } else {
+        setAssignedMemberId('');
+      }
     }
     setTitleError("");
     setDueDateError("");
-  }, [editingTask]);
+  }, [editingTask, activeProject, user, myMemberId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -72,7 +81,11 @@ export function TaskForm({ activeProject, projects = [], members = [], onSubmit,
       setPriority('Medium');
       setStatus('Pending');
       setDueDate("");
-      setAssignedMemberId("");
+      if (user?.role !== 'admin' && myMemberId) {
+        setAssignedMemberId(myMemberId);
+      } else {
+        setAssignedMemberId("");
+      }
     }
   };
 
@@ -154,13 +167,20 @@ export function TaskForm({ activeProject, projects = [], members = [], onSubmit,
 
         <div>
           <label>Assignee</label>
-          <select className="select-input" value={assignedMemberId} onChange={(e) => setAssignedMemberId(e.target.value)}>
-            <option value="">Unassigned</option>
-            {members
-              .filter(m => Number(m.projectId) === Number(activeProject))
-              .map(m => <option key={m.id} value={m.id}>{m.name}</option>)
-            }
-          </select>
+          {user?.role === 'admin' ? (
+            <select className="select-input" value={assignedMemberId} onChange={(e) => setAssignedMemberId(e.target.value)}>
+              <option value="">Unassigned</option>
+              {members
+                .filter(m => Number(m.projectId) === Number(activeProject))
+                .map(m => <option key={m.id} value={m.id}>{m.name}</option>)
+              }
+            </select>
+          ) : (
+            <select className="select-input" value={assignedMemberId} disabled>
+              <option value="">Unassigned</option>
+              {myMemberRecord && <option value={myMemberId}>{user.name}</option>}
+            </select>
+          )}
         </div>
 
         <div className="form-actions">

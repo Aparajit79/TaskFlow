@@ -8,15 +8,37 @@ import TeamView from './components/TeamView';
 import HelpView from './components/HelpView';
 import PowerQueryView from './components/PowerQueryView';
 import KanbanView from './components/KanbanView';
+import LoginView from './components/LoginView';
 import { TaskFlowProvider, useTaskFlow } from './context/TaskFlowContext';
 
 function AppContent() {
-  const { activeView } = useTaskFlow();
+  const { activeView, user, authLoading, handleLoginSuccess } = useTaskFlow();
 
   useEffect(() => {
     const isDark = localStorage.getItem('taskflow_dark_theme') === 'true';
     document.body.classList.toggle('dark-theme', isDark);
   }, []);
+
+  if (authLoading) {
+    return (
+      <div className="app-loader-container" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        backgroundColor: 'var(--bg-app)',
+        color: 'var(--text-main)',
+        fontSize: '16px',
+        fontWeight: '600'
+      }}>
+        Loading Session...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginView onLoginSuccess={handleLoginSuccess} />;
+  }
 
   const renderActiveView = () => {
     switch (activeView) {

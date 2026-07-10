@@ -3,7 +3,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { FolderOpen, Search, X, ListTodo, Play, AlertOctagon } from 'lucide-react';
 import TaskItem from './TaskItem';
 import TaskForm from './TaskForm';
-import { useTasks, useMembers } from '../context/TaskFlowContext';
+import { useTasks, useMembers, useTaskFlow } from '../context/TaskFlowContext';
 
 const COLUMNS = [
   { id: 'Pending', title: 'Pending', icon: <ListTodo size={16} />, colorClass: 'pending' },
@@ -23,6 +23,7 @@ export function KanbanView() {
   } = useTasks();
 
   const { members = [] } = useMembers();
+  const { user } = useTaskFlow();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -184,14 +185,25 @@ export function KanbanView() {
                           </div>
                         ) : (
                           <ul className="task-list kanban-list-style">
-                            {colTasks.map((task, index) => (
-                              <Draggable key={task.id} draggableId={String(task.id)} index={index}>
-                                {(provided, snapshot) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    className={`draggable-task ${snapshot.isDragging ? 'is-dragging' : ''}`}
+                            {colTasks.map((task, index) => {
+                              const isAdmin = user?.role === 'admin';
+                              const myMemberRecord = members.find(m => Number(m.projectId) === Number(task.projectId) && Number(m.userId) === Number(user?.id));
+                              const isMyTask = myMemberRecord && Number(task.assignedMemberId) === Number(myMemberRecord.id);
+                              const canModify = isAdmin || isMyTask;
+
+                              return (
+                                <Draggable 
+                                  key={task.id} 
+                                  draggableId={String(task.id)} 
+                                  index={index}
+                                  isDragDisabled={!canModify}
+                                >
+                                  {(provided, snapshot) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...(canModify ? provided.dragHandleProps : {})}
+                                      className={`draggable-task ${snapshot.isDragging ? 'is-dragging' : ''} ${!canModify ? 'drag-locked' : ''}`}
                                     style={{
                                       ...provided.draggableProps.style,
                                     }}
@@ -208,7 +220,8 @@ export function KanbanView() {
                                   </div>
                                 )}
                               </Draggable>
-                            ))}
+                            );
+                          })}
                           </ul>
                         )}
                         {provided.placeholder}

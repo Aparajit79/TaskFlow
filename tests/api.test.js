@@ -2,11 +2,48 @@ import test from 'node:test';
 import assert from 'node:assert';
 
 const BASE_URL = 'http://localhost:5000/api';
+let adminCookie = '';
+
+async function getAdminCookie() {
+  if (adminCookie) return adminCookie;
+  try {
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'admin',
+        email: 'admin@taskflow.com',
+        password: 'admin123'
+      })
+    });
+    const setCookie = res.headers.get('set-cookie');
+    if (setCookie) {
+      adminCookie = setCookie.split(';')[0];
+    }
+  } catch (err) {
+    console.error('Error logging in admin for tests:', err);
+  }
+  return adminCookie;
+}
+
+async function authenticatedFetch(url, options = {}) {
+  const cookie = await getAdminCookie();
+  const headers = {
+    ...options.headers,
+  };
+  if (cookie) {
+    headers['Cookie'] = cookie;
+  }
+  return fetch(url, {
+    ...options,
+    headers
+  });
+}
 
 test('API Backend - Check if Server is running & Database is connected', async () => {
   let res;
   try {
-    res = await fetch(`${BASE_URL}/projects`);
+    res = await authenticatedFetch(`${BASE_URL}/projects`);
   } catch (err) {
     throw new Error('Backend server is not running on http://localhost:5000. Please start the server first using: npm run server');
   }
@@ -27,7 +64,7 @@ test('API Backend - Create, Fetch, and Delete a Test Project & Task', async () =
 
   let resHealth;
   try {
-    resHealth = await fetch(`${BASE_URL}/projects`);
+    resHealth = await authenticatedFetch(`${BASE_URL}/projects`);
   } catch (err) {
     return;
   }
@@ -35,7 +72,7 @@ test('API Backend - Create, Fetch, and Delete a Test Project & Task', async () =
     return;
   }
   
-  const createProjRes = await fetch(`${BASE_URL}/projects`, {
+  const createProjRes = await authenticatedFetch(`${BASE_URL}/projects`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: testProjectName })
@@ -46,11 +83,11 @@ test('API Backend - Create, Fetch, and Delete a Test Project & Task', async () =
   const projData = projResponse.data;
   assert.ok(projData && projData.id);
 
-  const getProjsRes = await fetch(`${BASE_URL}/projects`);
+  const getProjsRes = await authenticatedFetch(`${BASE_URL}/projects`);
   const projects = await getProjsRes.json();
   assert.ok(projects.some(p => p.name === testProjectName));
 
-  const createTaskRes = await fetch(`${BASE_URL}/tasks`, {
+  const createTaskRes = await authenticatedFetch(`${BASE_URL}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -66,18 +103,18 @@ test('API Backend - Create, Fetch, and Delete a Test Project & Task', async () =
   const taskData = await createTaskRes.json();
   assert.strictEqual(taskData.text, 'Temporary Integration Test Task');
 
-  const getTasksRes = await fetch(`${BASE_URL}/tasks`);
+  const getTasksRes = await authenticatedFetch(`${BASE_URL}/tasks`);
   const tasks = await getTasksRes.json();
   const foundTask = tasks.find(t => Number(t.id) === testTaskId);
   assert.ok(foundTask);
   assert.strictEqual(Number(foundTask.projectId), Number(projData.id));
 
-  const deleteProjRes = await fetch(`${BASE_URL}/projects/${projData.id}`, {
+  const deleteProjRes = await authenticatedFetch(`${BASE_URL}/projects/${projData.id}`, {
     method: 'DELETE'
   });
   assert.strictEqual(deleteProjRes.status, 200);
 
-  const getProjsPostRes = await fetch(`${BASE_URL}/projects`);
+  const getProjsPostRes = await authenticatedFetch(`${BASE_URL}/projects`);
   const projectsPost = await getProjsPostRes.json();
   assert.ok(!projectsPost.some(p => p.name === testProjectName));
 });
@@ -89,7 +126,7 @@ test('API Backend - Query Tasks using HTTP QUERY method (RFC 10008)', async () =
 
   let resHealth;
   try {
-    resHealth = await fetch(`${BASE_URL}/projects`);
+    resHealth = await authenticatedFetch(`${BASE_URL}/projects`);
   } catch (err) {
     return;
   }
@@ -98,7 +135,7 @@ test('API Backend - Query Tasks using HTTP QUERY method (RFC 10008)', async () =
   }
 
   // 1. Create a project
-  const createProjRes = await fetch(`${BASE_URL}/projects`, {
+  const createProjRes = await authenticatedFetch(`${BASE_URL}/projects`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: testProjectName })
@@ -107,7 +144,7 @@ test('API Backend - Query Tasks using HTTP QUERY method (RFC 10008)', async () =
   const projData = projResponse.data;
 
   // 2. Create Task 1 (Pending)
-  await fetch(`${BASE_URL}/tasks`, {
+  await authenticatedFetch(`${BASE_URL}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -121,7 +158,7 @@ test('API Backend - Query Tasks using HTTP QUERY method (RFC 10008)', async () =
   });
 
   // 3. Create Task 2 (In Progress)
-  await fetch(`${BASE_URL}/tasks`, {
+  await authenticatedFetch(`${BASE_URL}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -135,7 +172,7 @@ test('API Backend - Query Tasks using HTTP QUERY method (RFC 10008)', async () =
   });
 
   // 4. Query using HTTP QUERY method - First request (MISS)
-  const queryRes1 = await fetch(`${BASE_URL}/tasks/query`, {
+  const queryRes1 = await authenticatedFetch(`${BASE_URL}/tasks/query`, {
     method: 'QUERY',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -154,7 +191,7 @@ test('API Backend - Query Tasks using HTTP QUERY method (RFC 10008)', async () =
   assert.strictEqual(Number(queryData1[0].id), task2Id);
 
   // 5. Run identical query - Second request (HIT)
-  const queryRes2 = await fetch(`${BASE_URL}/tasks/query`, {
+  const queryRes2 = await authenticatedFetch(`${BASE_URL}/tasks/query`, {
     method: 'QUERY',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -167,13 +204,13 @@ test('API Backend - Query Tasks using HTTP QUERY method (RFC 10008)', async () =
   assert.strictEqual(queryRes2.headers.get('x-cache'), 'HIT');
 
   // 6. Clean up (deleting the project should trigger write events and invalidate/clear the cache)
-  const deleteRes = await fetch(`${BASE_URL}/projects/${projData.id}`, {
+  const deleteRes = await authenticatedFetch(`${BASE_URL}/projects/${projData.id}`, {
     method: 'DELETE'
   });
   assert.strictEqual(deleteRes.status, 200);
 
   // 7. Run query again - Third request (MISS because write event cleared cache)
-  const queryRes3 = await fetch(`${BASE_URL}/tasks/query`, {
+  const queryRes3 = await authenticatedFetch(`${BASE_URL}/tasks/query`, {
     method: 'QUERY',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

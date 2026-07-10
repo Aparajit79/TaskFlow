@@ -1,65 +1,29 @@
-import { useState } from "react";
-import { Users, Plus, Trash2, ClipboardList, Info } from 'lucide-react';
-import { useTasks, useMembers } from "../context/TaskFlowContext";
+import React, { useState } from "react";
+import { Users, Plus, Trash2, ClipboardList } from 'lucide-react';
+import { useTasks, useMembers, useTaskFlow } from "../context/TaskFlowContext";
 import MemberAvatar from "./MemberAvatar";
+import MemberForm from "./MemberForm";
 
 function MemberManager({ isCollapsed, setIsCollapsed }) {
   const {
     members = [],
     activeProject = '',
     handleAddMember: onAddMember,
+    handleAssignMember: onAssignMember,
     handleDeleteMember: onDeleteMember
   } = useMembers();
 
-  const [memberName, setMemberName] = useState("");
-  const [memberRole, setMemberRole] = useState("Frontend Developer");
-  const [nameError, setNameError] = useState("");
+  const { user } = useTaskFlow();
+
   const [isExpanded, setIsExpanded] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
-  const [duplicateAlert, setDuplicateAlert] = useState(false);
 
   const currentProjectMembers = members.filter(m => Number(m.projectId) === Number(activeProject));
   const totalMembers = currentProjectMembers.length;
   const { filteredTasks } = useTasks();
   const totalTasks = filteredTasks.length;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!memberName.trim()) { setNameError("Member name is required"); return; }
-    setNameError("");
-    
-    const trimmedName = memberName.trim();
-    const isDuplicate = members.some(
-      (m) => Number(m.projectId) === Number(activeProject) &&
-             m.name.toLowerCase() === trimmedName.toLowerCase() &&
-             m.role === memberRole
-    );
-    
-    if (isDuplicate) {
-      setDuplicateAlert(true);
-      return;
-    }
-    
-    setDuplicateAlert(false);
-    onAddMember(trimmedName, memberRole);
-    setMemberName("");
-    setMemberRole("Frontend Developer");
-    setShowAddMember(false);
-  };
-
-  const handleNameChange = (e) => {
-    setMemberName(e.target.value);
-    if (nameError) setNameError("");
-    if (duplicateAlert) setDuplicateAlert(false);
-  };
-
-  const handleCancel = () => {
-    setShowAddMember(false);
-    setMemberName("");
-    setMemberRole("Frontend Developer");
-    setNameError("");
-    setDuplicateAlert(false);
-  };
+  const isAdmin = user?.role === 'admin';
 
   if (!activeProject) return null;
 
@@ -80,9 +44,11 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
             />
           ))}
         </div>
-        <button className="collapsed-add-member-btn" onClick={() => setIsCollapsed(false)} title="Add Member">
-          <Plus size={14} strokeWidth={2} />
-        </button>
+        {isAdmin && (
+          <button className="collapsed-add-member-btn" onClick={() => setIsCollapsed(false)} title="Add Member">
+            <Plus size={14} strokeWidth={2} />
+          </button>
+        )}
       </div>
     );
   }
@@ -94,54 +60,27 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
           <span className={`section-chevron ${isExpanded ? 'expanded' : ''}`}>▶</span>
           Team Members
         </span>
-        <button
-          className="section-action-btn"
-          onClick={(e) => { e.stopPropagation(); setShowAddMember(!showAddMember); if (!isExpanded) setIsExpanded(true); }}
-          title="Add Member"
-        >
-          <Plus size={13} strokeWidth={2} />
-        </button>
+        {isAdmin && (
+          <button
+            className="section-action-btn"
+            onClick={(e) => { e.stopPropagation(); setShowAddMember(!showAddMember); if (!isExpanded) setIsExpanded(true); }}
+            title="Add Member"
+          >
+            <Plus size={13} strokeWidth={2} />
+          </button>
+        )}
       </div>
 
       {isExpanded && (
         <div className="sidebar-section-content">
-          {showAddMember && (
-            <div className="inline-add-form-container">
-              <form className="inline-add-form" onSubmit={handleSubmit}>
-                <input
-                  type="text"
-                  placeholder="Member name..."
-                  className={`add-project-input ${nameError ? 'input-error' : ''}`}
-                  value={memberName}
-                  onChange={handleNameChange}
-                  autoFocus
-                />
-                {nameError && <p className="inline-field-error">{nameError}</p>}
-                {duplicateAlert && (
-                  <div className="inline-field-info">
-                    <Info size={14} strokeWidth={2} />
-                    <p className="inline-field-info-text">Member with this name and role already exists in this project</p>
-                  </div>
-                )}
-                <select
-                  className="select-input inline-member-select"
-                  value={memberRole}
-                  onChange={(e) => setMemberRole(e.target.value)}
-                >
-                  <option>Frontend Developer</option>
-                  <option>Backend Developer</option>
-                  <option>Full Stack Developer</option>
-                  <option>UI/UX Designer</option>
-                  <option>QA Tester</option>
-                  <option>Project Manager</option>
-                  <option>DevOps Engineer</option>
-                </select>
-                <div className="inline-add-actions">
-                  <button type="submit" className="inline-add-btn">Add</button>
-                  <button type="button" className="inline-cancel-btn" onClick={handleCancel}>Cancel</button>
-                </div>
-              </form>
-            </div>
+          {showAddMember && isAdmin && (
+            <MemberForm
+              projectId={activeProject}
+              onAddMember={onAddMember}
+              onAssignMember={onAssignMember}
+              onCancel={() => setShowAddMember(false)}
+              isAdmin={isAdmin}
+            />
           )}
 
           <div className="member-list">
@@ -155,9 +94,11 @@ function MemberManager({ isCollapsed, setIsCollapsed }) {
                     <strong>{member.name}</strong>
                     <small>{member.role}</small>
                   </div>
-                  <button className="member-delete-btn" onClick={() => onDeleteMember(member.id)} title="Remove Member">
-                    <Trash2 size={12} strokeWidth={1.75} />
-                  </button>
+                  {isAdmin && (
+                    <button className="member-delete-btn" onClick={() => onDeleteMember(member.id)} title="Remove Member">
+                      <Trash2 size={12} strokeWidth={1.75} />
+                    </button>
+                  )}
                 </div>
               ))
             )}

@@ -2,15 +2,28 @@ const express = require('express');
 const crypto = require('crypto');
 const { Pool } = require('pg');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'taskflow-secret-super-key-9988';
 
 app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
   exposedHeaders: ['X-Cache', 'X-Response-Time', 'X-Response-Method']
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
@@ -49,9 +62,173 @@ const generateCacheKey = (body) => {
   return crypto.createHash('sha256').update(serialized).digest('hex');
 };
 
-app.get('/api/projects', async (req, res) => {
+// Middleware to verify JWT token in HttpOnly cookies
+const authenticateJWT = (req, res, next) => {
+  const token = req.cookies.auth_token;
+  if (!token) {
+    return res.status(401).json({ error: 'Access denied. Please log in.' });
+  }
   try {
-    const result = await pool.query('SELECT id, name FROM projects ORDER BY created_at ASC');
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // { id, name, role }
+    next();
+  } catch (err) {
+    res.clearCookie('auth_token');
+    return res.status(403).json({ error: 'Session expired. Please log in again.' });
+  }
+};
+
+// 1. Auth Login Endpoint
+app.post('/api/auth/login', async (req, res) => {
+  const { type, email, username, password } = req.body;
+  
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+
+  try {
+    let user;
+    if (type === 'admin') {
+      if (!email) return res.status(400).json({ error: 'Email is required' });
+      const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+      if (userRes.rows.length === 0) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+      user = userRes.rows[0];
+    } else {
+      if (!username) return res.status(400).json({ error: 'Username is required' });
+      const userRes = await pool.query('SELECT * FROM users WHERE username = $1', [username.trim()]);
+      if (userRes.rows.length === 0) {
+        return res.status(401).json({ error: 'Invalid username or password' });
+      }
+      user = userRes.rows[0];
+    }
+
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, name: user.name, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: false, // Set true in production if running HTTPS
+      sameSite: 'lax', // Use 'lax' for local dev CORS compatibility
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    res.json({
+      message: 'Login successful',
+      user: { id: user.id, name: user.name, role: user.role }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error during login' });
+  }
+});
+
+// 2. Auth Logout Endpoint
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('auth_token');
+  res.json({ message: 'Logged out successfully' });
+});
+
+// 3. Get Members Users (Dropdown list)
+app.get('/api/users/members', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, name, username FROM users WHERE role = 'member' ORDER BY name ASC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error fetching team users' });
+  }
+});
+
+// 4. Get Available Users for Project Assignment
+app.get('/api/users/available', authenticateJWT, async (req, res) => {
+  const { projectId } = req.query;
+  if (!projectId) {
+    return res.status(400).json({ error: 'projectId is required' });
+  }
+  try {
+    const result = await pool.query(`
+      SELECT id, name, username 
+      FROM users 
+      WHERE role = 'member' 
+        AND id NOT IN (
+          SELECT user_id 
+          FROM members 
+          WHERE project_id = $1
+        )
+      ORDER BY name ASC
+    `, [Number(projectId)]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error fetching available users' });
+  }
+});
+
+// 5. Assign User to Project
+app.post('/api/members/assign', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can assign members to projects' });
+  }
+
+  const { projectId, userId, role } = req.body;
+  if (!projectId || !userId || !role) {
+    return res.status(400).json({ error: 'projectId, userId, and role are required' });
+  }
+
+  try {
+    const userRes = await pool.query('SELECT name FROM users WHERE id = $1', [Number(userId)]);
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const name = userRes.rows[0].name;
+    const avatar = name.trim().charAt(0).toUpperCase();
+
+    const result = await pool.query(
+      `INSERT INTO members (project_id, user_id, name, role, avatar) 
+       VALUES ($1, $2, $3, $4, $5) 
+       ON CONFLICT (project_id, user_id) 
+       DO UPDATE SET role = EXCLUDED.role 
+       RETURNING id, project_id AS "projectId", name, role, avatar`,
+      [Number(projectId), Number(userId), name, role, avatar]
+    );
+
+    clearCache();
+    res.status(201).json({ message: 'Member assigned successfully', data: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error assigning user' });
+  }
+});
+
+// 6. Check Current Auth Status
+app.get('/api/auth/me', authenticateJWT, (req, res) => {
+  res.json({ user: req.user });
+});
+
+app.get('/api/projects', authenticateJWT, async (req, res) => {
+  try {
+    let result;
+    if (req.user.role === 'admin') {
+      result = await pool.query('SELECT id, name FROM projects ORDER BY created_at ASC');
+    } else {
+      result = await pool.query(`
+        SELECT p.id, p.name 
+        FROM projects p
+        JOIN members m ON m.project_id = p.id
+        WHERE m.user_id = $1
+        ORDER BY p.created_at ASC
+      `, [req.user.id]);
+    }
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -59,7 +236,10 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-app.post('/api/projects', async (req, res) => {
+app.post('/api/projects', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can create projects' });
+  }
   const { name } = req.body;
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'Project name is required' });
@@ -78,7 +258,10 @@ app.post('/api/projects', async (req, res) => {
   }
 });
 
-app.delete('/api/projects/:id', async (req, res) => {
+app.delete('/api/projects/:id', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can delete projects' });
+  }
   const { id } = req.params;
 
   try {
@@ -91,9 +274,22 @@ app.delete('/api/projects/:id', async (req, res) => {
   }
 });
 
-app.get('/api/members', async (req, res) => {
+app.get('/api/members', authenticateJWT, async (req, res) => {
   try {
-    const result = await pool.query('SELECT id, project_id AS "projectId", name, role, avatar FROM members ORDER BY created_at ASC');
+    let result;
+    if (req.user.role === 'admin') {
+      result = await pool.query('SELECT id, project_id AS "projectId", user_id AS "userId", name, role, avatar FROM members ORDER BY created_at ASC');
+    } else {
+      // Members can see all members in projects they belong to
+      result = await pool.query(`
+        SELECT id, project_id AS "projectId", user_id AS "userId", name, role, avatar 
+        FROM members 
+        WHERE project_id IN (
+          SELECT project_id FROM members WHERE user_id = $1
+        )
+        ORDER BY created_at ASC
+      `, [req.user.id]);
+    }
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -101,7 +297,10 @@ app.get('/api/members', async (req, res) => {
   }
 });
 
-app.post('/api/members', async (req, res) => {
+app.post('/api/members', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can add members directly' });
+  }
   const { projectId, name, role } = req.body;
   if (!projectId || !name || !role) {
     return res.status(400).json({ error: 'ProjectId, name, and role are required' });
@@ -110,19 +309,58 @@ app.post('/api/members', async (req, res) => {
   const avatar = name.trim().charAt(0).toUpperCase();
 
   try {
-    const result = await pool.query(
-      'INSERT INTO members (project_id, name, role, avatar) VALUES ($1, $2, $3, $4) RETURNING id, project_id AS "projectId", name, role, avatar',
-      [projectId, name.trim(), role, avatar]
-    );
-    clearCache();
-    res.status(201).json({ message: 'Team member added successfully', data: result.rows[0] });
+    // Generate a unique username from name
+    const baseUsername = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+    let username = baseUsername;
+    let counter = 1;
+    // Check if username exists
+    while (true) {
+      const checkRes = await pool.query('SELECT 1 FROM users WHERE username = $1', [username]);
+      if (checkRes.rows.length === 0) break;
+      username = `${baseUsername}_${counter++}`;
+    }
+
+    // Hash default password
+    const passwordHash = await bcrypt.hash('member123', 10);
+    const email = `${username}@taskflow.com`;
+
+    // Start a transaction to ensure atomic inserts
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // 1. Insert user
+      const userResult = await client.query(
+        'INSERT INTO users (name, email, username, password_hash, role) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        [name.trim(), email, username, passwordHash, 'member']
+      );
+      const userId = userResult.rows[0].id;
+
+      // 2. Insert member
+      const memberResult = await client.query(
+        'INSERT INTO members (project_id, user_id, name, role, avatar) VALUES ($1, $2, $3, $4, $5) RETURNING id, project_id AS "projectId", name, role, avatar',
+        [Number(projectId), userId, name.trim(), role, avatar]
+      );
+
+      await client.query('COMMIT');
+      clearCache();
+      res.status(201).json({ message: 'Team member added successfully', data: memberResult.rows[0] });
+    } catch (txErr) {
+      await client.query('ROLLBACK');
+      throw txErr;
+    } finally {
+      client.release();
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error adding team member' });
   }
 });
 
-app.delete('/api/members/:id', async (req, res) => {
+app.delete('/api/members/:id', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can remove members' });
+  }
   const { id } = req.params;
 
   try {
@@ -136,8 +374,7 @@ app.delete('/api/members/:id', async (req, res) => {
 });
 
 // Endpoint supporting the HTTP QUERY method (RFC 10008) for complex, safe, and cacheable task filtering.
-// We support both native QUERY method and a POST fallback for maximum client compatibility.
-app.all('/api/tasks/query', async (req, res) => {
+app.all('/api/tasks/query', authenticateJWT, async (req, res) => {
   if (req.method !== 'QUERY' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed. Use QUERY (or POST fallback)' });
   }
@@ -178,10 +415,32 @@ app.all('/api/tasks/query', async (req, res) => {
     const queryParams = [];
     let paramCount = 1;
 
-    if (projectId && projectId !== 'All') {
-      queryText += ` AND project_id = $${paramCount++}`;
-      queryParams.push(Number(projectId));
+    // Enforce role workspace boundaries
+    if (req.user.role !== 'admin') {
+      const userProjects = await pool.query('SELECT project_id FROM members WHERE user_id = $1', [req.user.id]);
+      const projectIds = userProjects.rows.map(row => Number(row.project_id));
+
+      if (projectId && projectId !== 'All') {
+        if (!projectIds.includes(Number(projectId))) {
+          return res.status(403).json({ error: 'Access Denied: You are not a member of this project' });
+        }
+        queryText += ` AND project_id = $${paramCount++}`;
+        queryParams.push(Number(projectId));
+      } else {
+        if (projectIds.length === 0) {
+          queryText += ` AND 1=0`;
+        } else {
+          queryText += ` AND project_id = ANY($${paramCount++})`;
+          queryParams.push(projectIds);
+        }
+      }
+    } else {
+      if (projectId && projectId !== 'All') {
+        queryText += ` AND project_id = $${paramCount++}`;
+        queryParams.push(Number(projectId));
+      }
     }
+
     if (status && status !== 'All') {
       queryText += ` AND status = $${paramCount++}`;
       queryParams.push(status);
@@ -225,7 +484,10 @@ app.all('/api/tasks/query', async (req, res) => {
 });
 
 // Diagnostic endpoint to debug and inspect the in-memory query cache entries
-app.get('/api/cache-debug', (req, res) => {
+app.get('/api/cache-debug', authenticateJWT, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can inspect query caches' });
+  }
   const cacheData = [];
   queryCache.forEach((value, key) => {
     cacheData.push({
@@ -240,23 +502,45 @@ app.get('/api/cache-debug', (req, res) => {
   });
 });
 
-app.get('/api/tasks', async (req, res) => {
+app.get('/api/tasks', authenticateJWT, async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT 
-        id::text, 
-        project_id AS "projectId", 
-        text, 
-        description, 
-        priority, 
-        status, 
-        to_char(due_date, 'YYYY-MM-DD') AS "dueDate", 
-        assigned_member_id AS "assignedMemberId", 
-        completed,
-        completed_at AS "completedAt"
-      FROM tasks 
-      ORDER BY created_at ASC
-    `);
+    let result;
+    if (req.user.role === 'admin') {
+      result = await pool.query(`
+        SELECT 
+          id::text, 
+          project_id AS "projectId", 
+          text, 
+          description, 
+          priority, 
+          status, 
+          to_char(due_date, 'YYYY-MM-DD') AS "dueDate", 
+          assigned_member_id AS "assignedMemberId", 
+          completed,
+          completed_at AS "completedAt"
+        FROM tasks 
+        ORDER BY created_at ASC
+      `);
+    } else {
+      result = await pool.query(`
+        SELECT 
+          t.id::text, 
+          t.project_id AS "projectId", 
+          t.text, 
+          t.description, 
+          t.priority, 
+          t.status, 
+          to_char(t.due_date, 'YYYY-MM-DD') AS "dueDate", 
+          t.assigned_member_id AS "assignedMemberId", 
+          t.completed,
+          t.completed_at AS "completedAt"
+        FROM tasks t
+        WHERE t.project_id IN (
+          SELECT m.project_id FROM members m WHERE m.user_id = $1
+        )
+        ORDER BY t.created_at ASC
+      `, [req.user.id]);
+    }
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -264,10 +548,23 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
-app.post('/api/tasks', async (req, res) => {
+app.post('/api/tasks', authenticateJWT, async (req, res) => {
   const { id, projectId, text, description, priority, status, dueDate, assignedMemberId } = req.body;
   if (!id || !projectId || !text) {
     return res.status(400).json({ error: 'Task ID, projectId, and title are required' });
+  }
+
+  // Scoping check for member creation
+  if (req.user.role !== 'admin') {
+    const memberCheck = await pool.query('SELECT id FROM members WHERE project_id = $1 AND user_id = $2', [Number(projectId), req.user.id]);
+    if (memberCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Access Denied: You are not a member of this project' });
+    }
+    const memberId = memberCheck.rows[0].id;
+    // Standard members can only create tasks assigned to themselves or unassigned
+    if (assignedMemberId !== undefined && assignedMemberId !== null && Number(assignedMemberId) !== memberId) {
+      return res.status(403).json({ error: 'Access Denied: You cannot assign new tasks to other members' });
+    }
   }
 
   const formattedDueDate = dueDate && dueDate !== '' ? dueDate : null;
@@ -288,7 +585,7 @@ app.post('/api/tasks', async (req, res) => {
   }
 });
 
-app.put('/api/tasks/:id', async (req, res) => {
+app.put('/api/tasks/:id', authenticateJWT, async (req, res) => {
   const { id } = req.params;
   const { text, description, priority, status, dueDate, assignedMemberId, completed } = req.body;
 
@@ -298,6 +595,25 @@ app.put('/api/tasks/:id', async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
     const task = taskResult.rows[0];
+
+    // Scoping check for member edit and drag
+    if (req.user.role !== 'admin') {
+      const memberRes = await pool.query('SELECT id FROM members WHERE project_id = $1 AND user_id = $2', [task.project_id, req.user.id]);
+      if (memberRes.rows.length === 0) {
+        return res.status(403).json({ error: 'Access Denied: You are not a member of this project' });
+      }
+      const memberId = memberRes.rows[0].id;
+      
+      // Standard members can only update tasks assigned directly to them
+      if (task.assigned_member_id !== memberId) {
+        return res.status(403).json({ error: 'Access Denied: You can only edit or drag tasks assigned to you' });
+      }
+
+      // Enforce they cannot reassign the task to someone else
+      if (assignedMemberId !== undefined && assignedMemberId !== null && Number(assignedMemberId) !== memberId) {
+        return res.status(403).json({ error: 'Access Denied: You cannot reassign your tasks to other members' });
+      }
+    }
 
     const formattedDueDate = dueDate !== undefined ? (dueDate && dueDate !== '' ? dueDate : null) : task.due_date;
     const formattedAssignedMemberId = assignedMemberId !== undefined ? (assignedMemberId && assignedMemberId !== '' ? Number(assignedMemberId) : null) : task.assigned_member_id;
@@ -332,7 +648,10 @@ app.put('/api/tasks/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/tasks/:id', async (req, res) => {
+app.delete('/api/tasks/:id', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can delete tasks' });
+  }
   const { id } = req.params;
   try {
     await pool.query('DELETE FROM tasks WHERE id = $1', [id]);
@@ -347,3 +666,4 @@ app.delete('/api/tasks/:id', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`TaskMatrix API Server is running on port ${PORT}`);
 });
+// Nodemon trigger comment

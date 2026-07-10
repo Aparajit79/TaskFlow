@@ -107,10 +107,23 @@ export function DashboardView() {
 
   const maxWeeklyValue = Math.max(...weeklyData.map(d => d.value), 1);
 
+  // Filter out duplicate project-level memberships for global analytics
+  const uniqueMemberCount = React.useMemo(() => {
+    const uniqueIds = new Set();
+    members.forEach(m => {
+      if (m.userId) {
+        uniqueIds.add(m.userId);
+      } else if (m.name) {
+        uniqueIds.add(m.name.trim().toLowerCase());
+      }
+    });
+    return uniqueIds.size;
+  }, [members]);
+
   const kpis = [
     { icon: <CircleCheck size={18} strokeWidth={2} />, label: 'Total Tasks Completed', value: completed, accent: 'var(--success-text)' },
     { icon: <FolderOpen  size={18} strokeWidth={2} />, label: 'Active Projects',       value: projects.length, accent: 'var(--primary)' },
-    { icon: <Users       size={18} strokeWidth={2} />, label: 'Team Members',          value: members.length, accent: 'var(--inprogress-text)' },
+    { icon: <Users       size={18} strokeWidth={2} />, label: 'Team Members',          value: uniqueMemberCount, accent: 'var(--inprogress-text)' },
   ];
 
 const handleExport = () => {
@@ -121,7 +134,7 @@ const handleExport = () => {
     { Metric: "Pending Tasks", Value: pending },
     { Metric: "Blockers", Value: blockers },
     { Metric: "Active Projects", Value: projects.length },
-    { Metric: "Team Members", Value: members.length },
+    { Metric: "Team Members", Value: uniqueMemberCount },
   ];
 
   const csv = Papa.unparse(csvData);
