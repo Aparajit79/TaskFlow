@@ -9,6 +9,7 @@ import HelpView from './components/HelpView';
 import PowerQueryView from './components/PowerQueryView';
 import KanbanView from './components/KanbanView';
 import LoginView from './components/LoginView';
+import SprintsBoardView from './components/SprintsBoardView';
 import { TaskFlowProvider, useTaskFlow } from './context/TaskFlowContext';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -52,6 +53,8 @@ function AppContent() {
         return <DashboardView />;
       case 'Kanban':
         return <KanbanView />;
+      case 'Sprints':
+        return <SprintsBoardView />;
       case 'Team':
         return <TeamView />;
       case 'Settings':

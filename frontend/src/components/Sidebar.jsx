@@ -197,6 +197,27 @@ export function Sidebar() {
               <span>Kanban Board</span>
             </div>
           </button>
+ 
+          <button
+            className={`taskmatrix-nav-btn ${activeView === 'Sprints' ? 'active' : ''}`}
+            onClick={() => {
+              if (projects.length > 0) {
+                if (!activeProject) {
+                  setActiveProject(projects[0].id);
+                }
+                setActiveView('Sprints');
+              } else {
+                setActiveView('Home');
+              }
+            }}
+            disabled={projects.length === 0}
+            style={{ opacity: projects.length === 0 ? 0.6 : 1 }}
+          >
+            <div className="taskmatrix-nav-btn-content">
+              <Zap size={18} className="nav-icon" />
+              <span>Sprints Board</span>
+            </div>
+          </button>
 
           <button
             className={`taskmatrix-nav-btn ${activeView === 'Dashboard' ? 'active' : ''}`}

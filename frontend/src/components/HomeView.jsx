@@ -51,6 +51,7 @@ export function HomeView() {
     setActiveProject,
     handleAddProject,
     handleDeleteProject,
+    user
   } = useTaskFlow();
 
   const [newProjectName, setNewProjectName] = useState('');
@@ -91,16 +92,18 @@ export function HomeView() {
             Your workspace at a glance
           </p>
         </div>
-        <button
-          className="hub-new-project-btn"
-          onClick={() => setShowAddForm(v => !v)}
-        >
-          <Plus size={14} strokeWidth={2} />
-          New Project
-        </button>
+        {user?.role === 'admin' && (
+          <button
+            className="hub-new-project-btn"
+            onClick={() => setShowAddForm(v => !v)}
+          >
+            <Plus size={14} strokeWidth={2} />
+            New Project
+          </button>
+        )}
       </div>
 
-      {showAddForm && (
+      {user?.role === 'admin' && showAddForm && (
         <div className="hub-add-form-bar home-hub-form-bar">
           <form onSubmit={handleSubmit} className="hub-add-form-inner">
             <FolderOpen size={15} strokeWidth={1.75} style={{ color: 'var(--primary)', flexShrink: 0 }} />
@@ -259,13 +262,15 @@ export function HomeView() {
                       Open <ArrowRight size={12} strokeWidth={2} />
                     </button>
                     
-                    <button
-                      className="project-card-delete"
-                      onClick={() => handleDeleteProject(proj.id)}
-                      title="Delete project"
-                    >
-                      <Trash2 size={13} strokeWidth={1.75} />
-                    </button>
+                    {user?.role === 'admin' && (
+                      <button
+                        className="project-card-delete"
+                        onClick={() => handleDeleteProject(proj.id)}
+                        title="Delete project"
+                      >
+                        <Trash2 size={13} strokeWidth={1.75} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

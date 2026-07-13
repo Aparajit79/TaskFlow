@@ -10,6 +10,9 @@ export function TaskFlowProvider({ children }) {
   const [projects, setProjects] = useState([]);
   const [members, setMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [sprints, setSprints] = useState([]);
+  const [scrumMeetings, setScrumMeetings] = useState([]);
+  const [retroItems, setRetroItems] = useState([]);
   const [activeProject, setActiveProject] = useState(() => {
     const saved = localStorage.getItem('active_project_id');
     return saved ? Number(saved) : '';
@@ -384,6 +387,209 @@ export function TaskFlowProvider({ children }) {
     }
   }, [fetchWithCredentials]);
 
+  const fetchSprints = useCallback(async (projId) => {
+    if (!projId) return;
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/projects/${projId}/sprints`);
+      if (res.ok) {
+        const data = await res.json();
+        setSprints(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch sprints:", err);
+    }
+  }, [fetchWithCredentials]);
+
+  const fetchScrumMeetings = useCallback(async (sprintId) => {
+    if (!sprintId) return;
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/sprints/${sprintId}/meetings`);
+      if (res.ok) {
+        const data = await res.json();
+        setScrumMeetings(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch scrum meetings:", err);
+    }
+  }, [fetchWithCredentials]);
+
+  const fetchRetroItems = useCallback(async (sprintId) => {
+    if (!sprintId) return;
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/sprints/${sprintId}/retro`);
+      if (res.ok) {
+        const data = await res.json();
+        setRetroItems(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch retro items:", err);
+    }
+  }, [fetchWithCredentials]);
+
+  const handleCreateSprint = useCallback(async (projId, durationWeeks, goal) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/projects/${projId}/sprints`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ durationWeeks, goal })
+      });
+      if (res.ok) {
+        const newSprint = await res.json();
+        setSprints(prev => [newSprint, ...prev]);
+        return { ok: true, data: newSprint };
+      }
+      const err = await res.json();
+      return { ok: false, error: err.error };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }, [fetchWithCredentials]);
+
+  const handleCompleteSprint = useCallback(async (sprintId, projId) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/sprints/${sprintId}/complete`, {
+        method: 'PUT'
+      });
+      if (res.ok) {
+        await Promise.all([
+          fetchSprints(projId),
+          fetchWorkspaceData()
+        ]);
+        return { ok: true };
+      }
+      const err = await res.json();
+      return { ok: false, error: err.error };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }, [fetchSprints, fetchWorkspaceData, fetchWithCredentials]);
+
+  const handleAssignTaskToSprint = useCallback(async (taskId, sprintId) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/tasks/${taskId}/sprint`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sprintId })
+      });
+      if (res.ok) {
+        setTasks(prev => prev.map(t => t.id === Number(taskId) ? { ...t, sprintId: sprintId ? Number(sprintId) : null } : t));
+        return { ok: true };
+      }
+      const err = await res.json();
+      return { ok: false, error: err.error };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }, [fetchWithCredentials]);
+
+  const handleLogStandup = useCallback(async (sprintId, yesterdayDone, todayPlan, blockers) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/sprints/${sprintId}/meetings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ yesterdayDone, todayPlan, blockers })
+      });
+      if (res.ok) {
+        const newMeeting = await res.json();
+        setScrumMeetings(prev => [newMeeting, ...prev]);
+        return { ok: true, data: newMeeting };
+      }
+      const err = await res.json();
+      return { ok: false, error: err.error };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }, [fetchWithCredentials]);
+
+  const handleCreateRetroItem = useCallback(async (sprintId, category, content) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/sprints/${sprintId}/retro`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, content })
+      });
+      if (res.ok) {
+        const newItem = await res.json();
+        setRetroItems(prev => [newItem, ...prev]);
+        return { ok: true, data: newItem };
+      }
+      const err = await res.json();
+      return { ok: false, error: err.error };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }, [fetchWithCredentials]);
+
+  const handleVoteRetroItem = useCallback(async (itemId) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/retro/${itemId}/vote`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        const votedItem = await res.json();
+        setRetroItems(prev => prev.map(item => item.id === Number(itemId) ? { ...item, votes: votedItem.votes } : item).sort((a, b) => b.votes - a.votes));
+        return { ok: true };
+      }
+      const err = await res.json();
+      return { ok: false, error: err.error };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }, [fetchWithCredentials]);
+
+  const fetchMessagesContacts = useCallback(async () => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/messages-contacts`);
+      if (res.ok) {
+        return await res.json();
+      }
+      return [];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }, [fetchWithCredentials]);
+
+  const fetchMessages = useCallback(async (contactId) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/messages/${contactId}`);
+      if (res.ok) {
+        return await res.json();
+      }
+      return [];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }, [fetchWithCredentials]);
+
+  const handleSendMessage = useCallback(async (receiverId, messageText) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId, messageText })
+      });
+      if (res.ok) {
+        return { ok: true, data: await res.json() };
+      }
+      const err = await res.json();
+      return { ok: false, error: err.error };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }, [fetchWithCredentials]);
+
+  useEffect(() => {
+    setScrumMeetings([]);
+    setRetroItems([]);
+    if (activeProject) {
+      fetchSprints(activeProject);
+    } else {
+      setSprints([]);
+    }
+  }, [activeProject, fetchSprints]);
+
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => Number(task.projectId) === Number(activeProject));
   }, [tasks, activeProject]);
@@ -410,7 +616,22 @@ export function TaskFlowProvider({ children }) {
     handleDeleteTask,
     handleEditTask,
     handleDeleteProject,
-    handleQueryTasks
+    handleQueryTasks,
+    sprints,
+    scrumMeetings,
+    retroItems,
+    fetchSprints,
+    fetchScrumMeetings,
+    fetchRetroItems,
+    handleCreateSprint,
+    handleCompleteSprint,
+    handleAssignTaskToSprint,
+    handleLogStandup,
+    handleCreateRetroItem,
+    handleVoteRetroItem,
+    fetchMessagesContacts,
+    fetchMessages,
+    handleSendMessage
   }), [
     user,
     authLoading,
@@ -433,7 +654,22 @@ export function TaskFlowProvider({ children }) {
     handleDeleteTask,
     handleEditTask,
     handleDeleteProject,
-    handleQueryTasks
+    handleQueryTasks,
+    sprints,
+    scrumMeetings,
+    retroItems,
+    fetchSprints,
+    fetchScrumMeetings,
+    fetchRetroItems,
+    handleCreateSprint,
+    handleCompleteSprint,
+    handleAssignTaskToSprint,
+    handleLogStandup,
+    handleCreateRetroItem,
+    handleVoteRetroItem,
+    fetchMessagesContacts,
+    fetchMessages,
+    handleSendMessage
   ]);
 
   return (

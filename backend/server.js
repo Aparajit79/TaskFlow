@@ -408,7 +408,8 @@ app.all('/api/tasks/query', authenticateJWT, async (req, res) => {
         to_char(due_date, 'YYYY-MM-DD') AS "dueDate", 
         assigned_member_id AS "assignedMemberId", 
         completed,
-        completed_at AS "completedAt"
+        completed_at AS "completedAt",
+        sprint_id AS "sprintId"
       FROM tasks 
       WHERE 1=1
     `;
@@ -517,7 +518,8 @@ app.get('/api/tasks', authenticateJWT, async (req, res) => {
           to_char(due_date, 'YYYY-MM-DD') AS "dueDate", 
           assigned_member_id AS "assignedMemberId", 
           completed,
-          completed_at AS "completedAt"
+          completed_at AS "completedAt",
+          sprint_id AS "sprintId"
         FROM tasks 
         ORDER BY created_at ASC
       `);
@@ -533,7 +535,8 @@ app.get('/api/tasks', authenticateJWT, async (req, res) => {
           to_char(t.due_date, 'YYYY-MM-DD') AS "dueDate", 
           t.assigned_member_id AS "assignedMemberId", 
           t.completed,
-          t.completed_at AS "completedAt"
+          t.completed_at AS "completedAt",
+          t.sprint_id AS "sprintId"
         FROM tasks t
         WHERE t.project_id IN (
           SELECT m.project_id FROM members m WHERE m.user_id = $1
@@ -660,6 +663,263 @@ app.delete('/api/tasks/:id', authenticateJWT, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error deleting task' });
+  }
+});
+
+// ==================== Scrum Module Routes ====================
+
+app.get('/api/projects/:projectId/sprints', authenticateJWT, async (req, res) => {
+  const { projectId } = req.params;
+  try {
+    const result = await pool.query(
+      'SELECT id, project_id AS "projectId", sprint_number AS "sprintNumber", goal, duration_weeks AS "durationWeeks", status, start_date AS "startDate", end_date AS "endDate" FROM sprints WHERE project_id = $1 ORDER BY sprint_number DESC',
+      [projectId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error fetching sprints' });
+  }
+});
+
+app.post('/api/projects/:projectId/sprints', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can create sprints' });
+  }
+  const { projectId } = req.params;
+  const { durationWeeks = 2, goal = '' } = req.body;
+  try {
+    const maxRes = await pool.query('SELECT COALESCE(MAX(sprint_number), 0) AS max FROM sprints WHERE project_id = $1', [projectId]);
+    const nextNumber = maxRes.rows[0].max + 1;
+    
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(startDate.getDate() + (durationWeeks * 7));
+
+    const result = await pool.query(
+      'INSERT INTO sprints (project_id, sprint_number, goal, duration_weeks, status, start_date, end_date) VALUES ($1, $2, $3, $4, \'active\', $5, $6) RETURNING id, project_id AS "projectId", sprint_number AS "sprintNumber", goal, duration_weeks AS "durationWeeks", status, start_date AS "startDate", end_date AS "endDate"',
+      [projectId, nextNumber, goal, durationWeeks, startDate, endDate]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error creating sprint' });
+  }
+});
+
+app.put('/api/sprints/:sprintId/complete', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can complete sprints' });
+  }
+  const { sprintId } = req.params;
+  try {
+    const sprintRes = await pool.query(
+      'UPDATE sprints SET status = \'completed\', end_date = CURRENT_TIMESTAMP WHERE id = $1 RETURNING id, status',
+      [sprintId]
+    );
+    if (sprintRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Sprint not found' });
+    }
+    await pool.query(
+      'UPDATE tasks SET sprint_id = NULL WHERE sprint_id = $1 AND completed = FALSE',
+      [sprintId]
+    );
+    clearCache();
+    res.json(sprintRes.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error completing sprint' });
+  }
+});
+
+app.put('/api/tasks/:id/sprint', authenticateJWT, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can modify sprint task assignments' });
+  }
+  const { id } = req.params;
+  const { sprintId } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE tasks SET sprint_id = $1 WHERE id = $2 RETURNING id::text, project_id AS "projectId", text, sprint_id AS "sprintId", completed',
+      [sprintId, id]
+    );
+    clearCache();
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error assigning task to sprint' });
+  }
+});
+
+app.post('/api/sprints/:sprintId/meetings', authenticateJWT, async (req, res) => {
+  const { sprintId } = req.params;
+  const { yesterdayDone, todayPlan, blockers = '' } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO scrum_meetings (sprint_id, user_id, yesterday_done, today_plan, blockers) VALUES ($1, $2, $3, $4, $5) RETURNING id, sprint_id AS "sprintId", user_id AS "userId", yesterday_done AS "yesterdayDone", today_plan AS "todayPlan", blockers, created_at AS "createdAt"',
+      [sprintId, req.user.id, yesterdayDone, todayPlan, blockers]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error logging daily standup' });
+  }
+});
+
+app.get('/api/sprints/:sprintId/meetings', authenticateJWT, async (req, res) => {
+  const { sprintId } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT sm.id, sm.sprint_id AS "sprintId", sm.user_id AS "userId", u.name AS "userName", sm.yesterday_done AS "yesterdayDone", sm.today_plan AS "todayPlan", sm.blockers, sm.created_at AS "createdAt" 
+       FROM scrum_meetings sm
+       JOIN users u ON sm.user_id = u.id
+       WHERE sm.sprint_id = $1
+       ORDER BY sm.created_at DESC`,
+      [sprintId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error fetching standup logs' });
+  }
+});
+
+app.post('/api/sprints/:sprintId/retro', authenticateJWT, async (req, res) => {
+  const { sprintId } = req.params;
+  const { category, content } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO retro_items (sprint_id, user_id, category, content) VALUES ($1, $2, $3, $4) RETURNING id, sprint_id AS "sprintId", user_id AS "userId", category, content, votes, created_at AS "createdAt"',
+      [sprintId, req.user.id, category, content]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error creating retro item' });
+  }
+});
+
+app.get('/api/sprints/:sprintId/retro', authenticateJWT, async (req, res) => {
+  const { sprintId } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT ri.id, ri.sprint_id AS "sprintId", ri.user_id AS "userId", u.name AS "userName", ri.category, ri.content, ri.votes, ri.created_at AS "createdAt"
+       FROM retro_items ri
+       JOIN users u ON ri.user_id = u.id
+       WHERE ri.sprint_id = $1
+       ORDER BY ri.votes DESC, ri.created_at DESC`,
+      [sprintId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error fetching retro items' });
+  }
+});
+
+app.post('/api/retro/:itemId/vote', authenticateJWT, async (req, res) => {
+  const { itemId } = req.params;
+  const userId = req.user.id;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    const checkRes = await client.query(
+      'SELECT id FROM retro_votes WHERE retro_item_id = $1 AND user_id = $2',
+      [itemId, userId]
+    );
+
+    let updatedVotes;
+    if (checkRes.rows.length > 0) {
+      await client.query(
+        'DELETE FROM retro_votes WHERE retro_item_id = $1 AND user_id = $2',
+        [itemId, userId]
+      );
+      const updateRes = await client.query(
+        'UPDATE retro_items SET votes = GREATEST(votes - 1, 0) WHERE id = $1 RETURNING id, votes',
+        [itemId]
+      );
+      updatedVotes = updateRes.rows[0].votes;
+    } else {
+      await client.query(
+        'INSERT INTO retro_votes (retro_item_id, user_id) VALUES ($1, $2)',
+        [itemId, userId]
+      );
+      const updateRes = await client.query(
+        'UPDATE retro_items SET votes = votes + 1 WHERE id = $1 RETURNING id, votes',
+        [itemId]
+      );
+      updatedVotes = updateRes.rows[0].votes;
+    }
+
+    await client.query('COMMIT');
+    res.json({ id: Number(itemId), votes: updatedVotes });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ error: 'Database error handling retro item vote' });
+  } finally {
+    client.release();
+  }
+});
+
+// ==================== Direct Messaging Routes ====================
+
+app.post('/api/messages', authenticateJWT, async (req, res) => {
+  const { receiverId, messageText } = req.body;
+  const senderId = req.user.id;
+  if (!receiverId || !messageText || !messageText.trim()) {
+    return res.status(400).json({ error: 'Receiver ID and message text are required' });
+  }
+  try {
+    const result = await pool.query(
+      'INSERT INTO direct_messages (sender_id, receiver_id, message_text) VALUES ($1, $2, $3) RETURNING id, sender_id AS "senderId", receiver_id AS "receiverId", message_text AS "messageText", created_at AS "createdAt"',
+      [senderId, Number(receiverId), messageText.trim()]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error sending message' });
+  }
+});
+
+app.get('/api/messages/:contactId', authenticateJWT, async (req, res) => {
+  const { contactId } = req.params;
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(
+      `SELECT id, sender_id AS "senderId", receiver_id AS "receiverId", message_text AS "messageText", created_at AS "createdAt"
+       FROM direct_messages
+       WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)
+       ORDER BY created_at ASC`,
+      [userId, Number(contactId)]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error fetching messages' });
+  }
+});
+
+app.get('/api/messages-contacts', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    let result;
+    if (req.user.role === 'admin') {
+      result = await pool.query(
+        'SELECT id, name, role FROM users WHERE id != $1 ORDER BY name ASC',
+        [userId]
+      );
+    } else {
+      result = await pool.query(
+        'SELECT id, name, role FROM users WHERE role = \'admin\' AND id != $1 ORDER BY name ASC',
+        [userId]
+      );
+    }
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error fetching message contacts' });
   }
 });
 

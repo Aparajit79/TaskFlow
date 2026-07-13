@@ -1,9 +1,10 @@
 import React from 'react';
 import {
-  FolderOpen, Users, CircleCheck, Download
+  FolderOpen, Users, CircleCheck, Download, Zap, CircleAlert
 } from 'lucide-react';
 import { useTaskFlow } from '../context/TaskFlowContext';
-import Papa from "papaparse";
+import * as XLSX from 'xlsx';
+import MemberAvatar from './MemberAvatar';
 
 function DonutChart({ segments, total }) {
   const radius = 54;
@@ -127,7 +128,7 @@ export function DashboardView() {
   ];
 
 const handleExport = () => {
-  const csvData = [
+  const reportData = [
     { Metric: "Total Tasks", Value: total },
     { Metric: "Completed Tasks", Value: completed },
     { Metric: "In Progress Tasks", Value: inprogress },
@@ -137,16 +138,11 @@ const handleExport = () => {
     { Metric: "Team Members", Value: uniqueMemberCount },
   ];
 
-  const csv = Papa.unparse(csvData);
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "task-report.csv";
-  link.click();
-
-  URL.revokeObjectURL(link.href);
+  const worksheet = XLSX.utils.json_to_sheet(reportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Task Report");
+  const today = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(workbook, `task-report-${today}.xlsx`);
 };
 
   return (
@@ -278,6 +274,286 @@ const handleExport = () => {
         </div>
 
       </div>
+
+      {/* Project Performance Comparison (Stacked Bar Chart) */}
+      <div 
+        className="dash-card" 
+        style={{ 
+          backgroundColor: 'var(--bg-card)', 
+          border: '1px solid var(--border-color)', 
+          borderRadius: '16px', 
+          padding: '24px',
+          marginTop: '24px'
+        }}
+      >
+        <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 8px 0' }}>Project Performance Comparison</h3>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 24px 0' }}>Compare task completion and active status ratios across all projects.</p>
+        
+        {projects.length === 0 ? (
+          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
+            No active projects found.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {projects.map(p => {
+              const projectTasks = tasks.filter(t => Number(t.projectId) === Number(p.id));
+              const totalT = projectTasks.length;
+              const completedT = projectTasks.filter(t => t.completed).length;
+              const inprogressT = projectTasks.filter(t => t.status === 'In Progress' && !t.completed).length;
+              const pendingT = projectTasks.filter(t => t.status === 'Pending' && !t.completed).length;
+              const blockersT = projectTasks.filter(t => t.status === 'Blocker' && !t.completed).length;
+
+              if (totalT === 0) {
+                return (
+                  <div key={p.id} className="dashboard-project-comparison-row" style={{ display: 'grid', gridTemplateColumns: '200px 1fr', alignItems: 'center', gap: '16px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.name}>
+                      {p.name}
+                    </span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No tasks created yet</span>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={p.id} className="dashboard-project-comparison-row" style={{ display: 'grid', gridTemplateColumns: '200px 1fr', alignItems: 'center', gap: '16px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.name}>
+                    {p.name}
+                  </span>
+                  
+                  {/* Stacked bar */}
+                  <div style={{ display: 'flex', height: '14px', borderRadius: '7px', overflow: 'hidden', backgroundColor: 'var(--border-color)', width: '100%' }}>
+                    {completedT > 0 && (
+                      <div 
+                        style={{ width: `${(completedT / totalT) * 100}%`, backgroundColor: 'var(--success-text)', transition: 'width 0.3s ease' }} 
+                        title={`Completed: ${completedT} (${Math.round((completedT / totalT) * 100)}%)`} 
+                      />
+                    )}
+                    {inprogressT > 0 && (
+                      <div 
+                        style={{ width: `${(inprogressT / totalT) * 100}%`, backgroundColor: 'var(--inprogress-text)', transition: 'width 0.3s ease' }} 
+                        title={`In Progress: ${inprogressT} (${Math.round((inprogressT / totalT) * 100)}%)`} 
+                      />
+                    )}
+                    {pendingT > 0 && (
+                      <div 
+                        style={{ width: `${(pendingT / totalT) * 100}%`, backgroundColor: 'var(--pending-text)', transition: 'width 0.3s ease' }} 
+                        title={`Pending: ${pendingT} (${Math.round((pendingT / totalT) * 100)}%)`} 
+                      />
+                    )}
+                    {blockersT > 0 && (
+                      <div 
+                        style={{ width: `${(blockersT / totalT) * 100}%`, backgroundColor: 'var(--blocker-text)', transition: 'width 0.3s ease' }} 
+                        title={`Blockers: ${blockersT} (${Math.round((blockersT / totalT) * 100)}%)`} 
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            
+            {/* Legend for the comparison rows */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success-text)' }} />
+                <span>Completed</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--inprogress-text)' }} />
+                <span>In Progress</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--pending-text)' }} />
+                <span>Pending</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--blocker-text)' }} />
+                <span>Blocker</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Project Health Cards Grid */}
+      <div style={{ marginTop: '32px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 8px 0' }}>Project Health Statistics</h3>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 24px 0' }}>Detailed metrics breakdown and completion state for individual workspaces.</p>
+        
+        {projects.length === 0 ? (
+          <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            No workspaces registered. Create a project to monitor health metrics.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+            {projects.map(p => {
+              const projectTasks = tasks.filter(t => Number(t.projectId) === Number(p.id));
+              const totalT = projectTasks.length;
+              const completedT = projectTasks.filter(t => t.completed).length;
+              const inprogressT = projectTasks.filter(t => t.status === 'In Progress' && !t.completed).length;
+              const pendingT = projectTasks.filter(t => t.status === 'Pending' && !t.completed).length;
+              const blockersT = projectTasks.filter(t => t.status === 'Blocker' && !t.completed).length;
+              const pct = totalT > 0 ? Math.round((completedT / totalT) * 100) : 0;
+              const hasBlocker = blockersT > 0;
+              const projectMembers = members.filter(m => Number(m.projectId) === Number(p.id));
+
+              return (
+                <div 
+                  key={p.id} 
+                  className="project-health-card" 
+                  style={{
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    boxShadow: 'var(--shadow-sm)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                  }}
+                >
+                  {/* Card Title & Status Badge */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                      <FolderOpen size={16} strokeWidth={2} style={{ color: hasBlocker ? 'var(--blocker-text)' : 'var(--primary)', flexShrink: 0 }} />
+                      <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.name}>
+                        {p.name}
+                      </span>
+                    </div>
+                    {hasBlocker ? (
+                      <span style={{ 
+                        fontSize: '11px', 
+                        fontWeight: '600', 
+                        color: 'var(--blocker-text)', 
+                        backgroundColor: 'var(--blocker-bg)', 
+                        padding: '2px 8px', 
+                        borderRadius: '10px',
+                        border: '1px solid var(--blocker-border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        flexShrink: 0
+                      }}>
+                        <CircleAlert size={10} /> Blocked
+                      </span>
+                    ) : (
+                      <span style={{ 
+                        fontSize: '11px', 
+                        fontWeight: '600', 
+                        color: totalT > 0 && pct === 100 ? 'var(--success-text)' : 'var(--inprogress-text)', 
+                        backgroundColor: totalT > 0 && pct === 100 ? 'var(--success-bg)' : 'var(--inprogress-bg)', 
+                        padding: '2px 8px', 
+                        borderRadius: '10px',
+                        border: totalT > 0 && pct === 100 ? '1px solid var(--success-border)' : '1px solid var(--inprogress-border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        flexShrink: 0
+                      }}>
+                        {totalT > 0 && pct === 100 ? <CircleCheck size={10} /> : <Zap size={10} />}
+                        {totalT > 0 && pct === 100 ? 'Completed' : 'Active'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Progress bar */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '600' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Progress</span>
+                      <span style={{ color: 'var(--text-main)' }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${pct}%`,
+                        backgroundColor: hasBlocker ? 'var(--blocker-text)' : 'var(--primary)',
+                        borderRadius: '3px',
+                        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }} />
+                    </div>
+                  </div>
+
+                  {/* Stats counts summary */}
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(3, 1fr)', 
+                    gap: '8px', 
+                    borderTop: '1px solid var(--border-color)', 
+                    borderBottom: '1px solid var(--border-color)',
+                    padding: '12px 0', 
+                    textAlign: 'center' 
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Total Tasks</div>
+                      <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', marginTop: '2px' }}>{totalT}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--success-text)' }}>Completed</div>
+                      <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--success-text)', marginTop: '2px' }}>{completedT}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: hasBlocker ? 'var(--blocker-text)' : 'var(--inprogress-text)' }}>
+                        {hasBlocker ? 'Blocked' : 'Active'}
+                      </div>
+                      <div style={{ 
+                        fontSize: '15px', 
+                        fontWeight: '700', 
+                        color: hasBlocker ? 'var(--blocker-text)' : 'var(--inprogress-text)',
+                        marginTop: '2px' 
+                      }}>
+                        {hasBlocker ? blockersT : (inprogressT + pendingT)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Members Avatars stacked */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Workspace Team</span>
+                    {projectMembers.length === 0 ? (
+                      <span style={{ fontSize: '11px', color: 'var(--text-light)', fontStyle: 'italic' }}>No members</span>
+                    ) : (
+                      <div className="overlapping-avatars" style={{ display: 'flex', alignItems: 'center' }}>
+                        {projectMembers.slice(0, 3).map(m => (
+                          <MemberAvatar
+                            key={m.id}
+                            name={m.name}
+                            role={m.role}
+                            size={22}
+                            iconSize={10}
+                            className="stacked-avatar"
+                          />
+                        ))}
+                        {projectMembers.length > 3 && (
+                          <div 
+                            className="stacked-avatar more-avatar" 
+                            style={{ 
+                              width: '22px', 
+                              height: '22px', 
+                              borderRadius: '50%', 
+                              backgroundColor: 'var(--border-color)', 
+                              color: 'var(--text-main)', 
+                              fontSize: '10px', 
+                              fontWeight: '700', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              marginLeft: '-6px',
+                              border: '2px solid var(--bg-card)'
+                            }}
+                          >
+                            +{projectMembers.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }
