@@ -21,21 +21,21 @@ const PRIORITY_COLOR = {
 function TaskPreviewRow({ task, assigneeName }) {
   const s = STATUS_COLOR[task.status] || STATUS_COLOR['Pending'];
   return (
-    <div className={`home-task-preview ${task.completed ? 'home-task-done' : ''}`}>
+    <div className={`home-task-preview home-task-preview-padding ${task.completed ? 'home-task-done' : ''}`}>
       <span
         className="home-task-priority-dot"
         style={{ background: PRIORITY_COLOR[task.priority] }}
         title={`${task.priority} priority`}
       />
-      <span className="home-task-text">{task.text}</span>
+      <span className="home-task-text home-task-text-style">{task.text}</span>
       <span
-        className="home-task-status"
+        className="home-task-status home-task-status-style"
         style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
       >
         {task.status}
       </span>
       {assigneeName && (
-        <span className="home-task-assignee" title={`Assigned to ${assigneeName}`}>
+        <span className="home-task-assignee home-task-assignee-style" title={`Assigned to ${assigneeName}`}>
           {assigneeName.split(' ')[0]}
         </span>
       )}
@@ -60,7 +60,19 @@ export function HomeView() {
   const totalTasks    = tasks.length;
   const doneTasks     = tasks.filter(t => t.completed).length;
   const blockerCount  = tasks.filter(t => t.status === 'Blocker' && !t.completed).length;
-  const memberCount   = members.length;
+
+  // Calculate unique members globally
+  const uniqueMemberCount = React.useMemo(() => {
+    const uniqueIds = new Set();
+    members.forEach(m => {
+      if (m.userId) {
+        uniqueIds.add(m.userId);
+      } else if (m.name) {
+        uniqueIds.add(m.name.trim().toLowerCase());
+      }
+    });
+    return uniqueIds.size;
+  }, [members]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -71,11 +83,13 @@ export function HomeView() {
   };
 
   return (
-    <div className="home-hub-container">
-      <div className="hub-header">
+    <div className="home-hub-container home-hub-container-max">
+      <div className="hub-header home-hub-header-margin">
         <div className="hub-header-left">
           <h1>Home</h1>
-          <p className="hub-subtitle">Your workspace at a glance</p>
+          <p className="hub-subtitle home-hub-subtitle-style">
+            Your workspace at a glance
+          </p>
         </div>
         <button
           className="hub-new-project-btn"
@@ -87,7 +101,7 @@ export function HomeView() {
       </div>
 
       {showAddForm && (
-        <div className="hub-add-form-bar">
+        <div className="hub-add-form-bar home-hub-form-bar">
           <form onSubmit={handleSubmit} className="hub-add-form-inner">
             <FolderOpen size={15} strokeWidth={1.75} style={{ color: 'var(--primary)', flexShrink: 0 }} />
             <input
@@ -105,7 +119,7 @@ export function HomeView() {
         </div>
       )}
 
-      <div className="hub-summary-strip">
+      <div className="hub-summary-strip home-hub-summary-margin">
         <div className="hub-summary-item">
           <FolderOpen size={14} strokeWidth={1.75} />
           <span><strong>{totalProjects}</strong> Projects</span>
@@ -132,7 +146,7 @@ export function HomeView() {
         )}
         <div className="hub-summary-item">
           <Users size={14} strokeWidth={1.75} />
-          <span><strong>{memberCount}</strong> Members</span>
+          <span><strong>{uniqueMemberCount}</strong> Members</span>
         </div>
       </div>
 
@@ -165,103 +179,128 @@ export function HomeView() {
           const remaining = totalT - 2;
 
           return (
-            <div key={proj.id} className={`hub-project-row ${hasBlocker ? 'hub-project-row--blocker' : ''}`}>
-              <div className="hub-row-header">
-                <div className="hub-row-left">
-                  <FolderOpen size={16} strokeWidth={1.75} className="hub-row-folder-icon" />
-                  <span className="hub-row-name">{proj.name}</span>
-                  {hasBlocker && (
-                    <span className="hub-blocker-pill">
-                      <CircleAlert size={10} strokeWidth={2} /> Blocker
+            <div
+              key={proj.id}
+              className={`hub-project-row ${hasBlocker ? 'hub-project-row--blocker' : ''}`}
+            >
+              {/* Top metadata info section */}
+              <div className="home-row-info-wrapper">
+                {/* Left side group: Title + Stats chips */}
+                <div className="home-row-left-group">
+                  {/* 1. Project Title Section */}
+                  <div className="home-row-title-col">
+                    <FolderOpen size={18} strokeWidth={1.75} className="hub-row-folder-icon" />
+                    <span className="hub-row-name home-row-title-text">
+                      {proj.name}
                     </span>
-                  )}
+                    {hasBlocker && (
+                      <span className="hub-blocker-pill">
+                        <CircleAlert size={10} strokeWidth={2} /> Blocker
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 2. Stats Section */}
+                  <div className="home-row-stats-col">
+                    <span className="hub-stat-chip hub-stat-chip--total" title="Total tasks">
+                      <ClipboardList size={11} strokeWidth={1.75} /> {totalT}
+                    </span>
+                    {doneT > 0 && (
+                      <span className="hub-stat-chip hub-stat-chip--done" title="Completed">
+                        <CircleCheck size={11} strokeWidth={1.75} /> {doneT}
+                      </span>
+                    )}
+                    {inprogressT > 0 && (
+                      <span className="hub-stat-chip hub-stat-chip--inprogress" title="In Progress">
+                        <Zap size={11} strokeWidth={1.75} /> {inprogressT}
+                      </span>
+                    )}
+                    {blockersT > 0 && (
+                      <span className="hub-stat-chip hub-stat-chip--blocker" title="Blockers">
+                        <CircleAlert size={11} strokeWidth={1.75} /> {blockersT}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="hub-row-stats">
-                  <span className="hub-stat-chip hub-stat-chip--total" title="Total tasks">
-                    <ClipboardList size={11} strokeWidth={1.75} /> {totalT}
-                  </span>
-                  {doneT > 0 && (
-                    <span className="hub-stat-chip hub-stat-chip--done" title="Completed">
-                      <CircleCheck size={11} strokeWidth={1.75} /> {doneT}
-                    </span>
-                  )}
-                  {inprogressT > 0 && (
-                    <span className="hub-stat-chip hub-stat-chip--inprogress" title="In Progress">
-                      <Zap size={11} strokeWidth={1.75} /> {inprogressT}
-                    </span>
-                  )}
-                  {blockersT > 0 && (
-                    <span className="hub-stat-chip hub-stat-chip--blocker" title="Blockers">
-                      <CircleAlert size={11} strokeWidth={1.75} /> {blockersT}
-                    </span>
-                  )}
-                </div>
+                {/* Right side group: Members avatars + Action buttons */}
+                <div className="home-row-right-group">
+                  {/* 3. Members Section */}
+                  <div className="home-row-members-col">
+                    {projectMembers.length === 0 ? (
+                      <span className="no-members-label" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No members</span>
+                    ) : (
+                      <div className="overlapping-avatars">
+                        {projectMembers.slice(0, 3).map(m => (
+                          <MemberAvatar
+                            key={m.id}
+                            name={m.name}
+                            role={m.role}
+                            size={24}
+                            iconSize={11}
+                            className="stacked-avatar"
+                          />
+                        ))}
+                        {projectMembers.length > 3 && (
+                          <div className="stacked-avatar more-avatar home-row-avatar-more">
+                            +{projectMembers.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="hub-row-members">
-                  {projectMembers.length === 0 ? (
-                    <span className="no-members-label">No members</span>
-                  ) : (
-                    <div className="overlapping-avatars" style={{ paddingLeft: 6 }}>
-                      {projectMembers.slice(0, 4).map(m => (
-                        <MemberAvatar
-                          key={m.id}
-                          name={m.name}
-                          role={m.role}
-                          size={26}
-                          iconSize={12}
-                          className="stacked-avatar"
-                        />
-                      ))}
-                      {projectMembers.length > 4 && (
-                        <div className="stacked-avatar more-avatar">+{projectMembers.length - 4}</div>
-                      )}
-                    </div>
-                  )}
+                  {/* 4. Actions Section */}
+                  <div className="home-row-actions-col">
+                    <button
+                      className="hub-open-project-btn home-row-open-btn"
+                      onClick={() => setActiveProject(proj.id)}
+                    >
+                      Open <ArrowRight size={12} strokeWidth={2} />
+                    </button>
+                    
+                    <button
+                      className="project-card-delete"
+                      onClick={() => handleDeleteProject(proj.id)}
+                      title="Delete project"
+                    >
+                      <Trash2 size={13} strokeWidth={1.75} />
+                    </button>
+                  </div>
                 </div>
-
-                <button
-                  className="project-card-delete"
-                  onClick={() => handleDeleteProject(proj.id)}
-                  title="Delete project"
-                >
-                  <Trash2 size={13} strokeWidth={1.75} />
-                </button>
               </div>
 
-              <div className="hub-row-progress">
-                <div className="hub-row-progress-track">
-                  <div
-                    className={`hub-row-progress-fill ${hasBlocker ? 'has-blocker' : ''}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                <span className="hub-row-progress-pct">{pct}%</span>
-              </div>
-
+              {/* Bottom tasks & progress section */}
               {totalT > 0 && (
                 <div className="hub-task-preview-section">
-                  {previewTasks.map(t => {
-                    const assignee = members.find(m => Number(m.id) === Number(t.assignedMemberId));
-                    const assigneeName = assignee ? assignee.name : null;
-                    return <TaskPreviewRow key={t.id} task={t} assigneeName={assigneeName} />;
-                  })}
-                  {remaining > 0 && (
-                    <p className="hub-remaining-label">
-                      +{remaining} more task{remaining > 1 ? 's' : ''} in this project
-                    </p>
-                  )}
+                  <div className="hub-task-preview-list">
+                    {previewTasks.map(t => {
+                      const assignee = members.find(m => Number(m.id) === Number(t.assignedMemberId));
+                      const assigneeName = assignee ? assignee.name : null;
+                      return <TaskPreviewRow key={t.id} task={t} assigneeName={assigneeName} />;
+                    })}
+                    {remaining > 0 && (
+                      <p className="hub-remaining-label">
+                        +{remaining} more task{remaining > 1 ? 's' : ''} in workspace
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Progress Section (Positioned on the bottom right) */}
+                  <div className="home-row-progress-col">
+                    <div className="home-row-progress-labels">
+                      <span style={{ color: 'var(--text-muted)' }}>Progress</span>
+                      <span style={{ color: 'var(--text-main)' }}>{pct}%</span>
+                    </div>
+                    <div className="hub-row-progress-track home-row-progress-track-override">
+                      <div
+                        className={`hub-row-progress-fill ${hasBlocker ? 'has-blocker' : ''}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
-
-              <div className="hub-row-footer">
-                <button
-                  className="hub-open-project-btn"
-                  onClick={() => setActiveProject(proj.id)}
-                >
-                  Open Project <ArrowRight size={13} strokeWidth={2} />
-                </button>
-              </div>
             </div>
           );
         })}

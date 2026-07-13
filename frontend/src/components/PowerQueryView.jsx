@@ -4,6 +4,7 @@ import {
   TriangleAlert, RefreshCw, Play, Filter 
 } from 'lucide-react';
 import { useTasks, useMembers } from "../context/TaskFlowContext";
+import useDebounce from "../hooks/useDebounce";
 
 export function PowerQueryView() {
   const { projects = [], handleQueryTasks } = useTasks();
@@ -14,6 +15,7 @@ export function PowerQueryView() {
   const [priority, setPriority] = useState('All');
   const [assignedMemberId, setAssignedMemberId] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 400);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,7 +34,7 @@ export function PowerQueryView() {
     if (assignedMemberId !== 'All') {
       filterObj.assignedMemberId = assignedMemberId === 'Unassigned' ? 'Unassigned' : Number(assignedMemberId);
     }
-    if (searchTerm.trim() !== '') filterObj.searchTerm = searchTerm.trim();
+    if (debouncedSearchTerm.trim() !== '') filterObj.searchTerm = debouncedSearchTerm.trim();
 
     const jsonBody = JSON.stringify(filterObj, null, 2);
     
@@ -40,7 +42,7 @@ export function PowerQueryView() {
       rawHttp: `QUERY /api/tasks/query HTTP/1.1\nHost: localhost:5000\nContent-Type: application/json\nCache-Control: max-age=3600\n\n${jsonBody}`,
       bodyObj: filterObj
     };
-  }, [projectId, status, priority, assignedMemberId, searchTerm]);
+  }, [projectId, status, priority, assignedMemberId, debouncedSearchTerm]);
 
   const { rawHttp, bodyObj } = buildHttpRequest();
 
@@ -64,10 +66,10 @@ export function PowerQueryView() {
     }
   }, [bodyObj, handleQueryTasks]);
 
-  // Run when filters change
+  // Run when filters change (including debounced search keyword)
   useEffect(() => {
     runQuery();
-  }, [projectId, status, priority, assignedMemberId]);
+  }, [projectId, status, priority, assignedMemberId, debouncedSearchTerm]);
 
   const handleKeywordKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -163,7 +165,7 @@ export function PowerQueryView() {
               <Search size={14} className="search-icon" />
               <input
                 type="text"
-                placeholder="Search text or description... (Press Enter)"
+                placeholder="Search text or description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeywordKeyDown}

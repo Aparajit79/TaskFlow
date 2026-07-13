@@ -11,6 +11,8 @@ import KanbanView from './components/KanbanView';
 import LoginView from './components/LoginView';
 import { TaskFlowProvider, useTaskFlow } from './context/TaskFlowContext';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 function AppContent() {
   const { activeView, user, authLoading, handleLoginSuccess } = useTaskFlow();
 
@@ -67,7 +69,9 @@ function AppContent() {
     <div className="app-container">
       <Sidebar />
       <main className="main-content">
-        {renderActiveView()}
+        <ErrorBoundary key={activeView}>
+          {renderActiveView()}
+        </ErrorBoundary>
       </main>
     </div>
   );

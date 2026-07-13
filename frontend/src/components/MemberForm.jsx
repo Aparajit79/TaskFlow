@@ -44,21 +44,19 @@ function MemberForm({ projectId, onAddMember, onAssignMember, onCancel, isAdmin 
   };
 
   return (
-    <div className="inline-add-form-container" style={{ width: '100%' }}>
-      <div className="login-tabs" style={{ marginBottom: '12px', padding: '2px' }}>
+    <div className="inline-add-form-container">
+      <div className="login-tabs member-form-tabs">
         <button
           type="button"
-          className={`login-tab-btn ${addMode === 'create' ? 'active' : ''}`}
+          className={`login-tab-btn member-form-tab-btn ${addMode === 'create' ? 'active' : ''}`}
           onClick={() => setAddMode('create')}
-          style={{ padding: '6px' }}
         >
           Invite New Name
         </button>
         <button
           type="button"
-          className={`login-tab-btn ${addMode === 'assign' ? 'active' : ''}`}
+          className={`login-tab-btn member-form-tab-btn ${addMode === 'assign' ? 'active' : ''}`}
           onClick={() => setAddMode('assign')}
-          style={{ padding: '6px' }}
         >
           Assign Existing
         </button>
@@ -67,20 +65,19 @@ function MemberForm({ projectId, onAddMember, onAssignMember, onCancel, isAdmin 
       <form className="inline-add-form" onSubmit={handleSubmit}>
         {addMode === 'assign' ? (
           <div>
-            <label className="inline-input-label" style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-light)', marginBottom: '4px', display: 'block' }}>
+            <label className="inline-input-label member-form-label">
               Select User Account
             </label>
             {availableUsers.length === 0 ? (
-              <div className="inline-field-info" style={{ marginBottom: '10px' }}>
+              <div className="inline-field-info member-form-info-box">
                 <Info size={14} strokeWidth={2} />
                 <p className="inline-field-info-text">No unregistered users available</p>
               </div>
             ) : (
               <select
-                className="select-input inline-member-select"
+                className="select-input inline-member-select member-form-select-assign"
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(e.target.value)}
-                style={{ marginBottom: '10px', width: '100%' }}
                 required
               >
                 {availableUsers.map((u) => (
@@ -93,30 +90,28 @@ function MemberForm({ projectId, onAddMember, onAssignMember, onCancel, isAdmin 
           </div>
         ) : (
           <div>
-            <label className="inline-input-label" style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-light)', marginBottom: '4px', display: 'block' }}>
+            <label className="inline-input-label member-form-label">
               Full Name
             </label>
             <input
               type="text"
               placeholder="e.g. Alice Cooper"
-              className="task-input"
+              className="task-input member-form-input"
               value={memberName}
               onChange={(e) => setMemberName(e.target.value)}
-              style={{ marginBottom: '10px', width: '100%', height: '34px' }}
               required
               autoFocus
             />
           </div>
         )}
 
-        <label className="inline-input-label" style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-light)', marginBottom: '4px', display: 'block' }}>
+        <label className="inline-input-label member-form-label">
           Professional Role
         </label>
         <select
-          className="select-input inline-member-select"
+          className="select-input inline-member-select member-form-select"
           value={memberRole}
           onChange={(e) => setMemberRole(e.target.value)}
-          style={{ width: '100%', marginBottom: '12px' }}
         >
           <option>Frontend Developer</option>
           <option>Backend Developer</option>

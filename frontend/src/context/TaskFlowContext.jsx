@@ -10,8 +10,11 @@ export function TaskFlowProvider({ children }) {
   const [projects, setProjects] = useState([]);
   const [members, setMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [activeProject, setActiveProject] = useState('');
-  const [activeView, setActiveView] = useState('Home');
+  const [activeProject, setActiveProject] = useState(() => {
+    const saved = localStorage.getItem('active_project_id');
+    return saved ? Number(saved) : '';
+  });
+  const [activeView, setActiveView] = useState(() => localStorage.getItem('active_view') || 'Home');
 
   const fetchWithCredentials = useCallback((url, options = {}) => {
     return fetch(url, {
@@ -22,6 +25,7 @@ export function TaskFlowProvider({ children }) {
 
   const handleSetActiveProject = useCallback((projId) => {
     setActiveProject(Number(projId));
+    localStorage.setItem('active_project_id', Number(projId));
     setActiveView('Project');
   }, []);
 
@@ -57,10 +61,19 @@ export function TaskFlowProvider({ children }) {
         setTasks(formattedTasks);
 
         setActiveProject((currentActive) => {
-          if (currentActive && projs.some(p => Number(p.id) === Number(currentActive))) {
-            return Number(currentActive);
+          const savedActive = Number(localStorage.getItem('active_project_id'));
+          const targetActive = currentActive || savedActive;
+          if (targetActive && projs.some(p => Number(p.id) === Number(targetActive))) {
+            localStorage.setItem('active_project_id', Number(targetActive));
+            return Number(targetActive);
           }
-          return projs.length > 0 ? Number(projs[0].id) : '';
+          const defaultActive = projs.length > 0 ? Number(projs[0].id) : '';
+          if (defaultActive) {
+            localStorage.setItem('active_project_id', Number(defaultActive));
+          } else {
+            localStorage.removeItem('active_project_id');
+          }
+          return defaultActive;
         });
       }
     } catch (err) {
@@ -89,16 +102,24 @@ export function TaskFlowProvider({ children }) {
   }, [fetchWithCredentials]);
 
   useEffect(() => {
+    if (activeView) {
+      localStorage.setItem('active_view', activeView);
+    }
+  }, [activeView]);
+
+  useEffect(() => {
     if (user) {
       fetchWorkspaceData();
-    } else {
+    } else if (!authLoading) {
       setProjects([]);
       setMembers([]);
       setTasks([]);
       setActiveProject('');
       setActiveView('Home');
+      localStorage.removeItem('active_project_id');
+      localStorage.removeItem('active_view');
     }
-  }, [user, fetchWorkspaceData]);
+  }, [user, authLoading, fetchWorkspaceData]);
 
   const handleLoginSuccess = useCallback((userData) => {
     setUser(userData);
@@ -108,6 +129,8 @@ export function TaskFlowProvider({ children }) {
     try {
       await fetchWithCredentials(`${API_URL}/auth/logout`, { method: 'POST' });
       setUser(null);
+      localStorage.removeItem('active_project_id');
+      localStorage.removeItem('active_view');
     } catch (err) {
       console.error("Logout failed:", err);
     }

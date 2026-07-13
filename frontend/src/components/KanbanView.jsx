@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { FolderOpen, Search, X, ListTodo, Play, AlertOctagon } from 'lucide-react';
 import TaskItem from './TaskItem';
-import TaskForm from './TaskForm';
 import { useTasks, useMembers, useTaskFlow } from '../context/TaskFlowContext';
+import useDebounce from '../hooks/useDebounce';
+
+const TaskForm = React.lazy(() => import('./TaskForm'));
 
 const COLUMNS = [
   { id: 'Pending', title: 'Pending', icon: <ListTodo size={16} />, colorClass: 'pending' },
@@ -26,7 +28,7 @@ export function KanbanView() {
   const { user } = useTaskFlow();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [memberFilter, setMemberFilter] = useState('All');
   const [editingTask, setEditingTask] = useState(null);
@@ -35,16 +37,10 @@ export function KanbanView() {
 
   useEffect(() => {
     setSearchTerm('');
-    setDebouncedSearch('');
     setPriorityFilter('All');
     setMemberFilter('All');
     setEditingTask(null);
   }, [activeProject]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 400);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   const projectMembers = members.filter(m => Number(m.projectId) === Number(activeProject));
   const activeProjObj = projects.find(p => Number(p.id) === Number(activeProject));
@@ -235,15 +231,17 @@ export function KanbanView() {
         </DragDropContext>
       </div>
 
-      <TaskForm
-        activeProject={activeProject}
-        projects={projects}
-        members={members}
-        onSubmit={handleFormSubmit}
-        editingTask={editingTask}
-        onCancelEdit={() => setEditingTask(null)}
-        titleInputRef={titleInputRef}
-      />
+      <Suspense fallback={<div className="loading-suspense" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading form...</div>}>
+        <TaskForm
+          activeProject={activeProject}
+          projects={projects}
+          members={members}
+          onSubmit={handleFormSubmit}
+          editingTask={editingTask}
+          onCancelEdit={() => setEditingTask(null)}
+          titleInputRef={titleInputRef}
+        />
+      </Suspense>
     </div>
   );
 }

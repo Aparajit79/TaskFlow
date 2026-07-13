@@ -262,17 +262,15 @@ const handleExport = () => {
         >
           <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 24px 0' }}>Task Status Distribution</h3>
           
-          <div className="donut-layout" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', flex: 1, justifyContent: 'center' }}>
+          <div className="dashboard-donut-layout">
             <DonutChart segments={donutSegments} total={total} />
             
-            <div className="donut-legend" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
+            <div className="donut-legend">
               {donutSegments.map(s => (
-                <div key={s.label} className="legend-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                  <span className="legend-dot" style={{ width: '10px', height: '10px', borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
-                  <span className="legend-text" style={{ color: 'var(--text-muted)', flex: 1 }}>{s.label}</span>
-                  <span className="legend-val" style={{ fontWeight: '700', color: 'var(--text-main)' }}>
-                    {s.value}
-                  </span>
+                <div key={s.label} className="legend-row">
+                  <span className="legend-dot" style={{ background: s.color }} />
+                  <span className="legend-text">{s.label}</span>
+                  <span className="legend-val">{s.value}</span>
                 </div>
               ))}
             </div>

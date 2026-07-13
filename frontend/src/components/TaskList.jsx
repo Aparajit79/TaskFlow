@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { FolderOpen, TriangleAlert, Search, X } from 'lucide-react';
 import TaskStats from './TaskStats';
 import TaskItem from './TaskItem';
-import TaskForm from './TaskForm';
 import { useTasks, useMembers } from "../context/TaskFlowContext";
+import useDebounce from '../hooks/useDebounce';
+
+const TaskForm = React.lazy(() => import('./TaskForm'));
 
 export function TaskList() {
   const {
@@ -18,7 +20,7 @@ export function TaskList() {
 
   const { members = [] } = useMembers();
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [statusFilter, setStatusFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [memberFilter, setMemberFilter] = useState('All');
@@ -29,7 +31,6 @@ export function TaskList() {
 
   useEffect(() => {
     setSearchTerm('');
-    setDebouncedSearch('');
     setStatusFilter('All');
     setPriorityFilter('All');
     setMemberFilter('All');
@@ -45,11 +46,6 @@ export function TaskList() {
       onAddTask(text, description, priority, status, dueDate, assignedMemberId);
     }
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   const getTomorrowString = () => {
     const tom = new Date();
@@ -208,15 +204,17 @@ export function TaskList() {
         <TaskStats tasks={tasks} />
       </div>
 
-      <TaskForm
-        activeProject={activeProject}
-        projects={projects}
-        members={members}
-        onSubmit={handleFormSubmit}
-        editingTask={editingTask}
-        onCancelEdit={() => setEditingTask(null)}
-        titleInputRef={titleInputRef}
-      />
+      <Suspense fallback={<div className="loading-suspense" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading form...</div>}>
+        <TaskForm
+          activeProject={activeProject}
+          projects={projects}
+          members={members}
+          onSubmit={handleFormSubmit}
+          editingTask={editingTask}
+          onCancelEdit={() => setEditingTask(null)}
+          titleInputRef={titleInputRef}
+        />
+      </Suspense>
     </div>
   );
 }
