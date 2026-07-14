@@ -20,7 +20,7 @@ export function TaskList() {
 
   const { members = [] } = useMembers();
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearch = useDebounce(searchTerm, 400);
+  const debouncedSearch = useDebounce(searchTerm, 450);
   const [statusFilter, setStatusFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [memberFilter, setMemberFilter] = useState('All');

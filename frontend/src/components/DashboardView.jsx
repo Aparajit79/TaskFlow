@@ -305,23 +305,24 @@ const handleExport = () => {
 
               if (totalT === 0) {
                 return (
-                  <div key={p.id} className="dashboard-project-comparison-row" style={{ display: 'grid', gridTemplateColumns: '200px 1fr', alignItems: 'center', gap: '16px' }}>
+                  <div key={p.id} className="dashboard-project-comparison-row" style={{ display: 'grid', gridTemplateColumns: '200px 250px 80px', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.name}>
                       {p.name}
                     </span>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>No tasks created yet</span>
+                    <div style={{ display: 'flex', height: '10px', borderRadius: '5px', overflow: 'hidden', backgroundColor: 'var(--border-color)', width: '100%' }} />
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>0%</span>
                   </div>
                 );
               }
 
               return (
-                <div key={p.id} className="dashboard-project-comparison-row" style={{ display: 'grid', gridTemplateColumns: '200px 1fr', alignItems: 'center', gap: '16px' }}>
+                <div key={p.id} className="dashboard-project-comparison-row" style={{ display: 'grid', gridTemplateColumns: '200px 250px 80px', alignItems: 'center', gap: '16px' }}>
                   <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.name}>
                     {p.name}
                   </span>
                   
                   {/* Stacked bar */}
-                  <div style={{ display: 'flex', height: '14px', borderRadius: '7px', overflow: 'hidden', backgroundColor: 'var(--border-color)', width: '100%' }}>
+                  <div style={{ display: 'flex', height: '10px', borderRadius: '5px', overflow: 'hidden', backgroundColor: 'var(--border-color)', width: '100%' }}>
                     {completedT > 0 && (
                       <div 
                         style={{ width: `${(completedT / totalT) * 100}%`, backgroundColor: 'var(--success-text)', transition: 'width 0.3s ease' }} 
@@ -347,6 +348,11 @@ const handleExport = () => {
                       />
                     )}
                   </div>
+
+                  {/* Completion percentage */}
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>
+                    {Math.round((completedT / totalT) * 100)}%
+                  </span>
                 </div>
               );
             })}
