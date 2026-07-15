@@ -102,7 +102,7 @@ export function KanbanView() {
         <div className="app-card task-board-card empty-state">
           <div>
             <div className="empty-state-large-icon">
-              <FolderOpen size={48} strokeWidth={1.25} style={{ color: 'var(--primary)', opacity: 0.4 }} />
+              <FolderOpen size={48} strokeWidth={1.25} className="kanban-empty-icon" />
             </div>
             <h1>Welcome to TaskMatrix</h1>
             <p>Add a new project in the sidebar to get started.</p>
@@ -231,7 +231,7 @@ export function KanbanView() {
         </DragDropContext>
       </div>
 
-      <Suspense fallback={<div className="loading-suspense" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading form...</div>}>
+      <Suspense fallback={<div className="loading-suspense loading-suspense-extracted">Loading form...</div>}>
         <TaskForm
           activeProject={activeProject}
           projects={projects}

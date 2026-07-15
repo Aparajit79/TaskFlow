@@ -69,11 +69,6 @@ export function MemberAvatar({ name = '', role = '', size = 32, iconSize = 14, d
         minWidth:        size,
         backgroundColor: palette.bg,
         color:           palette.color,
-        borderRadius:    '50%',
-        display:         'inline-flex',
-        alignItems:      'center',
-        justifyContent:  'center',
-        flexShrink:       0,
       }}
     >
       <Icon size={iconSize} strokeWidth={1.75} />

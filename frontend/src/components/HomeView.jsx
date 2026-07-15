@@ -106,7 +106,7 @@ export function HomeView() {
       {user?.role === 'admin' && showAddForm && (
         <div className="hub-add-form-bar home-hub-form-bar">
           <form onSubmit={handleSubmit} className="hub-add-form-inner">
-            <FolderOpen size={15} strokeWidth={1.75} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+            <FolderOpen size={15} strokeWidth={1.75} className="home-folder-open-icon" />
             <input
               type="text"
               placeholder="Project name…"
@@ -133,14 +133,14 @@ export function HomeView() {
           <span><strong>{totalTasks}</strong> Tasks</span>
         </div>
         <div className="hub-summary-divider" />
-        <div className="hub-summary-item" style={{ color: 'var(--success-text)' }}>
+        <div className="hub-summary-item color-success-text">
           <CircleCheck size={14} strokeWidth={1.75} />
           <span><strong>{doneTasks}</strong> Done</span>
         </div>
         <div className="hub-summary-divider" />
         {blockerCount > 0 && (
           <>
-            <div className="hub-summary-item" style={{ color: 'var(--blocker-text)' }}>
+            <div className="hub-summary-item color-blocker-text">
               <CircleAlert size={14} strokeWidth={1.75} />
               <span><strong>{blockerCount}</strong> Blocker{blockerCount > 1 ? 's' : ''}</span>
             </div>
@@ -155,7 +155,7 @@ export function HomeView() {
 
       {projects.length === 0 && (
         <div className="hub-empty-state">
-          <FolderOpen size={40} strokeWidth={1.25} style={{ color: 'var(--primary)', opacity: 0.35 }} />
+          <FolderOpen size={40} strokeWidth={1.25} className="home-empty-folder-icon" />
           <p>No projects yet. Create your first one above.</p>
         </div>
       )}
@@ -231,7 +231,7 @@ export function HomeView() {
                   {/* 3. Members Section */}
                   <div className="home-row-members-col">
                     {projectMembers.length === 0 ? (
-                      <span className="no-members-label" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No members</span>
+                      <span className="no-members-label text-muted-small">No members</span>
                     ) : (
                       <div className="overlapping-avatars">
                         {projectMembers.slice(0, 3).map(m => (
@@ -294,8 +294,8 @@ export function HomeView() {
                   {/* Progress Section (Positioned on the bottom right) */}
                   <div className="home-row-progress-col">
                     <div className="home-row-progress-labels">
-                      <span style={{ color: 'var(--text-muted)' }}>Progress</span>
-                      <span style={{ color: 'var(--text-main)' }}>{pct}%</span>
+                      <span className="color-text-muted">Progress</span>
+                      <span className="color-text-main">{pct}%</span>
                     </div>
                     <div className="hub-row-progress-track home-row-progress-track-override">
                       <div

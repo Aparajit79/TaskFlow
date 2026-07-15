@@ -94,7 +94,7 @@ export function TaskForm({ activeProject, projects = [], members = [], onSubmit,
       <div className="task-form-selection empty-state">
         <div>
           <div className="empty-state-icon">
-            <Plus size={28} strokeWidth={1.5} style={{ color: 'var(--text-light)' }} />
+            <Plus size={28} strokeWidth={1.5} className="taskform-extracted-1" />
           </div>
           <h3>No Active Project</h3>
           <p>Create or select a project in the sidebar to start adding tasks.</p>
@@ -107,8 +107,8 @@ export function TaskForm({ activeProject, projects = [], members = [], onSubmit,
     <div className={`task-form-selection ${editingTask ? 'is-editing' : ''}`}>
       <h3>
         {editingTask
-          ? <><Pencil size={15} strokeWidth={1.75} style={{ marginRight: 6 }} />Edit Task</>
-          : <><Plus size={15} strokeWidth={2} style={{ marginRight: 6 }} />Add Task to {activeProjectName}</>
+          ? <><Pencil size={15} strokeWidth={1.75} className="taskform-extracted-2" />Edit Task</>
+          : <><Plus size={15} strokeWidth={2} className="taskform-extracted-3" />Add Task to {activeProjectName}</>
         }
       </h3>
       <form onSubmit={handleSubmit} className="task-form">

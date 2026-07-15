@@ -13,25 +13,25 @@ export function HelpView() {
 
       <div className="help-grid">
         <div className="help-card">
-          <BookOpen className="help-icon" size={24} style={{ color: 'var(--primary)' }} />
+          <BookOpen className="help-icon help-icon-primary" size={24} />
           <h3>Getting Started Guide</h3>
           <p>Learn the basics of TaskMatrix: how to create workspaces, invite members, and build your task workflows from scratch.</p>
         </div>
 
         <div className="help-card">
-          <Keyboard className="help-icon" size={24} style={{ color: 'var(--success-text)' }} />
+          <Keyboard className="help-icon help-icon-success" size={24} />
           <h3>Keyboard Shortcuts</h3>
           <p>Speed up your productivity with keyboard mappings to quickly create tasks, switch views, and search across workspaces.</p>
         </div>
 
         <div className="help-card">
-          <ShieldCheck className="help-icon" size={24} style={{ color: 'var(--warning-text)' }} />
+          <ShieldCheck className="help-icon help-icon-warning" size={24} />
           <h3>Security & Permissions</h3>
           <p>Read about how TaskMatrix keeps your workspace secure and configures role-based access for developers and managers.</p>
         </div>
 
         <div className="help-card">
-          <MessageSquare className="help-icon" size={24} style={{ color: 'var(--info-text)' }} />
+          <MessageSquare className="help-icon help-icon-info" size={24} />
           <h3>FAQs & Troubleshooting</h3>
           <p>Find quick answers to frequently asked questions about project deletion, team avatars, and task priority settings.</p>
         </div>

@@ -24,16 +24,7 @@ function AppContent() {
 
   if (authLoading) {
     return (
-      <div className="app-loader-container" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        backgroundColor: 'var(--bg-app)',
-        color: 'var(--text-main)',
-        fontSize: '16px',
-        fontWeight: '600'
-      }}>
+      <div className="app-loader-container">
         Loading Session...
       </div>
     );

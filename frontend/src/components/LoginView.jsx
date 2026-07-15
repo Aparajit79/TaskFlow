@@ -82,7 +82,7 @@ export function LoginView({ onLoginSuccess }) {
               setError(null);
             }}
           >
-            <Shield size={14} style={{ marginRight: 6 }} />
+            <Shield size={14} className="margin-right-6" />
             Admin Portal
           </button>
           <button 
@@ -93,14 +93,14 @@ export function LoginView({ onLoginSuccess }) {
               setError(null);
             }}
           >
-            <UserCheck size={14} style={{ marginRight: 6 }} />
+            <UserCheck size={14} className="margin-right-6" />
             Team Member Portal
           </button>
         </div>
 
         {error && (
           <div className="alert alert-danger login-error-alert">
-            <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+            <ShieldAlert size={16} className="flex-shrink-0" />
             <div>{error}</div>
           </div>
         )}
@@ -146,7 +146,7 @@ export function LoginView({ onLoginSuccess }) {
             </div>
           )}
 
-          <div className="form-group" style={{ marginTop: '16px' }}>
+          <div className="form-group margin-top-16">
             <label htmlFor="password">Password</label>
             <input
               id="password"
@@ -161,9 +161,8 @@ export function LoginView({ onLoginSuccess }) {
 
           <button 
             type="submit" 
-            className="primary-btn login-submit-btn" 
+            className="primary-btn login-submit-btn login-submit-btn-override" 
             disabled={loading}
-            style={{ marginTop: '24px', width: '100%', borderRadius: '6px' }}
           >
             {loading ? 'Authenticating...' : 'Sign In'}
           </button>

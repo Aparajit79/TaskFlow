@@ -49,7 +49,7 @@ export class ErrorBoundary extends React.Component {
                 onClick={this.handleReset}
                 className="primary-btn error-boundary-btn"
               >
-                <RotateCw size={14} style={{ marginRight: 6 }} /> Try Again
+                <RotateCw size={14} className="margin-right-6" /> Try Again
               </button>
               
               <button

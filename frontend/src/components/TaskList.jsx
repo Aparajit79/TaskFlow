@@ -93,7 +93,7 @@ export function TaskList() {
         <div className="app-card task-board-card empty-state">
           <div>
             <div className="empty-state-large-icon">
-              <FolderOpen size={48} strokeWidth={1.25} style={{ color: 'var(--primary)', opacity: 0.4 }} />
+              <FolderOpen size={48} strokeWidth={1.25} className="tasklist-extracted-1" />
             </div>
             <h1>Welcome to TaskMatrix</h1>
             <p>Add a new project in the sidebar to get started.</p>
@@ -102,7 +102,7 @@ export function TaskList() {
         <div className="task-form-selection empty-state">
           <div>
             <div className="empty-state-icon">
-              <FolderOpen size={28} strokeWidth={1.5} style={{ color: 'var(--text-light)' }} />
+              <FolderOpen size={28} strokeWidth={1.5} className="tasklist-extracted-2" />
             </div>
             <h3>No Active Project</h3>
             <p>Create or select a project to start adding tasks.</p>
@@ -194,7 +194,7 @@ export function TaskList() {
 
         {tasksDueTomorrow.length > 0 && (
           <div className="alert alert-warning">
-            <TriangleAlert size={16} style={{ marginRight: 8, flexShrink: 0 }} />
+            <TriangleAlert size={16} className="tasklist-extracted-3" />
             <div>
               <strong>Attention needed:</strong> You have {tasksDueTomorrow.length} task{tasksDueTomorrow.length > 1 ? 's' : ''} due tomorrow!
             </div>
@@ -204,7 +204,7 @@ export function TaskList() {
         <TaskStats tasks={tasks} />
       </div>
 
-      <Suspense fallback={<div className="loading-suspense" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading form...</div>}>
+      <Suspense fallback={<div className="loading-suspense tasklist-extracted-4" >Loading form...</div>}>
         <TaskForm
           activeProject={activeProject}
           projects={projects}

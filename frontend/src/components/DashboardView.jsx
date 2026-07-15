@@ -23,7 +23,7 @@ function DonutChart({ segments, total }) {
     });
 
   return (
-    <div className="donut-wrapper" style={{ margin: '0 auto 16px auto', width: '150px', height: '150px', position: 'relative' }}>
+    <div className="donut-wrapper">
       <svg viewBox="0 0 140 140" className="donut-svg">
         <circle cx="70" cy="70" r={radius} fill="none" stroke="var(--border-color)" strokeWidth={stroke} />
         {total === 0 ? (
@@ -38,21 +38,13 @@ function DonutChart({ segments, total }) {
             strokeDasharray={`${arc.len} ${circumference}`}
             strokeDashoffset={arc.offset}
             strokeLinecap="butt"
-            style={{ transition: 'stroke-dasharray 0.5s ease' }}
+            className="donut-segment"
           />
         ))}
       </svg>
-      <div className="donut-center" style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        textAlign: 'center',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <span className="donut-total" style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-main)' }}>{total}</span>
-        <span className="donut-label" style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>tasks</span>
+      <div className="donut-center">
+        <span className="donut-total">{total}</span>
+        <span className="donut-label">tasks</span>
       </div>
     </div>
   );
@@ -146,12 +138,12 @@ const handleExport = () => {
 };
 
   return (
-    <div className="dashboard-view-container" style={{ padding: '24px 0' }}>
+    <div className="dashboard-view-container">
       {/* Header section matching mockup style */}
-      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div className="dashboard-header">
         <div>
-          <h1 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 6px 0', letterSpacing: '-0.5px' }}>Analytics</h1>
-          <p className="dashboard-subtitle" style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px' }}>Track your performance and productivity metrics.</p>
+          <h1>Analytics</h1>
+          <p className="dashboard-subtitle">Track your performance and productivity metrics.</p>
         </div>
         <button 
           onClick={handleExport}
@@ -162,41 +154,19 @@ const handleExport = () => {
         </button>
       </div>
 
-      <div className="kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+      <div className="kpi-row">
         {kpis.map((k) => (
           <div 
             key={k.label} 
             className="kpi-card" 
-            style={{ 
-              backgroundColor: 'var(--bg-card)', 
-              border: '1px solid var(--border-color)', 
-              borderRadius: '16px', 
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-              alignItems: 'flex-start',
-              justifyContent: 'center',
-              boxShadow: 'var(--shadow-sm)'
-            }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)' }}>{k.label}</span>
-              <span style={{ 
-                width: '32px', 
-                height: '32px', 
-                borderRadius: '50%', 
-                backgroundColor: 'var(--border-color)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                color: k.accent,
-                flexShrink: 0
-              }}>
+            <div className="kpi-card-header">
+              <span className="kpi-card-label">{k.label}</span>
+              <span className="kpi-card-icon-wrapper" style={{ color: k.accent }}>
                 {k.icon}
               </span>
             </div>
-            <span style={{ fontSize: '36px', fontWeight: '700', color: 'var(--text-main)', letterSpacing: '-1px', marginTop: '4px' }}>
+            <span className="kpi-card-value">
               {k.value}
             </span>
           </div>
@@ -204,37 +174,23 @@ const handleExport = () => {
       </div>
 
       {/* Weekly Completion & Pie Chart Layout */}
-      <div className="charts-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
-        
-        <div 
-          className="dash-card" 
-          style={{ 
-            backgroundColor: 'var(--bg-card)', 
-            border: '1px solid var(--border-color)', 
-            borderRadius: '16px', 
-            padding: '24px' 
-          }}
-        >
-          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 24px 0' }}>Weekly Task Completion</h3>
+      <div className="charts-row">
+        <div className="dash-card">
+          <h3>Weekly Task Completion</h3>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="flex-column-gap-20">
             {weeklyData.map(day => {
               const percentage = Math.round((day.value / maxWeeklyValue) * 100);
               return (
-                <div key={day.label} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: '600' }}>
-                    <span style={{ color: 'var(--text-main)' }}>{day.label}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>{day.value} task{day.value !== 1 ? 's' : ''}</span>
+                <div key={day.label} className="flex-column-gap-8">
+                  <div className="flex-between-font-13-weight-600">
+                    <span className="color-text-main">{day.label}</span>
+                    <span className="color-text-muted">{day.value} task{day.value !== 1 ? 's' : ''}</span>
                   </div>
-                  <div style={{ height: '8px', backgroundColor: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden', width: '100%' }}>
+                  <div className="weekly-progress-track">
                     <div 
-                      style={{ 
-                        height: '100%', 
-                        width: `${percentage}%`, 
-                        backgroundColor: 'var(--primary)', 
-                        borderRadius: '4px',
-                        transition: 'width 0.5s ease-out'
-                      }}
+                      className="weekly-progress-fill"
+                      style={{ width: `${percentage}%` }}
                     />
                   </div>
                 </div>
@@ -244,20 +200,8 @@ const handleExport = () => {
         </div>
 
         {/* Task Status Distribution (Donut Chart) Card */}
-        <div 
-          className="dash-card" 
-          style={{ 
-            backgroundColor: 'var(--bg-card)', 
-            border: '1px solid var(--border-color)', 
-            borderRadius: '16px', 
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }}
-        >
-          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 24px 0' }}>Task Status Distribution</h3>
-          
+        <div className="dash-card dash-card-flex">
+          <h3>Task Status Distribution</h3>
           <div className="dashboard-donut-layout">
             <DonutChart segments={donutSegments} total={total} />
             
@@ -276,25 +220,16 @@ const handleExport = () => {
       </div>
 
       {/* Project Performance Comparison (Stacked Bar Chart) */}
-      <div 
-        className="dash-card" 
-        style={{ 
-          backgroundColor: 'var(--bg-card)', 
-          border: '1px solid var(--border-color)', 
-          borderRadius: '16px', 
-          padding: '24px',
-          marginTop: '24px'
-        }}
-      >
-        <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 8px 0' }}>Project Performance Comparison</h3>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 24px 0' }}>Compare task completion and active status ratios across all projects.</p>
+      <div className="dash-card margin-top-24">
+        <h3>Project Performance Comparison</h3>
+        <p className="dash-card-desc">Compare task completion and active status ratios across all projects.</p>
         
         {projects.length === 0 ? (
-          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
+          <div className="dash-empty-state">
             No active projects found.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="flex-column-gap-20">
             {projects.map(p => {
               const projectTasks = tasks.filter(t => Number(t.projectId) === Number(p.id));
               const totalT = projectTasks.length;
@@ -305,52 +240,56 @@ const handleExport = () => {
 
               if (totalT === 0) {
                 return (
-                  <div key={p.id} className="dashboard-project-comparison-row" style={{ display: 'grid', gridTemplateColumns: '200px 250px 80px', alignItems: 'center', gap: '16px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.name}>
+                  <div key={p.id} className="dashboard-project-comparison-row">
+                    <span className="dashboard-project-name" title={p.name}>
                       {p.name}
                     </span>
-                    <div style={{ display: 'flex', height: '10px', borderRadius: '5px', overflow: 'hidden', backgroundColor: 'var(--border-color)', width: '100%' }} />
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>0%</span>
+                    <div className="dashboard-stacked-bar-track" />
+                    <span className="dashboard-completion-zero">0%</span>
                   </div>
                 );
               }
 
               return (
-                <div key={p.id} className="dashboard-project-comparison-row" style={{ display: 'grid', gridTemplateColumns: '200px 250px 80px', alignItems: 'center', gap: '16px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.name}>
+                <div key={p.id} className="dashboard-project-comparison-row">
+                  <span className="dashboard-project-name" title={p.name}>
                     {p.name}
                   </span>
                   
                   {/* Stacked bar */}
-                  <div style={{ display: 'flex', height: '10px', borderRadius: '5px', overflow: 'hidden', backgroundColor: 'var(--border-color)', width: '100%' }}>
+                  <div className="dashboard-stacked-bar-track">
                     {completedT > 0 && (
                       <div 
-                        style={{ width: `${(completedT / totalT) * 100}%`, backgroundColor: 'var(--success-text)', transition: 'width 0.3s ease' }} 
+                        className="dashboard-bar-fill dashboard-bar-fill-completed"
+                        style={{ width: `${(completedT / totalT) * 100}%` }} 
                         title={`Completed: ${completedT} (${Math.round((completedT / totalT) * 100)}%)`} 
                       />
                     )}
                     {inprogressT > 0 && (
                       <div 
-                        style={{ width: `${(inprogressT / totalT) * 100}%`, backgroundColor: 'var(--inprogress-text)', transition: 'width 0.3s ease' }} 
+                        className="dashboard-bar-fill dashboard-bar-fill-inprogress"
+                        style={{ width: `${(inprogressT / totalT) * 100}%` }} 
                         title={`In Progress: ${inprogressT} (${Math.round((inprogressT / totalT) * 100)}%)`} 
                       />
                     )}
                     {pendingT > 0 && (
                       <div 
-                        style={{ width: `${(pendingT / totalT) * 100}%`, backgroundColor: 'var(--pending-text)', transition: 'width 0.3s ease' }} 
+                        className="dashboard-bar-fill dashboard-bar-fill-pending"
+                        style={{ width: `${(pendingT / totalT) * 100}%` }} 
                         title={`Pending: ${pendingT} (${Math.round((pendingT / totalT) * 100)}%)`} 
                       />
                     )}
                     {blockersT > 0 && (
                       <div 
-                        style={{ width: `${(blockersT / totalT) * 100}%`, backgroundColor: 'var(--blocker-text)', transition: 'width 0.3s ease' }} 
+                        className="dashboard-bar-fill dashboard-bar-fill-blocker"
+                        style={{ width: `${(blockersT / totalT) * 100}%` }} 
                         title={`Blockers: ${blockersT} (${Math.round((blockersT / totalT) * 100)}%)`} 
                       />
                     )}
                   </div>
 
                   {/* Completion percentage */}
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>
+                  <span className="dashboard-completion-percent">
                     {Math.round((completedT / totalT) * 100)}%
                   </span>
                 </div>
@@ -358,21 +297,21 @@ const handleExport = () => {
             })}
             
             {/* Legend for the comparison rows */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success-text)' }} />
+            <div className="dashboard-comparison-legend">
+              <div className="dashboard-comparison-legend-item">
+                <span className="legend-dot-circle bg-success" />
                 <span>Completed</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--inprogress-text)' }} />
+              <div className="dashboard-comparison-legend-item">
+                <span className="legend-dot-circle bg-inprogress" />
                 <span>In Progress</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--pending-text)' }} />
+              <div className="dashboard-comparison-legend-item">
+                <span className="legend-dot-circle bg-pending" />
                 <span>Pending</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--blocker-text)' }} />
+              <div className="dashboard-comparison-legend-item">
+                <span className="legend-dot-circle bg-blocker" />
                 <span>Blocker</span>
               </div>
             </div>
@@ -381,16 +320,16 @@ const handleExport = () => {
       </div>
 
       {/* Project Health Cards Grid */}
-      <div style={{ marginTop: '32px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 8px 0' }}>Project Health Statistics</h3>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 24px 0' }}>Detailed metrics breakdown and completion state for individual workspaces.</p>
+      <div className="margin-top-32">
+        <h3 className="health-section-title">Project Health Statistics</h3>
+        <p className="health-section-subtitle">Detailed metrics breakdown and completion state for individual workspaces.</p>
         
         {projects.length === 0 ? (
-          <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
+          <div className="dash-health-empty-state">
             No workspaces registered. Create a project to monitor health metrics.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+          <div className="health-grid">
             {projects.map(p => {
               const projectTasks = tasks.filter(t => Number(t.projectId) === Number(p.id));
               const totalT = projectTasks.length;
@@ -406,56 +345,21 @@ const handleExport = () => {
                 <div 
                   key={p.id} 
                   className="project-health-card" 
-                  style={{
-                    backgroundColor: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    boxShadow: 'var(--shadow-sm)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '16px',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                  }}
                 >
                   {/* Card Title & Status Badge */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                      <FolderOpen size={16} strokeWidth={2} style={{ color: hasBlocker ? 'var(--blocker-text)' : 'var(--primary)', flexShrink: 0 }} />
-                      <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={p.name}>
+                  <div className="health-card-header">
+                    <div className="health-card-title-container">
+                      <FolderOpen size={16} strokeWidth={2} className="health-card-folder-icon" style={{ color: hasBlocker ? 'var(--blocker-text)' : 'var(--primary)' }} />
+                      <span className="health-card-project-name" title={p.name}>
                         {p.name}
                       </span>
                     </div>
                     {hasBlocker ? (
-                      <span style={{ 
-                        fontSize: '11px', 
-                        fontWeight: '600', 
-                        color: 'var(--blocker-text)', 
-                        backgroundColor: 'var(--blocker-bg)', 
-                        padding: '2px 8px', 
-                        borderRadius: '10px',
-                        border: '1px solid var(--blocker-border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        flexShrink: 0
-                      }}>
+                      <span className="health-status-badge health-status-badge-blocked">
                         <CircleAlert size={10} /> Blocked
                       </span>
                     ) : (
-                      <span style={{ 
-                        fontSize: '11px', 
-                        fontWeight: '600', 
-                        color: totalT > 0 && pct === 100 ? 'var(--success-text)' : 'var(--inprogress-text)', 
-                        backgroundColor: totalT > 0 && pct === 100 ? 'var(--success-bg)' : 'var(--inprogress-bg)', 
-                        padding: '2px 8px', 
-                        borderRadius: '10px',
-                        border: totalT > 0 && pct === 100 ? '1px solid var(--success-border)' : '1px solid var(--inprogress-border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        flexShrink: 0
-                      }}>
+                      <span className={`health-status-badge ${totalT > 0 && pct === 100 ? 'health-status-badge-completed' : 'health-status-badge-active'}`}>
                         {totalT > 0 && pct === 100 ? <CircleCheck size={10} /> : <Zap size={10} />}
                         {totalT > 0 && pct === 100 ? 'Completed' : 'Active'}
                       </span>
@@ -463,62 +367,46 @@ const handleExport = () => {
                   </div>
 
                   {/* Progress bar */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '600' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Progress</span>
-                      <span style={{ color: 'var(--text-main)' }}>{pct}%</span>
+                  <div className="flex-column-gap-6">
+                    <div className="flex-between-font-12-weight-600">
+                      <span className="color-text-muted">Progress</span>
+                      <span className="color-text-main">{pct}%</span>
                     </div>
-                    <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{
-                        height: '100%',
-                        width: `${pct}%`,
-                        backgroundColor: hasBlocker ? 'var(--blocker-text)' : 'var(--primary)',
-                        borderRadius: '3px',
-                        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }} />
+                    <div className="health-progress-track">
+                      <div 
+                        className={`health-progress-fill ${hasBlocker ? 'health-progress-fill-blocked' : 'health-progress-fill-normal'}`} 
+                        style={{ width: `${pct}%` }} 
+                      />
                     </div>
                   </div>
 
                   {/* Stats counts summary */}
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(3, 1fr)', 
-                    gap: '8px', 
-                    borderTop: '1px solid var(--border-color)', 
-                    borderBottom: '1px solid var(--border-color)',
-                    padding: '12px 0', 
-                    textAlign: 'center' 
-                  }}>
+                  <div className="health-stats-row">
                     <div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Total Tasks</div>
-                      <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', marginTop: '2px' }}>{totalT}</div>
+                      <div className="health-stat-label">Total Tasks</div>
+                      <div className="health-stat-val">{totalT}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '11px', color: 'var(--success-text)' }}>Completed</div>
-                      <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--success-text)', marginTop: '2px' }}>{completedT}</div>
+                      <div className="health-stat-label success-text">Completed</div>
+                      <div className="health-stat-val success-text">{completedT}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '11px', color: hasBlocker ? 'var(--blocker-text)' : 'var(--inprogress-text)' }}>
+                      <div className={`health-stat-label ${hasBlocker ? 'blocker-text' : 'inprogress-text'}`}>
                         {hasBlocker ? 'Blocked' : 'Active'}
                       </div>
-                      <div style={{ 
-                        fontSize: '15px', 
-                        fontWeight: '700', 
-                        color: hasBlocker ? 'var(--blocker-text)' : 'var(--inprogress-text)',
-                        marginTop: '2px' 
-                      }}>
+                      <div className={`health-stat-val ${hasBlocker ? 'blocker-text' : 'inprogress-text'}`}>
                         {hasBlocker ? blockersT : (inprogressT + pendingT)}
                       </div>
                     </div>
                   </div>
 
                   {/* Members Avatars stacked */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Workspace Team</span>
+                  <div className="health-card-footer">
+                    <span className="health-team-label">Workspace Team</span>
                     {projectMembers.length === 0 ? (
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)', fontStyle: 'italic' }}>No members</span>
+                      <span className="health-no-members">No members</span>
                     ) : (
-                      <div className="overlapping-avatars" style={{ display: 'flex', alignItems: 'center' }}>
+                      <div className="overlapping-avatars flex-align-center">
                         {projectMembers.slice(0, 3).map(m => (
                           <MemberAvatar
                             key={m.id}
@@ -530,23 +418,7 @@ const handleExport = () => {
                           />
                         ))}
                         {projectMembers.length > 3 && (
-                          <div 
-                            className="stacked-avatar more-avatar" 
-                            style={{ 
-                              width: '22px', 
-                              height: '22px', 
-                              borderRadius: '50%', 
-                              backgroundColor: 'var(--border-color)', 
-                              color: 'var(--text-main)', 
-                              fontSize: '10px', 
-                              fontWeight: '700', 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center',
-                              marginLeft: '-6px',
-                              border: '2px solid var(--bg-card)'
-                            }}
-                          >
+                          <div className="stacked-avatar-more-badge">
                             +{projectMembers.length - 3}
                           </div>
                         )}

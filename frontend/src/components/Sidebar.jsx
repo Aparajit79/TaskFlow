@@ -97,7 +97,7 @@ export function Sidebar() {
                       className={`custom-select-option ${Number(activeProject) === Number(p.id) ? 'selected' : ''}`}
                       onClick={() => handleProjectSelect(p.id)}
                     >
-                      <Folder size={12} style={{ marginRight: 8, opacity: 0.7 }} />
+                      <Folder size={12} className="sidebar-folder-icon" />
                       {p.name}
                     </button>
                   </li>
@@ -126,7 +126,7 @@ export function Sidebar() {
                       className="custom-select-add-btn" 
                       onClick={() => setShowAddProject(true)}
                     >
-                      <Plus size={12} style={{ marginRight: 8 }} />
+                      <Plus size={12} className="margin-right-8" />
                       Create New Workspace
                     </button>
                   )}
@@ -154,7 +154,7 @@ export function Sidebar() {
           </button>
 
           <button
-            className={`taskmatrix-nav-btn ${activeView === 'Project' ? 'active' : ''}`}
+            className={`taskmatrix-nav-btn ${activeView === 'Project' ? 'active' : ''} ${projects.length === 0 ? 'sidebar-tab-disabled' : ''}`}
             onClick={() => {
               if (projects.length > 0) {
                 if (!activeProject) {
@@ -166,7 +166,6 @@ export function Sidebar() {
               }
             }}
             disabled={projects.length === 0}
-            style={{ opacity: projects.length === 0 ? 0.6 : 1 }}
           >
             <div className="taskmatrix-nav-btn-content">
               <CheckSquare size={18} className="nav-icon" />
@@ -178,7 +177,7 @@ export function Sidebar() {
           </button>
 
           <button
-            className={`taskmatrix-nav-btn ${activeView === 'Kanban' ? 'active' : ''}`}
+            className={`taskmatrix-nav-btn ${activeView === 'Kanban' ? 'active' : ''} ${projects.length === 0 ? 'sidebar-tab-disabled' : ''}`}
             onClick={() => {
               if (projects.length > 0) {
                 if (!activeProject) {
@@ -190,7 +189,6 @@ export function Sidebar() {
               }
             }}
             disabled={projects.length === 0}
-            style={{ opacity: projects.length === 0 ? 0.6 : 1 }}
           >
             <div className="taskmatrix-nav-btn-content">
               <Kanban size={18} className="nav-icon" />
@@ -199,7 +197,7 @@ export function Sidebar() {
           </button>
  
           <button
-            className={`taskmatrix-nav-btn ${activeView === 'Sprints' ? 'active' : ''}`}
+            className={`taskmatrix-nav-btn ${activeView === 'Sprints' ? 'active' : ''} ${projects.length === 0 ? 'sidebar-tab-disabled' : ''}`}
             onClick={() => {
               if (projects.length > 0) {
                 if (!activeProject) {
@@ -211,7 +209,6 @@ export function Sidebar() {
               }
             }}
             disabled={projects.length === 0}
-            style={{ opacity: projects.length === 0 ? 0.6 : 1 }}
           >
             <div className="taskmatrix-nav-btn-content">
               <Zap size={18} className="nav-icon" />
@@ -242,7 +239,7 @@ export function Sidebar() {
           )}
 
           <button
-            className={`taskmatrix-nav-btn ${activeView === 'Team' ? 'active' : ''}`}
+            className={`taskmatrix-nav-btn ${activeView === 'Team' ? 'active' : ''} ${projects.length === 0 ? 'sidebar-tab-disabled' : ''}`}
             onClick={() => {
               if (projects.length > 0) {
                 if (!activeProject) {
@@ -254,7 +251,6 @@ export function Sidebar() {
               }
             }}
             disabled={projects.length === 0}
-            style={{ opacity: projects.length === 0 ? 0.6 : 1 }}
           >
             <div className="taskmatrix-nav-btn-content">
               <Users size={18} className="nav-icon" />
@@ -264,7 +260,7 @@ export function Sidebar() {
         </div>
 
         {/* General Section */}
-        <div className="sidebar-section" style={{ marginTop: '16px' }}>
+        <div className="sidebar-section margin-top-16">
           <h4 className="sidebar-section-header-text">General</h4>
 
           <button
@@ -290,50 +286,19 @@ export function Sidebar() {
       </div>
 
       {/* User Section at the bottom */}
-      <div className="sidebar-user-footer" style={{
-        marginTop: 'auto',
-        padding: '16px',
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '8px'
-      }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ 
-            fontSize: '13px', 
-            fontWeight: '600', 
-            color: 'var(--sidebar-text)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
+      <div className="sidebar-user-footer">
+        <div className="sidebar-user-info">
+          <div className="sidebar-user-name">
             {user?.name}
           </div>
-          <div style={{ 
-            fontSize: '11px', 
-            color: 'var(--sidebar-text-muted)',
-            textTransform: 'capitalize' 
-          }}>
+          <div className="sidebar-user-role">
             {user?.role}
           </div>
         </div>
         <button 
           onClick={handleLogout}
           title="Sign Out"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--sidebar-text-muted)',
-            cursor: 'pointer',
-            padding: '6px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background 0.2s ease, color 0.2s ease'
-          }}
-          className="logout-icon-btn"
+          className="logout-icon-btn sidebar-logout-btn"
         >
           <LogOut size={16} />
         </button>

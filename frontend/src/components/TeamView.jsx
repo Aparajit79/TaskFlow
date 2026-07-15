@@ -147,7 +147,7 @@ export function TeamView() {
 
       {/* View Toggle Bar */}
       <div className="view-toggle-bar team-view-toggle-bar">
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="teamview-extracted-1">
           <button 
             className={`team-toggle-btn ${viewMode === 'project' ? 'active' : 'inactive'}`}
             onClick={() => setViewMode('project')}
@@ -269,25 +269,9 @@ export function TeamView() {
 
                     {canMessage && (
                       <button
-                        className="member-card-message-btn"
+                        className="member-card-message-btn teamview-extracted-2"
                         onClick={() => triggerMessageMember(member)}
-                        style={{
-                          marginTop: '8px',
-                          padding: '8px 12px',
-                          backgroundColor: 'var(--primary-light)',
-                          border: '1px solid var(--primary-glow)',
-                          color: 'var(--primary)',
-                          borderRadius: '6px',
-                          fontWeight: '600',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                          width: '100%',
-                          transition: 'all 0.2s ease'
-                        }}
+                        
                       >
                         <MessageSquare size={13} />
                         Message {member.name}
@@ -296,10 +280,10 @@ export function TeamView() {
 
                     {viewMode === 'project' && isAdmin && (
                       <button
-                        className="member-card-remove-btn"
+                        className="member-card-remove-btn teamview-extracted-3"
                         onClick={() => onDeleteMember(member.id)}
                         title="Unassign Member"
-                        style={{ marginTop: '8px' }}
+                        
                       >
                         <Trash2 size={14} className="team-card-trash-icon" />
                         Unassign
@@ -308,28 +292,12 @@ export function TeamView() {
 
                     {viewMode === 'overall' && isAdmin && (
                       <button
-                        className="member-card-remove-btn"
+                        className="member-card-remove-btn teamview-extracted-4"
                         onClick={() => handleDeleteOverallMember(member)}
                         title="Delete Member"
-                        style={{
-                          marginTop: '8px',
-                          padding: '8px 12px',
-                          backgroundColor: 'var(--blocker-bg)',
-                          border: '1px solid var(--blocker-border)',
-                          color: 'var(--blocker-text)',
-                          borderRadius: '6px',
-                          fontWeight: '600',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                          width: '100%',
-                          transition: 'all 0.2s ease'
-                        }}
+                        
                       >
-                        <Trash2 size={13} className="team-card-trash-icon" style={{ color: 'var(--blocker-text)' }} />
+                        <Trash2 size={13} className="team-card-trash-icon teamview-extracted-5"  />
                         Delete Member
                       </button>
                     )}
@@ -342,29 +310,12 @@ export function TeamView() {
       ))}
 
       {viewMode === 'messages' && (
-        <div className="messages-layout" style={{
-          display: 'grid',
-          gridTemplateColumns: '260px 1fr',
-          gap: '20px',
-          height: 'calc(100vh - 220px)',
-          minHeight: '400px',
-          border: '1px solid var(--border-color)',
-          borderRadius: '16px',
-          backgroundColor: 'var(--bg-card)',
-          overflow: 'hidden'
-        }}>
+        <div className="messages-layout teamview-extracted-6" >
           {/* Left panel: Contacts list */}
-          <div className="contacts-panel" style={{
-            borderRight: '1px solid var(--border-color)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflowY: 'auto',
-            padding: '16px',
-            gap: '8px'
-          }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 8px 0' }}>Contacts</h3>
+          <div className="contacts-panel teamview-extracted-7" >
+            <h3 className="teamview-extracted-8">Contacts</h3>
             {contacts.length === 0 ? (
-              <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center', marginTop: '20px' }}>
+              <p className="teamview-extracted-9">
                 No message contacts available.
               </p>
             ) : (
@@ -390,24 +341,12 @@ export function TeamView() {
                       width: '100%'
                     }}
                   >
-                    <div style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--border-color)',
-                      color: 'var(--text-main)',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
+                    <div className="teamview-extracted-10">
                       {c.name.charAt(0).toUpperCase()}
                     </div>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-light)' }}>{c.role}</div>
+                    <div className="teamview-extracted-11">
+                      <div className="teamview-extracted-12">{c.name}</div>
+                      <div className="teamview-extracted-13">{c.role}</div>
                     </div>
                   </button>
                 );
@@ -416,57 +355,28 @@ export function TeamView() {
           </div>
 
           {/* Right panel: Chat Conversation */}
-          <div className="chat-panel" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            overflow: 'hidden'
-          }}>
+          <div className="chat-panel teamview-extracted-14" >
             {activeContactId ? (
               <>
                 {/* Conversation Header */}
-                <div style={{
-                  padding: '16px',
-                  borderBottom: '1px solid var(--border-color)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}>
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--border-color)',
-                    color: 'var(--text-main)',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
+                <div className="teamview-extracted-15">
+                  <div className="teamview-extracted-16">
                     {contacts.find(c => c.id === activeContactId)?.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
+                    <h4 className="teamview-extracted-17">
                       {contacts.find(c => c.id === activeContactId)?.name}
                     </h4>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                    <span className="teamview-extracted-18">
                       {contacts.find(c => c.id === activeContactId)?.role}
                     </span>
                   </div>
                 </div>
 
                 {/* Messages list */}
-                <div style={{
-                  flex: 1,
-                  padding: '16px',
-                  overflowY: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px'
-                }}>
+                <div className="teamview-extracted-19">
                   {messages.length === 0 ? (
-                    <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center', marginTop: '40px' }}>
+                    <p className="teamview-extracted-20">
                       No messages exchanged yet. Start the conversation below!
                     </p>
                   ) : (
@@ -491,7 +401,7 @@ export function TeamView() {
                           }}>
                             {msg.messageText}
                           </div>
-                          <span style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '4px' }}>
+                          <span className="teamview-extracted-21">
                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
@@ -501,60 +411,28 @@ export function TeamView() {
                 </div>
 
                 {/* Compose Form */}
-                <form onSubmit={handleChatSendSubmit} style={{
-                  padding: '16px',
-                  borderTop: '1px solid var(--border-color)',
-                  display: 'flex',
-                  gap: '10px',
-                  backgroundColor: 'var(--bg-app)'
-                }}>
+                <form onSubmit={handleChatSendSubmit} className="teamview-extracted-22">
                   <input
                     type="text"
                     value={typedMessage}
                     onChange={(e) => setTypedMessage(e.target.value)}
                     placeholder="Type a message..."
-                    style={{
-                      flex: 1,
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)',
-                      backgroundColor: 'var(--bg-card)',
-                      color: 'var(--text-main)',
-                      fontSize: '13px'
-                    }}
+                    className="teamview-extracted-23"
                     required
                   />
                   <button
                     type="submit"
-                    style={{
-                      padding: '0 20px',
-                      backgroundColor: 'var(--primary)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px'
-                    }}
+                    className="teamview-extracted-24"
                   >
                     Send
                   </button>
                 </form>
               </>
             ) : (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                color: 'var(--text-muted)',
-                gap: '12px',
-                padding: '40px'
-              }}>
-                <MessageSquare size={32} style={{ opacity: 0.5 }} />
-                <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>No Conversation Selected</h4>
-                <p style={{ fontSize: '13px', margin: 0, textAlign: 'center' }}>
+              <div className="teamview-extracted-25">
+                <MessageSquare size={32} className="teamview-extracted-26" />
+                <h4 className="teamview-extracted-27">No Conversation Selected</h4>
+                <p className="teamview-extracted-28">
                   {user?.role === 'admin' 
                     ? 'Select a team member contact from the sidebar to open their chat feed.' 
                     : 'Select the Project Administrator from the contacts panel to open your direct chat.'}

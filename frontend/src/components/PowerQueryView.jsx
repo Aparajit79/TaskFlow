@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Terminal, Search, Database, Copy, Check, 
   TriangleAlert, RefreshCw, Play, Filter 
@@ -26,7 +26,7 @@ export function PowerQueryView() {
   const [responseTime, setResponseTime] = useState('unknown');
 
   // Build the HTTP Request representation dynamically
-  const buildHttpRequest = useCallback(() => {
+  const { rawHttp, bodyObj } = useMemo(() => {
     const filterObj = {};
     if (projectId !== 'All') filterObj.projectId = Number(projectId);
     if (status !== 'All') filterObj.status = status;
@@ -43,8 +43,6 @@ export function PowerQueryView() {
       bodyObj: filterObj
     };
   }, [projectId, status, priority, assignedMemberId, debouncedSearchTerm]);
-
-  const { rawHttp, bodyObj } = buildHttpRequest();
 
   const runQuery = useCallback(async () => {
     setLoading(true);
@@ -69,7 +67,7 @@ export function PowerQueryView() {
   // Run when filters change (including debounced search keyword)
   useEffect(() => {
     runQuery();
-  }, [projectId, status, priority, assignedMemberId, debouncedSearchTerm]);
+  }, [runQuery]);
 
   const handleKeywordKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -106,7 +104,7 @@ export function PowerQueryView() {
           </p>
         </div>
         <button className="primary-btn run-query-btn" onClick={runQuery} disabled={loading}>
-          <Play size={14} fill="currentColor" style={{ marginRight: 6 }} />
+          <Play size={14} fill="currentColor" className="margin-right-6" />
           <span>Execute Request</span>
         </button>
       </div>
@@ -207,23 +205,14 @@ export function PowerQueryView() {
               <Database size={14} className="database-icon" />
               <h3>Database Response ({results.length} tasks found)</h3>
             </div>
-            <div className="results-header-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="results-header-right flex-align-center-gap-12">
               {!loading && responseTime !== 'unknown' && (
-                <span className="latency-badge" style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-light)' }}>
+                <span className="latency-badge">
                   Latency: {responseTime}
                 </span>
               )}
               {!loading && cacheStatus && (
-                <span className={`cache-badge cache-badge-${cacheStatus.toLowerCase()}`} style={{
-                  fontSize: '11px', 
-                  fontWeight: '700', 
-                  borderRadius: '4px', 
-                  padding: '2px 6px', 
-                  fontFamily: 'monospace',
-                  backgroundColor: cacheStatus === 'HIT' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(249, 115, 22, 0.15)',
-                  color: cacheStatus === 'HIT' ? 'var(--success-text)' : 'var(--warning-text)',
-                  border: cacheStatus === 'HIT' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(249, 115, 22, 0.3)'
-                }}>
+                <span className={`cache-badge cache-badge-${cacheStatus.toLowerCase()}`}>
                   Cache: {cacheStatus}
                 </span>
               )}
@@ -241,7 +230,7 @@ export function PowerQueryView() {
 
             {!error && results.length === 0 && !loading && (
               <div className="query-empty-state">
-                <Database size={32} strokeWidth={1.5} style={{ opacity: 0.3, marginBottom: 12 }} />
+                <Database size={32} strokeWidth={1.5} className="query-empty-state-icon" />
                 <p>No matching tasks in database. Try widening your filter parameters.</p>
               </div>
             )}
