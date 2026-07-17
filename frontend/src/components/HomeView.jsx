@@ -226,7 +226,6 @@ export function HomeView() {
                   </div>
                 </div>
 
-                {/* Right side group: Members avatars + Action buttons */}
                 <div className="home-row-right-group">
                   {/* 3. Members Section */}
                   <div className="home-row-members-col">
@@ -253,7 +252,6 @@ export function HomeView() {
                     )}
                   </div>
 
-                  {/* 4. Actions Section */}
                   <div className="home-row-actions-col">
                     <button
                       className="hub-open-project-btn home-row-open-btn"
@@ -275,7 +273,6 @@ export function HomeView() {
                 </div>
               </div>
 
-              {/* Bottom tasks & progress section */}
               {totalT > 0 && (
                 <div className="hub-task-preview-section">
                   <div className="hub-task-preview-list">
@@ -291,7 +288,6 @@ export function HomeView() {
                     )}
                   </div>
 
-                  {/* Progress Section (Positioned on the bottom right) */}
                   <div className="home-row-progress-col">
                     <div className="home-row-progress-labels">
                       <span className="color-text-muted">Progress</span>

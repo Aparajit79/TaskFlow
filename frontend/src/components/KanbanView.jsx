@@ -46,7 +46,7 @@ export function KanbanView() {
   const activeProjObj = projects.find(p => Number(p.id) === Number(activeProject));
   const activeProjectName = activeProjObj ? activeProjObj.name : '';
 
-  // Filter tasks for column display
+
   const getFilteredTasksForColumn = (columnId) => {
     return tasks.filter((task) => {
       if (task.status !== columnId) return false;
@@ -83,7 +83,6 @@ export function KanbanView() {
     const task = tasks.find((t) => t.id === taskId);
 
     if (task) {
-      // Execute edit with updated status
       await onEditTask(
         taskId,
         task.text,

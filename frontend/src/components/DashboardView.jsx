@@ -66,13 +66,13 @@ export function DashboardView() {
     { label: 'Blocker',     value: blockers,   color: 'var(--blocker-text)' },
   ];
 
-  // Calculate dynamic weekly completions
+
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const weeklyCounts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
   
   // Get start of the current week (Monday)
   const now = new Date();
-  const currentDayIndex = now.getDay(); // 0 is Sun, 1 is Mon, etc.
+  const currentDayIndex = now.getDay(); 
   const distanceToMonday = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - distanceToMonday);
@@ -86,7 +86,7 @@ export function DashboardView() {
     if (t.completed && t.completedAt) {
       const compDate = new Date(t.completedAt);
       if (compDate >= startOfWeek && compDate <= endOfWeek) {
-        const dayIdx = compDate.getDay(); // 0 is Sun, 1 is Mon, etc.
+        const dayIdx = compDate.getDay(); 
         const dayName = dayIdx === 0 ? 'Sun' : daysOfWeek[dayIdx - 1];
         weeklyCounts[dayName] = (weeklyCounts[dayName] || 0) + 1;
       }
@@ -100,7 +100,6 @@ export function DashboardView() {
 
   const maxWeeklyValue = Math.max(...weeklyData.map(d => d.value), 1);
 
-  // Filter out duplicate project-level memberships for global analytics
   const uniqueMemberCount = React.useMemo(() => {
     const uniqueIds = new Set();
     members.forEach(m => {
@@ -139,7 +138,7 @@ const handleExport = () => {
 
   return (
     <div className="dashboard-view-container">
-      {/* Header section matching mockup style */}
+
       <div className="dashboard-header">
         <div>
           <h1>Analytics</h1>
@@ -173,7 +172,7 @@ const handleExport = () => {
         ))}
       </div>
 
-      {/* Weekly Completion & Pie Chart Layout */}
+
       <div className="charts-row">
         <div className="dash-card">
           <h3>Weekly Task Completion</h3>
@@ -199,7 +198,6 @@ const handleExport = () => {
           </div>
         </div>
 
-        {/* Task Status Distribution (Donut Chart) Card */}
         <div className="dash-card dash-card-flex">
           <h3>Task Status Distribution</h3>
           <div className="dashboard-donut-layout">
@@ -219,7 +217,7 @@ const handleExport = () => {
 
       </div>
 
-      {/* Project Performance Comparison (Stacked Bar Chart) */}
+
       <div className="dash-card margin-top-24">
         <h3>Project Performance Comparison</h3>
         <p className="dash-card-desc">Compare task completion and active status ratios across all projects.</p>
@@ -256,7 +254,7 @@ const handleExport = () => {
                     {p.name}
                   </span>
                   
-                  {/* Stacked bar */}
+
                   <div className="dashboard-stacked-bar-track">
                     {completedT > 0 && (
                       <div 
@@ -296,7 +294,7 @@ const handleExport = () => {
               );
             })}
             
-            {/* Legend for the comparison rows */}
+
             <div className="dashboard-comparison-legend">
               <div className="dashboard-comparison-legend-item">
                 <span className="legend-dot-circle bg-success" />
@@ -319,7 +317,7 @@ const handleExport = () => {
         )}
       </div>
 
-      {/* Project Health Cards Grid */}
+
       <div className="margin-top-32">
         <h3 className="health-section-title">Project Health Statistics</h3>
         <p className="health-section-subtitle">Detailed metrics breakdown and completion state for individual workspaces.</p>
@@ -346,7 +344,7 @@ const handleExport = () => {
                   key={p.id} 
                   className="project-health-card" 
                 >
-                  {/* Card Title & Status Badge */}
+
                   <div className="health-card-header">
                     <div className="health-card-title-container">
                       <FolderOpen size={16} strokeWidth={2} className="health-card-folder-icon" style={{ color: hasBlocker ? 'var(--blocker-text)' : 'var(--primary)' }} />
@@ -380,7 +378,7 @@ const handleExport = () => {
                     </div>
                   </div>
 
-                  {/* Stats counts summary */}
+
                   <div className="health-stats-row">
                     <div>
                       <div className="health-stat-label">Total Tasks</div>
@@ -400,7 +398,7 @@ const handleExport = () => {
                     </div>
                   </div>
 
-                  {/* Members Avatars stacked */}
+
                   <div className="health-card-footer">
                     <span className="health-team-label">Workspace Team</span>
                     {projectMembers.length === 0 ? (

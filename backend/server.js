@@ -78,7 +78,7 @@ const authenticateJWT = (req, res, next) => {
   }
 };
 
-// 1. Auth Login Endpoint
+// 1Auth Login Endpoint
 app.post('/api/auth/login', async (req, res) => {
   const { type, email, username, password } = req.body;
   
@@ -117,9 +117,9 @@ app.post('/api/auth/login', async (req, res) => {
 
     res.cookie('auth_token', token, {
       httpOnly: true,
-      secure: false, // Set true in production if running HTTPS
-      sameSite: 'lax', // Use 'lax' for local dev CORS compatibility
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      secure: false, 
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000 
     });
 
     res.json({
@@ -132,13 +132,13 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// 2. Auth Logout Endpoint
+//Logout Endpoint
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('auth_token');
   res.json({ message: 'Logged out successfully' });
 });
 
-// 3. Get Members Users (Dropdown list)
+//Get Members Users 
 app.get('/api/users/members', async (req, res) => {
   try {
     const result = await pool.query("SELECT id, name, username FROM users WHERE role = 'member' ORDER BY name ASC");

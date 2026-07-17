@@ -10,7 +10,8 @@
     "server:start": "npm start --prefix backend",
     "test": "node tests/taskValidator.test.js",
     "test:api": "node tests/api.test.js",
-    "test:all": "node tests/taskValidator.test.js && node tests/api.test.js"
+    "test:functional": "node tests/functional.test.js",
+    "test:all": "node tests/taskValidator.test.js && node tests/api.test.js && node tests/functional.test.js"
   },
   "devDependencies": {
     "plantuml": "^0.0.2"
