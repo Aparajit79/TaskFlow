@@ -98,7 +98,12 @@ function MemberForm({ projectId, onAddMember, onAssignMember, onCancel, isAdmin 
               placeholder="e.g. Alice Cooper"
               className="task-input member-form-input"
               value={memberName}
-              onChange={(e) => setMemberName(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^[a-zA-Z0-9 ]*$/.test(val)) {
+                  setMemberName(val);
+                }
+              }}
               required
               autoFocus
             />

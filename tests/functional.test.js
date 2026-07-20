@@ -52,7 +52,7 @@ test('Auth Failure - Missing password returns 400 Bad Request', async () => {
   assert.strictEqual(data.error, 'Password is required');
 });
 
-// Test case 2. ROLE BASED ACCESS CONTROL TESTS
+// Test case 2. ROLE BASED ACCESS CONTROL
 
 
 test('RBAC - Member role cannot create a project (returns 403 Forbidden)', async () => {
@@ -97,6 +97,104 @@ test('RBAC - Member role cannot delete a project (returns 403 Forbidden)', async
 });
 
 
+// PROJECT NAME VALIDATION TESTS
+
+test('Project Validation - Empty/Whitespace name returns 400 Bad Request', async () => {
+  const adminCookie = await getAuthCookie({
+    type: 'admin',
+    email: 'admin@taskflow.com',
+    password: 'admin123'
+  });
+  assert.ok(adminCookie, 'Admin login should succeed');
+
+  const res = await fetch(`${BASE_URL}/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': adminCookie
+    },
+    body: JSON.stringify({ name: '   ' })
+  });
+
+  assert.strictEqual(res.status, 400);
+  const data = await res.json();
+  assert.strictEqual(data.error, 'Project name is required');
+});
+
+test('Project Validation - Name exceeding 25 characters returns 400 Bad Request', async () => {
+  const adminCookie = await getAuthCookie({
+    type: 'admin',
+    email: 'admin@taskflow.com',
+    password: 'admin123'
+  });
+
+  const res = await fetch(`${BASE_URL}/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': adminCookie
+    },
+    body: JSON.stringify({ name: 'Project Name That Exceeds Twenty Five Characters' })
+  });
+
+  assert.strictEqual(res.status, 400);
+  const data = await res.json();
+  assert.strictEqual(data.error, 'Project name cannot exceed 25 characters');
+});
+
+test('Project Validation - Name with special characters returns 400 Bad Request', async () => {
+  const adminCookie = await getAuthCookie({
+    type: 'admin',
+    email: 'admin@taskflow.com',
+    password: 'admin123'
+  });
+
+  const res = await fetch(`${BASE_URL}/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': adminCookie
+    },
+    body: JSON.stringify({ name: 'Project #123!' })
+  });
+
+  assert.strictEqual(res.status, 400);
+  const data = await res.json();
+  assert.strictEqual(data.error, 'Project name can only contain letters, numbers, and spaces');
+});
+
+test('Project Validation - Valid alphanumeric & space name succeeds', async () => {
+  const adminCookie = await getAuthCookie({
+    type: 'admin',
+    email: 'admin@taskflow.com',
+    password: 'admin123'
+  });
+
+  const testName = `Proj ${Date.now().toString().slice(-10)}`; // alphanumeric + space, length <= 25
+
+  const res = await fetch(`${BASE_URL}/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': adminCookie
+    },
+    body: JSON.stringify({ name: testName })
+  });
+
+  assert.strictEqual(res.status, 201);
+  const responseData = await res.json();
+  assert.strictEqual(responseData.message, 'Project added successfully');
+  assert.strictEqual(responseData.data.name, testName);
+
+  // Clean up
+  const deleteRes = await fetch(`${BASE_URL}/projects/${responseData.data.id}`, {
+    method: 'DELETE',
+    headers: { 'Cookie': adminCookie }
+  });
+  assert.strictEqual(deleteRes.status, 200);
+});
+
+
 //TASK CREATION VALIDATION no title
 
 test('Validation - Missing text/title field on task creation returns 400 Bad Request', async () => {
@@ -137,7 +235,7 @@ test('Workflow - Create, Update, and Complete a Task', async () => {
   });
 
   const tempTaskId = 99991;
-  const testProjectName = `__FUNC_TEST_PROJ_${Date.now()}__`;
+  const testProjectName = `FuncProj ${Date.now().toString().slice(-10)}`;
   //login
   const createProjRes = await fetch(`${BASE_URL}/projects`, {
     method: 'POST',
@@ -208,7 +306,6 @@ test('Workflow - Create, Update, and Complete a Task', async () => {
 
 
 //Teast5 SESSION (LOGOUT)
-
 
 test('Logout - Clears auth_token cookie', async () => {
   const adminCookie = await getAuthCookie({

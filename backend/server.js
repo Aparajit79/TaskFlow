@@ -241,14 +241,22 @@ app.post('/api/projects', authenticateJWT, async (req, res) => {
     return res.status(403).json({ error: 'Only admins can create projects' });
   }
   const { name } = req.body;
-  if (!name || name.trim() === '') {
+  const trimmed = name ? name.trim() : '';
+  if (!trimmed) {
     return res.status(400).json({ error: 'Project name is required' });
+  }
+  if (trimmed.length > 25) {
+    return res.status(400).json({ error: 'Project name cannot exceed 25 characters' });
+  }
+  const nameRegex = /^[a-zA-Z0-9 ]+$/;
+  if (!nameRegex.test(trimmed)) {
+    return res.status(400).json({ error: 'Project name can only contain letters, numbers, and spaces' });
   }
 
   try {
     const result = await pool.query(
       'INSERT INTO projects (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING *',
-      [name.trim()]
+      [trimmed]
     );
     clearCache();
     res.status(201).json({ message: 'Project added successfully', data: result.rows[0] });
@@ -306,11 +314,19 @@ app.post('/api/members', authenticateJWT, async (req, res) => {
     return res.status(400).json({ error: 'ProjectId, name, and role are required' });
   }
 
-  const avatar = name.trim().charAt(0).toUpperCase();
+  const trimmedName = name ? name.trim() : '';
+  if (!trimmedName) {
+    return res.status(400).json({ error: 'Member name is required' });
+  }
+  if (!/^[a-zA-Z0-9 ]+$/.test(trimmedName)) {
+    return res.status(400).json({ error: 'Member name can only contain letters, numbers, and spaces' });
+  }
+
+  const avatar = trimmedName.charAt(0).toUpperCase();
 
   try {
     // Generate a unique username from name
-    const baseUsername = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const baseUsername = trimmedName.toLowerCase().replace(/[^a-z0-9]/g, '_');
     let username = baseUsername;
     let counter = 1;
     // Check if username exists
@@ -332,14 +348,14 @@ app.post('/api/members', authenticateJWT, async (req, res) => {
       // 1. Insert user
       const userResult = await client.query(
         'INSERT INTO users (name, email, username, password_hash, role) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-        [name.trim(), email, username, passwordHash, 'member']
+        [trimmedName, email, username, passwordHash, 'member']
       );
       const userId = userResult.rows[0].id;
 
       // 2. Insert member
       const memberResult = await client.query(
         'INSERT INTO members (project_id, user_id, name, role, avatar) VALUES ($1, $2, $3, $4, $5) RETURNING id, project_id AS "projectId", name, role, avatar',
-        [Number(projectId), userId, name.trim(), role, avatar]
+        [Number(projectId), userId, trimmedName, role, avatar]
       );
 
       await client.query('COMMIT');
@@ -907,7 +923,12 @@ app.get('/api/messages-contacts', authenticateJWT, async (req, res) => {
     let result;
     if (req.user.role === 'admin') {
       result = await pool.query(
-        'SELECT id, name, role FROM users WHERE id != $1 ORDER BY name ASC',
+        `SELECT DISTINCT u.id, u.name, u.role 
+         FROM users u 
+         LEFT JOIN members m ON m.user_id = u.id 
+         WHERE u.id != $1 
+           AND (u.role = 'admin' OR m.user_id IS NOT NULL) 
+         ORDER BY u.name ASC`,
         [userId]
       );
     } else {

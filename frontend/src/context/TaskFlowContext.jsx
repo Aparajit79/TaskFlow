@@ -140,11 +140,23 @@ export function TaskFlowProvider({ children }) {
   }, [fetchWithCredentials]);
 
   const handleAddProject = useCallback(async (name) => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
+    const trimmed = name ? name.trim() : '';
+    if (!trimmed) {
+      alert("Project name is required.");
+      return false;
+    }
+    if (trimmed.length > 25) {
+      alert("Project name cannot exceed 25 characters.");
+      return false;
+    }
+    const nameRegex = /^[a-zA-Z0-9 ]+$/;
+    if (!nameRegex.test(trimmed)) {
+      alert("Project name can only contain letters, numbers, and spaces.");
+      return false;
+    }
     if (projects.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) {
       alert(`A project with the name "${trimmed}" already exists.`);
-      return;
+      return false;
     }
 
     try {
@@ -158,9 +170,16 @@ export function TaskFlowProvider({ children }) {
         const newProj = body.data ?? body;
         await fetchWorkspaceData();
         setActiveProject(Number(newProj.id));
+        return true;
+      } else {
+        const errorBody = await res.json().catch(() => ({}));
+        alert(errorBody.error || "Failed to add project.");
+        return false;
       }
     } catch (err) {
       console.error(err);
+      alert("An error occurred while adding the project.");
+      return false;
     }
   }, [projects, fetchWithCredentials, fetchWorkspaceData]);
 

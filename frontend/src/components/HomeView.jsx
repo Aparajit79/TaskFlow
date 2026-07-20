@@ -75,12 +75,14 @@ export function HomeView() {
     return uniqueIds.size;
   }, [members]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newProjectName.trim()) return;
-    handleAddProject(newProjectName.trim());
-    setNewProjectName('');
-    setShowAddForm(false);
+    const success = await handleAddProject(newProjectName.trim());
+    if (success) {
+      setNewProjectName('');
+      setShowAddForm(false);
+    }
   };
 
   return (

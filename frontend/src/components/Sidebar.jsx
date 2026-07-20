@@ -23,14 +23,16 @@ export function Sidebar() {
   const [showAddProject, setShowAddProject] = useState(false);
   const [newProjectText, setNewProjectText] = useState('');
 
-  const handleAddProjectSubmit = (e) => {
+  const handleAddProjectSubmit = async (e) => {
     e.preventDefault();
     if (newProjectText.trim() === '') return;
-    onAddProject(newProjectText);
-    setNewProjectText('');
-    setShowAddProject(false);
-    setIsOpen(false);
-    setActiveView('Project');
+    const success = await onAddProject(newProjectText);
+    if (success) {
+      setNewProjectText('');
+      setShowAddProject(false);
+      setIsOpen(false);
+      setActiveView('Project');
+    }
   };
 
   const handleProjectSelect = (projId) => {

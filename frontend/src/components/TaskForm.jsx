@@ -126,12 +126,17 @@ export function TaskForm({ activeProject, projects = [], members = [], onSubmit,
         </div>
 
         <div>
-          <label>Description</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <label style={{ marginBottom: 0 }}>Description</label>
+            <span style={{ fontSize: '11px', color: '#888888' }}>{description.length}/100</span>
+          </div>
           <textarea
-            placeholder="Optional description..."
+            placeholder="Optional description (max 100 characters)..."
             className="task-input"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            maxLength={100}
+            style={{ resize: 'none' }}
           />
         </div>
 
